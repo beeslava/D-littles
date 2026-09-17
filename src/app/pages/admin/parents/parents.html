@@ -1,0 +1,1821 @@
+<div class="parents-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+    <div class="header-content">
+
+      <span class="header-label">
+        SCHOOL ADMINISTRATION
+      </span>
+
+      <h1>
+        Parents & Guardians
+      </h1>
+
+      <p>
+        Manage parent and guardian information,
+        contact details and student relationships.
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="add-parent-btn"
+      (click)="openAddParent()"
+    >
+      <span class="btn-icon">+</span>
+      Add Parent
+    </button>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+  ====================================================== -->
+
+  <div
+    class="success-message"
+    *ngIf="successMessage"
+  >
+    <span class="message-icon">✓</span>
+
+    <span>
+      {{ successMessage }}
+    </span>
+  </div>
+
+
+
+  <!-- =====================================================
+       STATISTICS
+  ====================================================== -->
+
+  <section class="statistics-grid">
+
+    <div class="stat-card">
+
+      <div class="stat-icon total-icon">
+        👥
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Total Parents
+        </span>
+
+        <strong class="stat-value">
+          {{ totalParents }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon active-icon">
+        ✓
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Active Parents
+        </span>
+
+        <strong class="stat-value">
+          {{ activeParents }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon inactive-icon">
+        !
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Inactive Parents
+        </span>
+
+        <strong class="stat-value">
+          {{ inactiveParents }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       PARENTS DIRECTORY
+  ====================================================== -->
+
+  <section class="parents-directory">
+
+    <div class="directory-header">
+
+      <div>
+
+        <span class="section-label">
+          DIRECTORY
+        </span>
+
+        <h2>
+          Parents & Guardians
+        </h2>
+
+        <p>
+          View and manage registered parents and guardians.
+        </p>
+
+      </div>
+
+
+      <div class="parent-count">
+
+        {{ filteredParents.length }}
+
+        Parent{{ filteredParents.length === 1 ? '' : 's' }}
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         SEARCH & FILTERS
+    ==================================================== -->
+
+    <div class="filter-tools">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          🔍
+        </span>
+
+        <input
+          type="text"
+          placeholder="Search by name, ID, phone or email..."
+          [(ngModel)]="searchTerm"
+        />
+
+      </div>
+
+
+      <div class="filter-group">
+
+        <label for="relationshipFilter">
+          Relationship
+        </label>
+
+        <select
+          id="relationshipFilter"
+          [(ngModel)]="selectedRelationship"
+        >
+
+          <option value="">
+            All Relationships
+          </option>
+
+          <option value="Father">
+            Father
+          </option>
+
+          <option value="Mother">
+            Mother
+          </option>
+
+          <option value="Guardian">
+            Guardian
+          </option>
+
+          <option value="Uncle">
+            Uncle
+          </option>
+
+          <option value="Aunt">
+            Aunt
+          </option>
+
+          <option value="Grandfather">
+            Grandfather
+          </option>
+
+          <option value="Grandmother">
+            Grandmother
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="filter-group">
+
+        <label for="statusFilter">
+          Status
+        </label>
+
+        <select
+          id="statusFilter"
+          [(ngModel)]="selectedStatus"
+        >
+
+          <option value="">
+            All Status
+          </option>
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="inactive">
+            Inactive
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="clear-filter-btn"
+        *ngIf="
+          searchTerm ||
+          selectedRelationship ||
+          selectedStatus
+        "
+        (click)="clearFilters()"
+      >
+        Clear
+      </button>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    <div
+      class="loading-state"
+      *ngIf="loading"
+    >
+
+      <div class="loading-spinner"></div>
+
+      <h3>
+        Loading Parents
+      </h3>
+
+      <p>
+        Please wait while we load the parent directory.
+      </p>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         ERROR
+    ==================================================== -->
+
+    <div
+      class="error-state"
+      *ngIf="!loading && errorMessage"
+    >
+
+      <div class="error-icon">
+        !
+      </div>
+
+      <h3>
+        Something went wrong
+      </h3>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+      <button
+        type="button"
+        class="retry-btn"
+        (click)="loadParents()"
+      >
+        Try Again
+      </button>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         EMPTY DATABASE
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        parents.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        👥
+      </div>
+
+      <h3>
+        No Parents Registered
+      </h3>
+
+      <p>
+        There are currently no parents or guardians
+        registered in the system.
+      </p>
+
+      <button
+        type="button"
+        class="empty-action-btn"
+        (click)="openAddParent()"
+      >
+        Add First Parent
+      </button>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         NO SEARCH RESULTS
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        parents.length > 0 &&
+        filteredParents.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        🔍
+      </div>
+
+      <h3>
+        No Matching Parents
+      </h3>
+
+      <p>
+        No parent matches your current search or filters.
+      </p>
+
+      <button
+        type="button"
+        class="empty-action-btn"
+        (click)="clearFilters()"
+      >
+        Clear Filters
+      </button>
+
+    </div>
+
+
+
+    <!-- ===================================================
+         TABLE
+    ==================================================== -->
+
+    <div
+      class="table-wrapper"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredParents.length > 0
+      "
+    >
+
+      <table class="parents-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Parent ID
+            </th>
+
+            <th>
+              Parent / Guardian
+            </th>
+
+            <th>
+              Relationship
+            </th>
+
+            <th>
+              Phone
+            </th>
+
+            <th>
+              Email
+            </th>
+
+            <th>
+              Occupation
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let parent of filteredParents"
+          >
+
+            <td>
+
+              <span class="parent-id">
+                {{ parent.parentId }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <div class="parent-info">
+
+                <div class="parent-avatar">
+                  {{ parent.fullName.charAt(0).toUpperCase() }}
+                </div>
+
+                <div class="parent-name">
+
+                  <strong>
+                    {{ parent.fullName }}
+                  </strong>
+
+                  <small>
+                    {{ parent.email || 'No email provided' }}
+                  </small>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <span class="relationship-badge">
+                {{ parent.relationship }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="phone-number">
+                {{ parent.phone }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="email-address">
+                {{ parent.email || '—' }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="occupation">
+                {{ parent.occupation || '—' }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.status-active]="parent.status === 'active'"
+                [class.status-inactive]="parent.status === 'inactive'"
+              >
+
+                <span class="status-dot"></span>
+
+                {{ parent.status | titlecase }}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <div class="action-buttons">
+
+                <button
+                  type="button"
+                  class="action-btn view-btn"
+                  title="View Parent"
+                  (click)="viewParent(parent)"
+                >
+                  View
+                </button>
+
+                <button
+                  type="button"
+                  class="action-btn edit-btn"
+                  title="Edit Parent"
+                  (click)="editParent(parent)"
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  class="action-btn delete-btn"
+                  title="Delete Parent"
+                  (click)="openDeleteParent(parent)"
+                >
+                  Delete
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ADD PARENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAddParent"
+    (click)="closeAddParent()"
+  >
+
+    <div
+      class="modal-card parent-form-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            PARENT MANAGEMENT
+          </span>
+
+          <h2>
+            Add Parent / Guardian
+          </h2>
+
+          <p>
+            Register a new parent or guardian.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeAddParent()"
+          [disabled]="saving"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form
+        #parentForm="ngForm"
+        (ngSubmit)="saveParent()"
+      >
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <span>
+              01
+            </span>
+
+            <div>
+
+              <h3>
+                Basic Information
+              </h3>
+
+              <p>
+                Enter the parent's basic details.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label for="parentId">
+                Parent ID
+              </label>
+
+              <input
+                id="parentId"
+                name="parentId"
+                type="text"
+                [(ngModel)]="newParent.parentId"
+                placeholder="Auto-generated if empty"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="fullName">
+                Full Name
+                <span>*</span>
+              </label>
+
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                [(ngModel)]="newParent.fullName"
+                placeholder="Enter full name"
+                required
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="relationship">
+                Relationship
+                <span>*</span>
+              </label>
+
+              <select
+                id="relationship"
+                name="relationship"
+                [(ngModel)]="newParent.relationship"
+                required
+              >
+
+                <option value="">
+                  Select relationship
+                </option>
+
+                <option value="Father">
+                  Father
+                </option>
+
+                <option value="Mother">
+                  Mother
+                </option>
+
+                <option value="Guardian">
+                  Guardian
+                </option>
+
+                <option value="Uncle">
+                  Uncle
+                </option>
+
+                <option value="Aunt">
+                  Aunt
+                </option>
+
+                <option value="Grandfather">
+                  Grandfather
+                </option>
+
+                <option value="Grandmother">
+                  Grandmother
+                </option>
+
+                <option value="Other">
+                  Other
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="phone">
+                Phone Number
+                <span>*</span>
+              </label>
+
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                [(ngModel)]="newParent.phone"
+                placeholder="0800 000 0000"
+                required
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="email">
+                Email Address
+              </label>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                [(ngModel)]="newParent.email"
+                placeholder="parent@example.com"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="occupation">
+                Occupation
+              </label>
+
+              <input
+                id="occupation"
+                name="occupation"
+                type="text"
+                [(ngModel)]="newParent.occupation"
+                placeholder="e.g. Teacher, Engineer, Business Owner"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <span>
+              02
+            </span>
+
+            <div>
+
+              <h3>
+                Contact Information
+              </h3>
+
+              <p>
+                Add address and emergency contact details.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+
+              <label for="address">
+                Address
+              </label>
+
+              <textarea
+                id="address"
+                name="address"
+                rows="3"
+                [(ngModel)]="newParent.address"
+                placeholder="Enter residential address"
+              ></textarea>
+
+            </div>
+
+
+            <div class="form-group full-width">
+
+              <label for="emergencyContact">
+                Emergency Contact
+              </label>
+
+              <input
+                id="emergencyContact"
+                name="emergencyContact"
+                type="text"
+                [(ngModel)]="newParent.emergencyContact"
+                placeholder="Name and phone number"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="parentStatus">
+                Status
+              </label>
+
+              <select
+                id="parentStatus"
+                name="status"
+                [(ngModel)]="newParent.status"
+              >
+
+                <option value="active">
+                  Active
+                </option>
+
+                <option value="inactive">
+                  Inactive
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div
+          class="form-error"
+          *ngIf="errorMessage"
+        >
+
+          <span>!</span>
+
+          {{ errorMessage }}
+
+        </div>
+
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="closeAddParent()"
+            [disabled]="saving"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="submit"
+            class="save-btn"
+            [disabled]="saving || parentForm.invalid"
+          >
+
+            <span
+              class="button-spinner"
+              *ngIf="saving"
+            ></span>
+
+            <span *ngIf="!saving">
+              Save Parent
+            </span>
+
+            <span *ngIf="saving">
+              Saving...
+            </span>
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       VIEW PARENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showParentDetails"
+    (click)="closeParentDetails()"
+  >
+
+    <div
+      class="modal-card details-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- =================================================
+           PARENT HEADER
+      ================================================== -->
+
+      <div
+        class="details-header"
+        *ngIf="selectedParent"
+      >
+
+        <div class="details-avatar">
+
+          {{ selectedParent.fullName.charAt(0).toUpperCase() }}
+
+        </div>
+
+        <div>
+
+          <span class="modal-label">
+            PARENT DETAILS
+          </span>
+
+          <h2>
+            {{ selectedParent.fullName }}
+          </h2>
+
+          <p>
+            {{ selectedParent.parentId }}
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeParentDetails()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+
+      <!-- =================================================
+           PARENT INFORMATION
+      ================================================== -->
+
+      <div
+        class="details-body"
+        *ngIf="selectedParent"
+      >
+
+        <div class="details-grid">
+
+          <div class="detail-item">
+
+            <span>
+              Parent ID
+            </span>
+
+            <strong>
+              {{ selectedParent.parentId }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Relationship
+            </span>
+
+            <strong>
+              {{ selectedParent.relationship }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Status
+            </span>
+
+            <strong
+              [class.detail-active]="selectedParent.status === 'active'"
+              [class.detail-inactive]="selectedParent.status === 'inactive'"
+            >
+              {{ selectedParent.status | titlecase }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Phone Number
+            </span>
+
+            <strong>
+              {{ selectedParent.phone }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Email Address
+            </span>
+
+            <strong>
+              {{ selectedParent.email || 'Not provided' }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Occupation
+            </span>
+
+            <strong>
+              {{ selectedParent.occupation || 'Not provided' }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Emergency Contact
+            </span>
+
+            <strong>
+              {{ selectedParent.emergencyContact || 'Not provided' }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item full-width">
+
+            <span>
+              Address
+            </span>
+
+            <strong>
+              {{ selectedParent.address || 'Not provided' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             CHILDREN / STUDENTS
+        ================================================== -->
+
+        <div class="children-section">
+
+          <div class="children-section-header">
+
+            <div>
+
+              <span class="section-label">
+                STUDENT RELATIONSHIP
+              </span>
+
+              <h3>
+                Children / Students
+              </h3>
+
+            </div>
+
+
+            <div class="children-count">
+
+              {{ parentChildren.length }}
+
+              {{ parentChildren.length === 1 ? 'Student' : 'Students' }}
+
+            </div>
+
+          </div>
+
+
+
+          <!-- LOADING CHILDREN -->
+
+          <div
+            class="children-loading"
+            *ngIf="loadingChildren"
+          >
+
+            <div class="loading-spinner"></div>
+
+            <span>
+              Loading students...
+            </span>
+
+          </div>
+
+
+
+          <!-- NO CHILDREN -->
+
+          <div
+            class="children-empty"
+            *ngIf="
+              !loadingChildren &&
+              parentChildren.length === 0
+            "
+          >
+
+            <div class="children-empty-icon">
+              🎓
+            </div>
+
+            <h4>
+              No Students Linked
+            </h4>
+
+            <p>
+              There are currently no students linked
+              to this parent.
+            </p>
+
+          </div>
+
+
+
+          <!-- CHILDREN LIST -->
+
+          <div
+            class="children-list"
+            *ngIf="
+              !loadingChildren &&
+              parentChildren.length > 0
+            "
+          >
+
+            <div
+              class="child-card"
+              *ngFor="let student of parentChildren"
+            >
+
+              <div class="child-avatar">
+
+                {{
+                  student.firstName
+                    ? student.firstName.charAt(0).toUpperCase()
+                    : '?'
+                }}
+
+              </div>
+
+
+              <div class="child-info">
+
+                <strong>
+                  {{ getStudentName(student) }}
+                </strong>
+
+                <span>
+                  {{ student.studentId }}
+                </span>
+
+              </div>
+
+
+              <div class="child-details">
+
+                <div>
+
+                  <small>
+                    Class
+                  </small>
+
+                  <strong>
+                    {{ student.class || 'Not assigned' }}
+                  </strong>
+
+                </div>
+
+
+                <div>
+
+                  <small>
+                    Gender
+                  </small>
+
+                  <strong>
+                    {{ student.gender || 'Not provided' }}
+                  </strong>
+
+                </div>
+
+
+                <div>
+
+                  <small>
+                    Status
+                  </small>
+
+                  <strong
+                    [class.child-active]="student.status === 'active'"
+                  >
+                    {{ student.status | titlecase }}
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =================================================
+           FOOTER
+      ================================================== -->
+
+      <div class="details-footer">
+
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="closeParentDetails()"
+        >
+          Close
+        </button>
+
+
+        <button
+          type="button"
+          class="save-btn"
+          *ngIf="selectedParent"
+          (click)="editParent(selectedParent); closeParentDetails()"
+        >
+          Edit Parent
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       EDIT PARENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showEditParent"
+    (click)="closeEditParent()"
+  >
+
+    <div
+      class="modal-card parent-form-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            PARENT MANAGEMENT
+          </span>
+
+          <h2>
+            Edit Parent / Guardian
+          </h2>
+
+          <p>
+            Update parent or guardian information.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeEditParent()"
+          [disabled]="updating"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+
+      <form
+        #editParentForm="ngForm"
+        (ngSubmit)="updateParent()"
+        *ngIf="selectedParent"
+      >
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <span>
+              01
+            </span>
+
+            <div>
+
+              <h3>
+                Basic Information
+              </h3>
+
+              <p>
+                Update the parent's basic details.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label>
+                Parent ID
+              </label>
+
+              <input
+                type="text"
+                name="editParentId"
+                [(ngModel)]="selectedParent.parentId"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Full Name
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="editFullName"
+                [(ngModel)]="selectedParent.fullName"
+                required
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Relationship
+                <span>*</span>
+              </label>
+
+              <select
+                name="editRelationship"
+                [(ngModel)]="selectedParent.relationship"
+                required
+              >
+
+                <option value="">
+                  Select relationship
+                </option>
+
+                <option value="Father">
+                  Father
+                </option>
+
+                <option value="Mother">
+                  Mother
+                </option>
+
+                <option value="Guardian">
+                  Guardian
+                </option>
+
+                <option value="Uncle">
+                  Uncle
+                </option>
+
+                <option value="Aunt">
+                  Aunt
+                </option>
+
+                <option value="Grandfather">
+                  Grandfather
+                </option>
+
+                <option value="Grandmother">
+                  Grandmother
+                </option>
+
+                <option value="Other">
+                  Other
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Phone Number
+                <span>*</span>
+              </label>
+
+              <input
+                type="tel"
+                name="editPhone"
+                [(ngModel)]="selectedParent.phone"
+                required
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Email Address
+              </label>
+
+              <input
+                type="email"
+                name="editEmail"
+                [(ngModel)]="selectedParent.email"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Occupation
+              </label>
+
+              <input
+                type="text"
+                name="editOccupation"
+                [(ngModel)]="selectedParent.occupation"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <span>
+              02
+            </span>
+
+            <div>
+
+              <h3>
+                Contact Information
+              </h3>
+
+              <p>
+                Update address and emergency contact details.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+
+              <label>
+                Address
+              </label>
+
+              <textarea
+                name="editAddress"
+                rows="3"
+                [(ngModel)]="selectedParent.address"
+              ></textarea>
+
+            </div>
+
+
+            <div class="form-group full-width">
+
+              <label>
+                Emergency Contact
+              </label>
+
+              <input
+                type="text"
+                name="editEmergencyContact"
+                [(ngModel)]="selectedParent.emergencyContact"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Status
+              </label>
+
+              <select
+                name="editStatus"
+                [(ngModel)]="selectedParent.status"
+              >
+
+                <option value="active">
+                  Active
+                </option>
+
+                <option value="inactive">
+                  Inactive
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div
+          class="form-error"
+          *ngIf="errorMessage"
+        >
+
+          <span>!</span>
+
+          {{ errorMessage }}
+
+        </div>
+
+
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="closeEditParent()"
+            [disabled]="updating"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="submit"
+            class="save-btn"
+            [disabled]="updating || editParentForm.invalid"
+          >
+
+            <span
+              class="button-spinner"
+              *ngIf="updating"
+            ></span>
+
+            <span *ngIf="!updating">
+              Save Changes
+            </span>
+
+            <span *ngIf="updating">
+              Updating...
+            </span>
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       DELETE CONFIRMATION MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay delete-overlay"
+    *ngIf="showDeleteParent"
+    (click)="closeDeleteParent()"
+  >
+
+    <div
+      class="modal-card delete-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="delete-icon">
+        !
+      </div>
+
+
+      <span class="modal-label">
+        CONFIRM ACTION
+      </span>
+
+
+      <h2>
+        Delete Parent?
+      </h2>
+
+
+      <p *ngIf="parentToDelete">
+
+        Are you sure you want to delete
+
+        <strong>
+          {{ parentToDelete.fullName }}
+        </strong>
+
+        from the parent directory?
+
+        <br />
+
+        This action cannot be undone.
+
+      </p>
+
+
+
+      <div
+        class="delete-error"
+        *ngIf="deleteErrorMessage"
+      >
+
+        <span>!</span>
+
+        {{ deleteErrorMessage }}
+
+      </div>
+
+
+
+      <div class="delete-actions">
+
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="closeDeleteParent()"
+          [disabled]="deleting"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="confirm-delete-btn"
+          (click)="deleteParent()"
+          [disabled]="deleting"
+        >
+
+          <span
+            class="button-spinner"
+            *ngIf="deleting"
+          ></span>
+
+          <span *ngIf="!deleting">
+            Delete Parent
+          </span>
+
+          <span *ngIf="deleting">
+            Deleting...
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

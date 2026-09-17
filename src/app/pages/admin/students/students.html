@@ -1,0 +1,2096 @@
+<div class="students-page">
+
+  <!-- =====================================================
+       HEADER
+  ===================================================== -->
+
+  <header class="students-header">
+
+    <div>
+      <span class="header-label">
+        SCHOOL ADMINISTRATION
+      </span>
+
+      <h1>
+        Students
+      </h1>
+
+      <p>
+        Manage and view all registered students.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="add-student-btn"
+      (click)="openAddStudent()"
+    >
+      + Add Student
+    </button>
+
+  </header>
+
+
+  <!-- =====================================================
+       STATISTICS
+  ===================================================== -->
+
+  <section class="stats-grid">
+
+    <div class="stat-card">
+      <span>TOTAL STUDENTS</span>
+      <strong>{{ totalStudents }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>ACTIVE STUDENTS</span>
+      <strong>{{ activeStudents }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>MALE STUDENTS</span>
+      <strong>{{ maleStudents }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>FEMALE STUDENTS</span>
+      <strong>{{ femaleStudents }}</strong>
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       STUDENTS DIRECTORY
+  ===================================================== -->
+
+  <section class="students-card">
+
+    <div class="section-heading">
+
+      <div>
+        <span>
+          STUDENT DIRECTORY
+        </span>
+
+        <h2>
+          All Students
+        </h2>
+      </div>
+
+      <div class="student-count">
+        {{ students.length }}
+        Student{{ students.length === 1 ? '' : 's' }}
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         SEARCH / FILTER
+    =================================================== -->
+
+    <div class="student-tools">
+
+      <div class="search-box">
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search students..."
+        />
+
+      </div>
+
+
+      <!-- DYNAMIC CLASS FILTER -->
+
+      <select
+        [(ngModel)]="selectedClass"
+      >
+
+        <option value="">
+          All Classes
+        </option>
+
+        <option
+          *ngFor="let schoolClass of classes"
+          [value]="schoolClass.id"
+        >
+          {{ getClassDisplayName(schoolClass) }}
+        </option>
+
+      </select>
+
+
+      <select
+        [(ngModel)]="selectedStatus"
+      >
+
+        <option value="">
+          All Status
+        </option>
+
+        <option value="active">
+          Active
+        </option>
+
+        <option value="inactive">
+          Inactive
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- ===================================================
+         CLASS LOADING MESSAGE
+    =================================================== -->
+
+    <div
+      class="field-hint"
+      *ngIf="classesLoading"
+    >
+      Loading classes...
+    </div>
+
+
+    <!-- ===================================================
+         CLASS LOAD ERROR
+    =================================================== -->
+
+    <div
+      class="students-error"
+      *ngIf="classLoadError"
+    >
+
+      <div class="error-icon">
+        ⚠
+      </div>
+
+      <p>
+        {{ classLoadError }}
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+    =================================================== -->
+
+    <div
+      class="students-loading"
+      *ngIf="loading"
+    >
+
+      <div class="spinner"></div>
+
+      <p>
+        Loading students...
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         ERROR
+    =================================================== -->
+
+    <div
+      class="students-error"
+      *ngIf="!loading && errorMessage"
+    >
+
+      <div class="error-icon">
+        ⚠
+      </div>
+
+      <h3>
+        Unable to load students
+      </h3>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+      <button
+        type="button"
+        (click)="loadStudents()"
+      >
+        Try Again
+      </button>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY STATE
+    =================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        students.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        👨‍🎓
+      </div>
+
+      <h3>
+        No Students Yet
+      </h3>
+
+      <p>
+        Registered students will appear here.
+      </p>
+
+      <button
+        type="button"
+        class="empty-action"
+        (click)="openAddStudent()"
+      >
+        + Add First Student
+      </button>
+
+    </div>
+
+
+    <!-- ===================================================
+         NO SEARCH RESULTS
+    =================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        students.length > 0 &&
+        filteredStudents.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        🔎
+      </div>
+
+      <h3>
+        No Matching Students
+      </h3>
+
+      <p>
+        No student matches your current search or filter.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         STUDENT TABLE
+    =================================================== -->
+
+    <div
+      class="students-table-wrapper"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredStudents.length > 0
+      "
+    >
+
+      <table class="students-table">
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Student ID
+            </th>
+
+            <th>
+              Student
+            </th>
+
+            <th>
+              Gender
+            </th>
+
+            <th>
+              Date of Birth
+            </th>
+
+            <th>
+              Class
+            </th>
+
+            <th>
+              Parent / Guardian
+            </th>
+
+            <th>
+              Phone
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let student of filteredStudents"
+          >
+
+            <!-- STUDENT ID -->
+
+            <td>
+
+              <strong class="student-id">
+                {{ student.studentId }}
+              </strong>
+
+            </td>
+
+
+            <!-- STUDENT NAME -->
+
+            <td>
+
+              <div class="student-name-cell">
+
+                <div class="student-avatar">
+
+                  {{
+                    student.firstName
+                      ? student.firstName.charAt(0).toUpperCase()
+                      : '?'
+                  }}
+
+                </div>
+
+                <div>
+
+                  <strong>
+                    {{ getStudentName(student) }}
+                  </strong>
+
+                  <small
+                    *ngIf="student.parentEmail"
+                  >
+                    {{ student.parentEmail }}
+                  </small>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- GENDER -->
+
+            <td>
+              {{ student.gender | titlecase }}
+            </td>
+
+
+            <!-- DATE OF BIRTH -->
+
+            <td>
+              {{ student.dateOfBirth }}
+            </td>
+
+
+            <!-- CLASS -->
+
+            <td>
+
+              <span
+                class="class-badge"
+                *ngIf="student.className || student.class"
+              >
+                {{ student.className || student.class }}
+              </span>
+
+              <span
+                class="class-badge"
+                *ngIf="!student.className && !student.class"
+              >
+                Not Assigned
+              </span>
+
+            </td>
+
+
+            <!-- PARENT -->
+
+            <td>
+              {{ student.parentName }}
+            </td>
+
+
+            <!-- PHONE -->
+
+            <td>
+              {{ student.parentPhone }}
+            </td>
+
+
+            <!-- STATUS -->
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.status-active]="
+                  student.status.toLowerCase() === 'active'
+                "
+                [class.status-inactive]="
+                  student.status.toLowerCase() !== 'active'
+                "
+              >
+
+                {{ student.status | titlecase }}
+
+              </span>
+
+            </td>
+
+
+            <!-- ACTIONS -->
+
+            <td class="student-actions">
+
+              <!-- VIEW -->
+
+              <button
+                type="button"
+                class="view-btn"
+                (click)="viewStudent(student)"
+                title="View Student"
+              >
+
+                <i class="fas fa-eye"></i>
+
+                View
+
+              </button>
+
+
+              <!-- EDIT -->
+
+              <button
+                type="button"
+                class="edit-btn"
+                (click)="editStudent(student)"
+                title="Edit Student"
+              >
+
+                <i class="fas fa-pen"></i>
+
+                Edit
+
+              </button>
+
+
+              <!-- ASSIGN CLASS -->
+
+              <button
+                type="button"
+                class="assign-class-btn"
+                (click)="openAssignClass(student)"
+                title="Assign Class"
+              >
+
+                <i class="fas fa-school"></i>
+
+                {{
+                  student.classId
+                    ? 'Change Class'
+                    : 'Assign Class'
+                }}
+
+              </button>
+
+
+              <!-- REMOVE CLASS -->
+
+              <button
+                type="button"
+                class="remove-class-btn"
+                *ngIf="student.classId"
+                (click)="removeClassAssignment(student)"
+                [disabled]="assigningClass"
+                title="Remove Class Assignment"
+              >
+
+                <i class="fas fa-user-minus"></i>
+
+                Remove Class
+
+              </button>
+
+
+              <!-- DELETE -->
+
+              <button
+                type="button"
+                class="delete-btn"
+                (click)="openDeleteStudent(student)"
+                title="Delete Student"
+              >
+
+                <i class="fas fa-trash"></i>
+
+                Delete
+
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- =====================================================
+         ADD STUDENT MODAL
+    ===================================================== -->
+
+    <div
+      class="modal-overlay"
+      *ngIf="showAddStudent"
+      (click)="closeAddStudent()"
+    >
+
+      <div
+        class="student-modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+          <div>
+
+            <span>
+              STUDENT MANAGEMENT
+            </span>
+
+            <h2>
+              Add New Student
+            </h2>
+
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            (click)="closeAddStudent()"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <form
+          #studentForm="ngForm"
+          (ngSubmit)="saveStudent()"
+        >
+
+          <!-- STUDENT INFORMATION -->
+
+          <div class="form-section">
+
+            <div class="form-section-title">
+              Student Information
+            </div>
+
+            <div class="form-grid">
+
+              <div class="form-group">
+
+                <label>
+                  First Name *
+                </label>
+
+                <input
+                  type="text"
+                  name="firstName"
+                  [(ngModel)]="student.firstName"
+                  required
+                  placeholder="First name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Middle Name
+                </label>
+
+                <input
+                  type="text"
+                  name="middleName"
+                  [(ngModel)]="student.middleName"
+                  placeholder="Middle name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Last Name *
+                </label>
+
+                <input
+                  type="text"
+                  name="lastName"
+                  [(ngModel)]="student.lastName"
+                  required
+                  placeholder="Last name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Gender *
+                </label>
+
+                <select
+                  name="gender"
+                  [(ngModel)]="student.gender"
+                  required
+                >
+
+                  <option value="">
+                    Select gender
+                  </option>
+
+                  <option value="male">
+                    Male
+                  </option>
+
+                  <option value="female">
+                    Female
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Date of Birth *
+                </label>
+
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  [(ngModel)]="student.dateOfBirth"
+                  required
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Student ID
+                </label>
+
+                <input
+                  type="text"
+                  name="studentId"
+                  [(ngModel)]="student.studentId"
+                  placeholder="e.g. DL-2026-001"
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ACADEMIC INFORMATION -->
+
+          <div class="form-section">
+
+            <div class="form-section-title">
+              Academic Information
+            </div>
+
+            <div class="form-grid">
+
+              <div class="form-group full-width">
+
+                <label>
+                  Class
+                </label>
+
+                <select
+                  name="classId"
+                  [(ngModel)]="student.classId"
+                  (ngModelChange)="onClassChange($event, 'add')"
+                >
+
+                  <option value="">
+                    No class assigned
+                  </option>
+
+                  <option
+                    *ngFor="let schoolClass of classes"
+                    [value]="schoolClass.id"
+                  >
+
+                    {{ getClassDisplayName(schoolClass) }}
+
+                    {{
+                      schoolClass.classTeacherName
+                        ? ' — ' + schoolClass.classTeacherName
+                        : ''
+                    }}
+
+                  </option>
+
+                </select>
+
+                <small
+                  class="field-hint"
+                  *ngIf="classesLoading"
+                >
+                  Loading available classes...
+                </small>
+
+                <small
+                  class="field-hint"
+                  *ngIf="
+                    !classesLoading &&
+                    classes.length === 0 &&
+                    !classLoadError
+                  "
+                >
+                  No active classes are available yet.
+                  Please create a class first.
+                </small>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Status
+                </label>
+
+                <select
+                  name="status"
+                  [(ngModel)]="student.status"
+                >
+
+                  <option value="active">
+                    Active
+                  </option>
+
+                  <option value="inactive">
+                    Inactive
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- PARENT INFORMATION -->
+
+          <div class="form-section">
+
+            <div class="form-section-title">
+              Parent / Guardian Information
+            </div>
+
+            <div class="form-grid">
+
+              <div class="form-group full-width">
+
+                <label>
+                  Select Parent / Guardian *
+                </label>
+
+                <select
+                  name="parentId"
+                  [(ngModel)]="student.parentId"
+                  (ngModelChange)="onParentChange($event, 'add')"
+                  required
+                >
+
+                  <option value="">
+                    {{
+                      parentsLoading
+                        ? 'Loading parents...'
+                        : 'Select a parent or guardian'
+                    }}
+                  </option>
+
+                  <option
+                    *ngFor="let parent of parents"
+                    [value]="parent.parentId"
+                  >
+
+                    {{ parent.fullName }}
+                    —
+                    {{ parent.relationship }}
+                    —
+                    {{ parent.phone }}
+
+                  </option>
+
+                </select>
+
+
+                <small
+                  class="field-hint"
+                  *ngIf="parentsLoading"
+                >
+                  Loading registered parents...
+                </small>
+
+
+                <small
+                  class="field-hint"
+                  *ngIf="
+                    !parentsLoading &&
+                    parents.length === 0 &&
+                    !parentLoadError
+                  "
+                >
+                  No parents are registered yet.
+                  Please add a parent first.
+                </small>
+
+
+                <small
+                  class="field-hint error-text"
+                  *ngIf="parentLoadError"
+                >
+                  {{ parentLoadError }}
+                </small>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Parent / Guardian Name
+                </label>
+
+                <input
+                  type="text"
+                  name="parentName"
+                  [(ngModel)]="student.parentName"
+                  readonly
+                  placeholder="Selected parent name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Phone Number
+                </label>
+
+                <input
+                  type="tel"
+                  name="parentPhone"
+                  [(ngModel)]="student.parentPhone"
+                  readonly
+                  placeholder="Parent phone number"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Email Address
+                </label>
+
+                <input
+                  type="email"
+                  name="parentEmail"
+                  [(ngModel)]="student.parentEmail"
+                  readonly
+                  placeholder="Parent email address"
+                />
+
+              </div>
+
+
+              <div class="form-group full-width">
+
+                <label>
+                  Home Address
+                </label>
+
+                <textarea
+                  name="address"
+                  [(ngModel)]="student.address"
+                  rows="3"
+                  placeholder="Residential address"
+                ></textarea>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- MESSAGES -->
+
+          <div
+            class="form-error"
+            *ngIf="errorMessage"
+          >
+            {{ errorMessage }}
+          </div>
+
+
+          <div
+            class="form-success"
+            *ngIf="successMessage"
+          >
+            {{ successMessage }}
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="form-actions">
+
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="closeAddStudent()"
+              [disabled]="saving"
+            >
+              Cancel
+            </button>
+
+
+            <button
+              type="submit"
+              class="save-btn"
+              [disabled]="studentForm.invalid || saving"
+            >
+
+              <span *ngIf="!saving">
+                Save Student
+              </span>
+
+              <span *ngIf="saving">
+                Saving...
+              </span>
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         VIEW STUDENT DETAILS MODAL
+    ===================================================== -->
+
+    <div
+      class="modal-overlay"
+      *ngIf="showStudentDetails && selectedStudent"
+      (click)="closeStudentDetails()"
+    >
+
+      <div
+        class="student-details-modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+          <div>
+
+            <span class="modal-label">
+              STUDENT PROFILE
+            </span>
+
+            <h2>
+              {{ getStudentName(selectedStudent) }}
+            </h2>
+
+            <p>
+              Student ID:
+              <strong>
+                {{ selectedStudent.studentId }}
+              </strong>
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            (click)="closeStudentDetails()"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <!-- STUDENT INFORMATION -->
+
+        <div class="details-section">
+
+          <h3>
+            <i class="fas fa-user"></i>
+            Student Information
+          </h3>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+
+              <span>
+                First Name
+              </span>
+
+              <strong>
+                {{ selectedStudent.firstName }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Middle Name
+              </span>
+
+              <strong>
+                {{ selectedStudent.middleName || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Last Name
+              </span>
+
+              <strong>
+                {{ selectedStudent.lastName }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Gender
+              </span>
+
+              <strong>
+                {{ selectedStudent.gender | titlecase }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Date of Birth
+              </span>
+
+              <strong>
+                {{ selectedStudent.dateOfBirth || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Student ID
+              </span>
+
+              <strong>
+                {{ selectedStudent.studentId }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ACADEMIC INFORMATION -->
+
+        <div class="details-section">
+
+          <h3>
+            <i class="fas fa-graduation-cap"></i>
+            Academic Information
+          </h3>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+
+              <span>
+                Class
+              </span>
+
+              <strong>
+                {{
+                  selectedStudent.className ||
+                  selectedStudent.class ||
+                  'Not Assigned'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Class ID
+              </span>
+
+              <strong>
+                {{ selectedStudent.classId || 'Not Assigned' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Status
+              </span>
+
+              <strong>
+
+                <span
+                  class="status-badge"
+                  [class.status-active]="
+                    selectedStudent.status.toLowerCase() === 'active'
+                  "
+                  [class.status-inactive]="
+                    selectedStudent.status.toLowerCase() !== 'active'
+                  "
+                >
+
+                  {{ selectedStudent.status | titlecase }}
+
+                </span>
+
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PARENT INFORMATION -->
+
+        <div class="details-section">
+
+          <h3>
+            <i class="fas fa-users"></i>
+            Parent / Guardian Information
+          </h3>
+
+          <div class="details-grid">
+
+            <div class="detail-item">
+
+              <span>
+                Parent ID
+              </span>
+
+              <strong>
+                {{ selectedStudent.parentId || 'Legacy record' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Parent / Guardian
+              </span>
+
+              <strong>
+                {{ selectedStudent.parentName }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Phone
+              </span>
+
+              <strong>
+                {{ selectedStudent.parentPhone }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Email
+              </span>
+
+              <strong>
+                {{ selectedStudent.parentEmail || '—' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item detail-full">
+
+              <span>
+                Address
+              </span>
+
+              <strong>
+                {{ selectedStudent.address || '—' }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="details-footer">
+
+          <button
+            type="button"
+            class="close-details-btn"
+            (click)="closeStudentDetails()"
+          >
+            Close
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         EDIT STUDENT MODAL
+    ===================================================== -->
+
+    <div
+      class="modal-overlay"
+      *ngIf="showEditStudent && editingStudent"
+      (click)="closeEditStudent()"
+    >
+
+      <div
+        class="student-modal edit-student-modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+          <div>
+
+            <span>
+              STUDENT MANAGEMENT
+            </span>
+
+            <h2>
+              Edit Student
+            </h2>
+
+            <p>
+              Update the student's information below.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            (click)="closeEditStudent()"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <!-- EDIT FORM -->
+
+        <form
+          #editStudentForm="ngForm"
+          (ngSubmit)="updateStudent()"
+        >
+
+          <!-- STUDENT INFORMATION -->
+
+          <div class="form-section">
+
+            <div class="form-section-title">
+              Student Information
+            </div>
+
+            <div class="form-grid">
+
+              <div class="form-group">
+
+                <label>
+                  First Name *
+                </label>
+
+                <input
+                  type="text"
+                  name="editFirstName"
+                  [(ngModel)]="editingStudent.firstName"
+                  required
+                  placeholder="First name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Middle Name
+                </label>
+
+                <input
+                  type="text"
+                  name="editMiddleName"
+                  [(ngModel)]="editingStudent.middleName"
+                  placeholder="Middle name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Last Name *
+                </label>
+
+                <input
+                  type="text"
+                  name="editLastName"
+                  [(ngModel)]="editingStudent.lastName"
+                  required
+                  placeholder="Last name"
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Gender *
+                </label>
+
+                <select
+                  name="editGender"
+                  [(ngModel)]="editingStudent.gender"
+                  required
+                >
+
+                  <option value="">
+                    Select gender
+                  </option>
+
+                  <option value="male">
+                    Male
+                  </option>
+
+                  <option value="female">
+                    Female
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Date of Birth *
+                </label>
+
+                <input
+                  type="date"
+                  name="editDateOfBirth"
+                  [(ngModel)]="editingStudent.dateOfBirth"
+                  required
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Student ID
+                </label>
+
+                <input
+                  type="text"
+                  name="editStudentId"
+                  [(ngModel)]="editingStudent.studentId"
+                  placeholder="e.g. DL-2026-001"
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- ACADEMIC INFORMATION -->
+
+          <div class="form-section">
+
+            <div class="form-section-title">
+              Academic Information
+            </div>
+
+            <div class="form-grid">
+
+              <div class="form-group full-width">
+
+                <label>
+                  Class
+                </label>
+
+                <select
+                  name="editClassId"
+                  [(ngModel)]="editingStudent.classId"
+                  (ngModelChange)="onClassChange($event, 'edit')"
+                >
+
+                  <option value="">
+                    No class assigned
+                  </option>
+
+                  <option
+                    *ngFor="let schoolClass of classes"
+                    [value]="schoolClass.id"
+                  >
+
+                    {{ getClassDisplayName(schoolClass) }}
+
+                    {{
+                      schoolClass.classTeacherName
+                        ? ' — ' + schoolClass.classTeacherName
+                        : ''
+                    }}
+
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Status
+                </label>
+
+                <select
+                  name="editStatus"
+                  [(ngModel)]="editingStudent.status"
+                >
+
+                  <option value="active">
+                    Active
+                  </option>
+
+                  <option value="inactive">
+                    Inactive
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- PARENT INFORMATION -->
+
+          <div class="form-section">
+
+            <div class="form-section-title">
+              Parent / Guardian Information
+            </div>
+
+            <div class="form-grid">
+
+              <div class="form-group full-width">
+
+                <label>
+                  Select Parent / Guardian *
+                </label>
+
+                <select
+                  name="editParentId"
+                  [(ngModel)]="editingStudent.parentId"
+                  (ngModelChange)="onParentChange($event, 'edit')"
+                  required
+                >
+
+                  <option value="">
+                    {{
+                      parentsLoading
+                        ? 'Loading parents...'
+                        : 'Select a parent or guardian'
+                    }}
+                  </option>
+
+                  <option
+                    *ngFor="let parent of parents"
+                    [value]="parent.parentId"
+                  >
+
+                    {{ parent.fullName }}
+                    —
+                    {{ parent.relationship }}
+                    —
+                    {{ parent.phone }}
+
+                  </option>
+
+                </select>
+
+                <small
+                  class="field-hint"
+                  *ngIf="
+                    parents.length === 0 &&
+                    !parentsLoading
+                  "
+                >
+                  No parents are registered yet.
+                </small>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Parent / Guardian Name
+                </label>
+
+                <input
+                  type="text"
+                  name="editParentName"
+                  [(ngModel)]="editingStudent.parentName"
+                  readonly
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Phone Number
+                </label>
+
+                <input
+                  type="tel"
+                  name="editParentPhone"
+                  [(ngModel)]="editingStudent.parentPhone"
+                  readonly
+                />
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label>
+                  Email Address
+                </label>
+
+                <input
+                  type="email"
+                  name="editParentEmail"
+                  [(ngModel)]="editingStudent.parentEmail"
+                  readonly
+                />
+
+              </div>
+
+
+              <div class="form-group full-width">
+
+                <label>
+                  Home Address
+                </label>
+
+                <textarea
+                  name="editAddress"
+                  [(ngModel)]="editingStudent.address"
+                  rows="3"
+                  placeholder="Residential address"
+                ></textarea>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- EDIT MESSAGES -->
+
+          <div
+            class="form-error"
+            *ngIf="editErrorMessage"
+          >
+            {{ editErrorMessage }}
+          </div>
+
+
+          <div
+            class="form-success"
+            *ngIf="editSuccessMessage"
+          >
+            {{ editSuccessMessage }}
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="form-actions">
+
+            <button
+              type="button"
+              class="cancel-btn"
+              (click)="closeEditStudent()"
+              [disabled]="updating"
+            >
+              Cancel
+            </button>
+
+
+            <button
+              type="submit"
+              class="update-btn"
+              [disabled]="editStudentForm.invalid || updating"
+            >
+
+              <span *ngIf="!updating">
+
+                <i class="fas fa-save"></i>
+
+                Update Student
+
+              </span>
+
+
+              <span *ngIf="updating">
+                Updating...
+              </span>
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ASSIGN CLASS MODAL
+    ===================================================== -->
+
+    <div
+      class="modal-overlay"
+      *ngIf="showAssignClass && studentToAssign"
+      (click)="closeAssignClass()"
+    >
+
+      <div
+        class="student-modal assign-class-modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <!-- HEADER -->
+
+        <div class="modal-header">
+
+          <div>
+
+            <span>
+              CLASS MANAGEMENT
+            </span>
+
+            <h2>
+              Assign Student to Class
+            </h2>
+
+            <p>
+              {{ getStudentName(studentToAssign) }}
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="close-btn"
+            (click)="closeAssignClass()"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <!-- ASSIGNMENT CONTENT -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+            Student Class Assignment
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Select Class *
+            </label>
+
+            <select
+              [(ngModel)]="selectedClassIdForAssignment"
+              name="assignmentClass"
+            >
+
+              <option value="">
+                Select a class
+              </option>
+
+              <option
+                *ngFor="let schoolClass of classes"
+                [value]="schoolClass.id"
+              >
+
+                {{ getClassDisplayName(schoolClass) }}
+
+                {{
+                  schoolClass.classTeacherName
+                    ? ' — ' + schoolClass.classTeacherName
+                    : ''
+                }}
+
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- CURRENT CLASS -->
+
+          <div class="detail-item">
+
+            <span>
+              Current Class
+            </span>
+
+            <strong>
+              {{
+                studentToAssign.className ||
+                studentToAssign.class ||
+                'Not Assigned'
+              }}
+            </strong>
+
+          </div>
+
+
+          <!-- ERROR -->
+
+          <div
+            class="form-error"
+            *ngIf="classAssignErrorMessage"
+          >
+
+            {{ classAssignErrorMessage }}
+
+          </div>
+
+
+          <!-- SUCCESS -->
+
+          <div
+            class="form-success"
+            *ngIf="classAssignSuccessMessage"
+          >
+
+            {{ classAssignSuccessMessage }}
+
+          </div>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="closeAssignClass()"
+            [disabled]="assigningClass"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="button"
+            class="save-btn"
+            (click)="assignClass()"
+            [disabled]="
+              assigningClass ||
+              !selectedClassIdForAssignment
+            "
+          >
+
+            <span *ngIf="!assigningClass">
+
+              <i class="fas fa-school"></i>
+
+              Assign Class
+
+            </span>
+
+
+            <span *ngIf="assigningClass">
+              Assigning...
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         DELETE STUDENT CONFIRMATION
+    ===================================================== -->
+
+    <div
+      class="modal-overlay delete-modal-overlay"
+      *ngIf="showDeleteStudent"
+      (click)="closeDeleteStudent()"
+    >
+
+      <div
+        class="delete-modal"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="delete-icon">
+          <i class="fas fa-trash"></i>
+        </div>
+
+        <h2>
+          Delete Student?
+        </h2>
+
+        <p class="delete-warning">
+          Are you sure you want to permanently delete
+          this student?
+        </p>
+
+
+        <div
+          class="delete-student-info"
+          *ngIf="studentToDelete"
+        >
+
+          <strong>
+            {{ studentToDelete.firstName }}
+            {{ studentToDelete.middleName }}
+            {{ studentToDelete.lastName }}
+          </strong>
+
+          <span>
+            Student ID:
+            {{ studentToDelete.studentId }}
+          </span>
+
+          <span>
+            Class:
+            {{
+              studentToDelete.className ||
+              studentToDelete.class ||
+              'Not Assigned'
+            }}
+          </span>
+
+        </div>
+
+
+        <div
+          class="delete-error"
+          *ngIf="deleteErrorMessage"
+        >
+
+          <i class="fas fa-circle-exclamation"></i>
+
+          <span>
+            {{ deleteErrorMessage }}
+          </span>
+
+        </div>
+
+
+        <div class="delete-actions">
+
+          <button
+            type="button"
+            class="cancel-delete-btn"
+            (click)="closeDeleteStudent()"
+            [disabled]="deleting"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="button"
+            class="confirm-delete-btn"
+            (click)="deleteStudent()"
+            [disabled]="deleting"
+          >
+
+            <i
+              class="fas"
+              [class.fa-trash]="!deleting"
+              [class.fa-spinner]="deleting"
+              [class.fa-spin]="deleting"
+            ></i>
+
+            {{
+              deleting
+                ? 'Deleting...'
+                : 'Delete Student'
+            }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

@@ -1,0 +1,1213 @@
+<div class="teaching-assignments-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+    <div class="page-header-content">
+
+      <div>
+        <span class="page-label">
+          ACADEMIC MANAGEMENT
+        </span>
+
+        <h1>
+          Teaching Assignments
+        </h1>
+
+        <p>
+          Assign teachers to subjects within specific classes.
+        </p>
+      </div>
+
+      <button
+        class="btn btn-primary"
+        type="button"
+        (click)="openAddAssignment()">
+
+        <i class="fas fa-plus"></i>
+
+        <span>
+          Add Assignment
+        </span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ALERTS
+  ====================================================== -->
+
+  <div
+    class="alert alert-success"
+    *ngIf="successMessage">
+
+    <i class="fas fa-check-circle"></i>
+
+    <span>
+      {{ successMessage }}
+    </span>
+
+    <button
+      type="button"
+      (click)="clearMessages()">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="alert alert-error"
+    *ngIf="errorMessage">
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+    <button
+      type="button"
+      (click)="clearMessages()">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+  ====================================================== -->
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        <i class="fas fa-chalkboard-teacher"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Total Assignments
+        </span>
+
+        <strong>
+          {{ totalAssignments }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        <i class="fas fa-school"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Active Classes
+        </span>
+
+        <strong>
+          {{ totalClasses }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        <i class="fas fa-book-open"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Active Subjects
+        </span>
+
+        <strong>
+          {{ totalSubjects }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       FILTERS
+  ====================================================== -->
+
+  <div class="filter-card">
+
+    <div class="filter-header">
+
+      <div>
+
+        <h2>
+          Assignment List
+        </h2>
+
+        <p>
+          Search and filter teaching assignments.
+        </p>
+
+      </div>
+
+      <button
+        class="btn btn-secondary"
+        type="button"
+        (click)="clearFilters()">
+
+        <i class="fas fa-rotate-left"></i>
+
+        <span>
+          Clear Filters
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <div class="filters-grid">
+
+      <!-- SEARCH -->
+
+      <div class="form-group search-group">
+
+        <label>
+          Search
+        </label>
+
+        <div class="input-with-icon">
+
+          <i class="fas fa-search"></i>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search class, subject or teacher...">
+
+        </div>
+
+      </div>
+
+
+      <!-- CLASS -->
+
+      <div class="form-group">
+
+        <label>
+          Class
+        </label>
+
+        <select
+          [(ngModel)]="selectedClass">
+
+          <option value="">
+            All Classes
+          </option>
+
+          <option
+            *ngFor="let schoolClass of classes"
+            [value]="schoolClass.id">
+
+            {{ schoolClass.className }}
+            {{ schoolClass.section }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- SUBJECT -->
+
+      <div class="form-group">
+
+        <label>
+          Subject
+        </label>
+
+        <select
+          [(ngModel)]="selectedSubject">
+
+          <option value="">
+            All Subjects
+          </option>
+
+          <option
+            *ngFor="let subject of subjects"
+            [value]="subject.id">
+
+            {{ subject.subjectName }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- TEACHER -->
+
+      <div class="form-group">
+
+        <label>
+          Teacher
+        </label>
+
+        <select
+          [(ngModel)]="selectedTeacher">
+
+          <option value="">
+            All Teachers
+          </option>
+
+          <option
+            *ngFor="let teacher of staff"
+            [value]="teacher.id">
+
+            {{ teacher.fullName }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading">
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading teaching assignments...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       EMPTY STATE
+  ====================================================== -->
+
+  <div
+    class="empty-state"
+    *ngIf="!loading && filteredAssignments.length === 0">
+
+    <div class="empty-icon">
+
+      <i class="fas fa-chalkboard-teacher"></i>
+
+    </div>
+
+    <h3>
+      No Teaching Assignments Found
+    </h3>
+
+    <p>
+      There are currently no teaching assignments matching your filters.
+    </p>
+
+    <button
+      class="btn btn-primary"
+      type="button"
+      (click)="openAddAssignment()">
+
+      <i class="fas fa-plus"></i>
+
+      <span>
+        Create First Assignment
+      </span>
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       ASSIGNMENTS TABLE
+  ====================================================== -->
+
+  <div
+    class="table-card"
+    *ngIf="!loading && filteredAssignments.length > 0">
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+
+            <th>
+              Class
+            </th>
+
+            <th>
+              Subject
+            </th>
+
+            <th>
+              Teacher
+            </th>
+
+            <th>
+              Assigned Date
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let assignment of filteredAssignments; let i = index">
+
+            <td>
+              {{ i + 1 }}
+            </td>
+
+
+            <td>
+
+              <div class="class-info">
+
+                <strong>
+                  {{ assignment.className }}
+                </strong>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <span class="subject-badge">
+
+                <i class="fas fa-book"></i>
+
+                {{ assignment.subjectName }}
+
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <div class="teacher-info">
+
+                <div class="teacher-avatar">
+
+                  {{
+                    assignment.teacherName
+                      ? assignment.teacherName.charAt(0).toUpperCase()
+                      : '?'
+                  }}
+
+                </div>
+
+                <span>
+                  {{ assignment.teacherName }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              {{ assignment.createdAt | date:'mediumDate' }}
+
+            </td>
+
+
+            <td>
+
+              <!-- UNIQUE ASSIGNMENT ACTION CLASSES -->
+
+              <div class="assignment-action-buttons">
+
+                <!-- VIEW -->
+
+                <button
+                  class="assignment-action-btn assignment-view-btn"
+                  type="button"
+                  title="View Assignment"
+                  (click)="viewAssignment(assignment)">
+
+                  <i class="fas fa-eye"></i>
+
+                  <span>
+                    View
+                  </span>
+
+                </button>
+
+
+                <!-- EDIT -->
+
+                <button
+                  class="assignment-action-btn assignment-edit-btn"
+                  type="button"
+                  title="Edit Assignment"
+                  (click)="openEditAssignment(assignment)">
+
+                  <i class="fas fa-pen"></i>
+
+                  <span>
+                    Edit
+                  </span>
+
+                </button>
+
+
+                <!-- DELETE -->
+
+                <button
+                  class="assignment-action-btn assignment-delete-btn"
+                  type="button"
+                  title="Delete Assignment"
+                  (click)="openDeleteAssignment(assignment)">
+
+                  <i class="fas fa-trash"></i>
+
+                  <span>
+                    Delete
+                  </span>
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ADD ASSIGNMENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAddAssignment"
+    (click)="closeAddAssignment()">
+
+    <div
+      class="modal-card"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ACADEMIC MANAGEMENT
+          </span>
+
+          <h2>
+            Add Teaching Assignment
+          </h2>
+
+          <p>
+            Assign a teacher to a subject in a class.
+          </p>
+
+        </div>
+
+        <button
+          class="modal-close"
+          type="button"
+          (click)="closeAddAssignment()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <!-- CLASS -->
+
+        <div class="form-group">
+
+          <label>
+            Class
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="newAssignment.classId">
+
+            <option value="">
+              Select Class
+            </option>
+
+            <option
+              *ngFor="let schoolClass of classes"
+              [value]="schoolClass.id">
+
+              {{ schoolClass.className }}
+              {{ schoolClass.section }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- SUBJECT -->
+
+        <div class="form-group">
+
+          <label>
+            Subject
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="newAssignment.subjectId">
+
+            <option value="">
+              Select Subject
+            </option>
+
+            <option
+              *ngFor="let subject of subjects"
+              [value]="subject.id">
+
+              {{ subject.subjectName }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- TEACHER -->
+
+        <div class="form-group">
+
+          <label>
+            Teacher
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="newAssignment.teacherId">
+
+            <option value="">
+              Select Teacher
+            </option>
+
+            <option
+              *ngFor="let teacher of staff"
+              [value]="teacher.id">
+
+              {{ teacher.fullName }}
+              -
+              {{ teacher.position }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- RELATIONSHIP PREVIEW -->
+
+        <div class="assignment-preview">
+
+          <div class="preview-icon">
+
+            <i class="fas fa-link"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Assignment Relationship
+            </strong>
+
+            <p>
+              This assignment connects the selected
+              <strong>class</strong>,
+              <strong>subject</strong>
+              and
+              <strong>teacher</strong>.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          [disabled]="saving"
+          (click)="closeAddAssignment()">
+
+          <span>
+            Cancel
+          </span>
+
+        </button>
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="saving"
+          (click)="saveAssignment()">
+
+          <span
+            *ngIf="saving"
+            class="button-spinner">
+          </span>
+
+          <i
+            *ngIf="!saving"
+            class="fas fa-save">
+          </i>
+
+          <span>
+            {{ saving ? 'Saving...' : 'Save Assignment' }}
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       VIEW ASSIGNMENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAssignmentDetails"
+    (click)="closeAssignmentDetails()">
+
+    <div
+      class="modal-card details-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ASSIGNMENT DETAILS
+          </span>
+
+          <h2>
+            Teaching Assignment
+          </h2>
+
+        </div>
+
+        <button
+          class="modal-close"
+          type="button"
+          (click)="closeAssignmentDetails()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div
+        class="details-content"
+        *ngIf="selectedAssignment">
+
+        <div class="assignment-hero">
+
+          <div class="assignment-large-icon">
+
+            <i class="fas fa-chalkboard-teacher"></i>
+
+          </div>
+
+          <div>
+
+            <h3>
+              {{ selectedAssignment.subjectName }}
+            </h3>
+
+            <p>
+              {{ selectedAssignment.className }}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="details-grid">
+
+          <div class="detail-item">
+
+            <span>
+              Class
+            </span>
+
+            <strong>
+              {{ selectedAssignment.className }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Subject
+            </span>
+
+            <strong>
+              {{ selectedAssignment.subjectName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Teacher
+            </span>
+
+            <strong>
+              {{ selectedAssignment.teacherName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Assigned On
+            </span>
+
+            <strong>
+              {{ selectedAssignment.createdAt | date:'medium' }}
+            </strong>
+
+          </div>
+
+
+          <div
+            class="detail-item"
+            *ngIf="selectedAssignment.updatedAt">
+
+            <span>
+              Last Updated
+            </span>
+
+            <strong>
+              {{ selectedAssignment.updatedAt | date:'medium' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          (click)="closeAssignmentDetails()">
+
+          <span>
+            Close
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       EDIT ASSIGNMENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showEditAssignment"
+    (click)="closeEditAssignment()">
+
+    <div
+      class="modal-card"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ACADEMIC MANAGEMENT
+          </span>
+
+          <h2>
+            Edit Teaching Assignment
+          </h2>
+
+          <p>
+            Change the class, subject or teacher.
+          </p>
+
+        </div>
+
+        <button
+          class="modal-close"
+          type="button"
+          [disabled]="updating"
+          (click)="closeEditAssignment()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <!-- CLASS -->
+
+        <div class="form-group">
+
+          <label>
+            Class
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="editAssignmentData.classId">
+
+            <option value="">
+              Select Class
+            </option>
+
+            <option
+              *ngFor="let schoolClass of classes"
+              [value]="schoolClass.id">
+
+              {{ schoolClass.className }}
+              {{ schoolClass.section }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- SUBJECT -->
+
+        <div class="form-group">
+
+          <label>
+            Subject
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="editAssignmentData.subjectId">
+
+            <option value="">
+              Select Subject
+            </option>
+
+            <option
+              *ngFor="let subject of subjects"
+              [value]="subject.id">
+
+              {{ subject.subjectName }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- TEACHER -->
+
+        <div class="form-group">
+
+          <label>
+            Teacher
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="editAssignmentData.teacherId">
+
+            <option value="">
+              Select Teacher
+            </option>
+
+            <option
+              *ngFor="let teacher of staff"
+              [value]="teacher.id">
+
+              {{ teacher.fullName }}
+              -
+              {{ teacher.position }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- EDIT PREVIEW -->
+
+        <div class="assignment-preview">
+
+          <div class="preview-icon">
+
+            <i class="fas fa-pen"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Update Assignment
+            </strong>
+
+            <p>
+              You can change the class, subject or teacher
+              associated with this assignment.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          [disabled]="updating"
+          (click)="closeEditAssignment()">
+
+          <span>
+            Cancel
+          </span>
+
+        </button>
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          [disabled]="updating"
+          (click)="updateAssignment()">
+
+          <span
+            *ngIf="updating"
+            class="button-spinner">
+          </span>
+
+          <i
+            *ngIf="!updating"
+            class="fas fa-save">
+          </i>
+
+          <span>
+            {{ updating ? 'Updating...' : 'Update Assignment' }}
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       DELETE ASSIGNMENT MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showDeleteAssignment"
+    (click)="closeDeleteAssignment()">
+
+    <div
+      class="modal-card delete-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="delete-icon">
+
+        <i class="fas fa-trash"></i>
+
+      </div>
+
+
+      <h2>
+        Delete Assignment?
+      </h2>
+
+
+      <p>
+        Are you sure you want to remove this teaching assignment?
+      </p>
+
+
+      <div
+        class="delete-assignment-info"
+        *ngIf="assignmentToDelete">
+
+        <strong>
+          {{ assignmentToDelete.subjectName }}
+        </strong>
+
+        <span>
+          {{ assignmentToDelete.className }}
+          —
+          {{ assignmentToDelete.teacherName }}
+        </span>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          [disabled]="deleting"
+          (click)="closeDeleteAssignment()">
+
+          <span>
+            Cancel
+          </span>
+
+        </button>
+
+        <button
+          class="btn btn-danger"
+          type="button"
+          [disabled]="deleting"
+          (click)="deleteAssignment()">
+
+          <span
+            *ngIf="deleting"
+            class="button-spinner">
+          </span>
+
+          <i
+            *ngIf="!deleting"
+            class="fas fa-trash">
+          </i>
+
+          <span>
+            {{ deleting ? 'Deleting...' : 'Delete Assignment' }}
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+

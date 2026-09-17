@@ -1,0 +1,1795 @@
+<div class="staff-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header">
+
+<div class="page-header-content">
+
+  <div>
+
+    <span class="page-label">
+      D LITTLE PRIVATE SCHOOL
+    </span>
+
+    <h1>
+      Teachers & Staff
+    </h1>
+
+    <p>
+      Manage teachers, administrators and other school staff.
+    </p>
+
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="openAddStaff()">
+
+    <span class="btn-icon">
+      +
+    </span>
+
+    Add Staff
+
+  </button>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert alert-success"
+    *ngIf="successMessage">
+
+<span class="alert-icon">
+  ✓
+</span>
+
+<span>
+  {{ successMessage }}
+</span>
+
+<button
+  type="button"
+  class="alert-close"
+  (click)="successMessage = ''">
+
+  ×
+
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       ERROR MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert alert-error"
+    *ngIf="errorMessage">
+
+
+<span class="alert-icon">
+  !
+</span>
+
+<span>
+  {{ errorMessage }}
+</span>
+
+<button
+  type="button"
+  class="alert-close"
+  (click)="errorMessage = ''">
+
+  ×
+
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       STATISTICS
+       ===================================================== -->
+
+  <section class="stats-grid">
+
+
+<!-- TOTAL -->
+
+<div class="stat-card">
+
+  <div class="stat-icon">
+    👥
+  </div>
+
+  <div class="stat-content">
+
+    <span class="stat-label">
+      Total Staff
+    </span>
+
+    <strong class="stat-value">
+      {{ totalStaff }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- ACTIVE -->
+
+<div class="stat-card active-card">
+
+  <div class="stat-icon">
+    ✓
+  </div>
+
+  <div class="stat-content">
+
+    <span class="stat-label">
+      Active Staff
+    </span>
+
+    <strong class="stat-value">
+      {{ activeStaff }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- INACTIVE -->
+
+<div class="stat-card inactive-card">
+
+  <div class="stat-icon">
+    !
+  </div>
+
+  <div class="stat-content">
+
+    <span class="stat-label">
+      Inactive Staff
+    </span>
+
+    <strong class="stat-value">
+      {{ inactiveStaff }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+  <!-- =====================================================
+       FILTER SECTION
+       ===================================================== -->
+
+  <section class="filter-card">
+
+<div class="filter-header">
+
+  <div>
+
+    <h2>
+      Staff Directory
+    </h2>
+
+    <p>
+      Search and filter teachers and staff members.
+    </p>
+
+  </div>
+
+  <span class="result-count">
+    {{ filteredStaff.length }}
+    {{ filteredStaff.length === 1 ? 'member' : 'members' }}
+  </span>
+
+</div>
+
+
+<div class="filter-grid">
+
+  <!-- SEARCH -->
+
+  <div class="form-group search-group">
+
+    <label for="staffSearch">
+      Search
+    </label>
+
+    <div class="search-wrapper">
+
+      <span class="search-icon">
+        🔍
+      </span>
+
+      <input
+        id="staffSearch"
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search by name, ID, email or phone">
+
+    </div>
+
+  </div>
+
+
+  <!-- POSITION -->
+
+  <div class="form-group">
+
+    <label for="positionFilter">
+      Position
+    </label>
+
+    <select
+      id="positionFilter"
+      [(ngModel)]="selectedPosition">
+
+      <option value="">
+        All Positions
+      </option>
+
+      <option value="Teacher">
+        Teacher
+      </option>
+
+      <option value="Head Teacher">
+        Head Teacher
+      </option>
+
+      <option value="Principal">
+        Principal
+      </option>
+
+      <option value="Vice Principal">
+        Vice Principal
+      </option>
+
+      <option value="Administrator">
+        Administrator
+      </option>
+
+      <option value="Accountant">
+        Accountant
+      </option>
+
+      <option value="Secretary">
+        Secretary
+      </option>
+
+      <option value="Librarian">
+        Librarian
+      </option>
+
+      <option value="Counsellor">
+        Counsellor
+      </option>
+
+      <option value="Security">
+        Security
+      </option>
+
+      <option value="Cleaner">
+        Cleaner
+      </option>
+
+      <option value="Driver">
+        Driver
+      </option>
+
+      <option value="Other">
+        Other
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- DEPARTMENT -->
+
+  <div class="form-group">
+
+    <label for="departmentFilter">
+      Department
+    </label>
+
+    <select
+      id="departmentFilter"
+      [(ngModel)]="selectedDepartment">
+
+      <option value="">
+        All Departments
+      </option>
+
+      <option value="Academic">
+        Academic
+      </option>
+
+      <option value="Administration">
+        Administration
+      </option>
+
+      <option value="Finance">
+        Finance
+      </option>
+
+      <option value="Student Affairs">
+        Student Affairs
+      </option>
+
+      <option value="Library">
+        Library
+      </option>
+
+      <option value="Maintenance">
+        Maintenance
+      </option>
+
+      <option value="Security">
+        Security
+      </option>
+
+      <option value="Transport">
+        Transport
+      </option>
+
+      <option value="Other">
+        Other
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- STATUS -->
+
+  <div class="form-group">
+
+    <label for="statusFilter">
+      Status
+    </label>
+
+    <select
+      id="statusFilter"
+      [(ngModel)]="selectedStatus">
+
+      <option value="">
+        All Status
+      </option>
+
+      <option value="active">
+        Active
+      </option>
+
+      <option value="inactive">
+        Inactive
+      </option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+<div class="filter-actions">
+
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="clearFilters()">
+
+    Clear Filters
+
+  </button>
+
+</div>
+
+
+  </section>
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <section
+    class="loading-state"
+    *ngIf="loading">
+
+
+<div class="loading-spinner"></div>
+
+<p>
+  Loading teachers and staff...
+</p>
+
+
+  </section>
+
+  <!-- =====================================================
+       STAFF TABLE
+       ===================================================== -->
+
+  <section
+    class="table-card"
+    *ngIf="!loading && filteredStaff.length > 0">
+
+
+<div class="table-wrapper">
+
+  <table>
+
+    <thead>
+
+      <tr>
+
+        <th>
+          Staff
+        </th>
+
+        <th>
+          Staff ID
+        </th>
+
+        <th>
+          Position
+        </th>
+
+        <th>
+          Department
+        </th>
+
+        <th>
+          Phone
+        </th>
+
+        <th>
+          Status
+        </th>
+
+        <th>
+          Actions
+        </th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr
+        *ngFor="let member of filteredStaff">
+
+        <!-- STAFF -->
+
+        <td>
+
+          <div class="staff-cell">
+
+            <div class="staff-avatar">
+
+              {{ member.fullName.charAt(0).toUpperCase() }}
+
+            </div>
+
+            <div class="staff-info">
+
+              <strong>
+                {{ member.fullName }}
+              </strong>
+
+              <span>
+                {{ member.email || 'No email provided' }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </td>
+
+
+        <!-- ID -->
+
+        <td>
+
+          <span class="staff-id">
+            {{ member.staffId }}
+          </span>
+
+        </td>
+
+
+        <!-- POSITION -->
+
+        <td>
+
+          <span class="position-text">
+            {{ member.position }}
+          </span>
+
+        </td>
+
+
+        <!-- DEPARTMENT -->
+
+        <td>
+
+          {{ member.department || '—' }}
+
+        </td>
+
+
+        <!-- PHONE -->
+
+        <td>
+
+          {{ member.phone }}
+
+        </td>
+
+
+        <!-- STATUS -->
+
+        <td>
+
+          <span
+            class="status-badge"
+            [class.status-active]="member.status === 'active'"
+            [class.status-inactive]="member.status === 'inactive'">
+
+            <span class="status-dot"></span>
+
+            {{ member.status | titlecase }}
+
+          </span>
+
+        </td>
+
+
+        <!-- ACTIONS -->
+
+        <td>
+
+          <div class="action-buttons">
+
+            <button
+              type="button"
+              class="action-btn view-btn"
+              title="View staff"
+              (click)="viewStaff(member)">
+
+              View
+
+            </button>
+
+            <button
+              type="button"
+              class="action-btn edit-btn"
+              title="Edit staff"
+              (click)="editStaff(member)">
+
+              Edit
+
+            </button>
+
+            <button
+              type="button"
+              class="action-btn delete-btn"
+              title="Delete staff"
+              (click)="openDeleteStaff(member)">
+
+              Delete
+
+            </button>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+
+  </section>
+
+  <!-- =====================================================
+       EMPTY STATE
+       ===================================================== -->
+
+  <section
+    class="empty-state"
+    *ngIf="!loading && filteredStaff.length === 0">
+
+
+<div class="empty-icon">
+  👨‍🏫
+</div>
+
+<h2>
+  No Staff Found
+</h2>
+
+<p *ngIf="staff.length === 0">
+  You haven't added any teachers or staff members yet.
+</p>
+
+<p *ngIf="staff.length > 0">
+  No staff members match your current search or filters.
+</p>
+
+<button
+  type="button"
+  class="btn btn-primary"
+  *ngIf="staff.length === 0"
+  (click)="openAddStaff()">
+
+  Add First Staff Member
+
+</button>
+
+<button
+  type="button"
+  class="btn btn-secondary"
+  *ngIf="staff.length > 0"
+  (click)="clearFilters()">
+
+  Clear Filters
+
+</button>
+
+
+  </section>
+
+  <!-- =====================================================
+       ADD STAFF MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAddStaff"
+    (click)="closeAddStaff()">
+
+<div
+  class="modal modal-large"
+  (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+
+    <div>
+
+      <span class="modal-label">
+        STAFF MANAGEMENT
+      </span>
+
+      <h2>
+        Add New Staff Member
+      </h2>
+
+      <p>
+        Enter the staff member's information below.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="modal-close"
+      (click)="closeAddStaff()">
+
+      ×
+
+    </button>
+
+  </div>
+
+
+  <div class="modal-body">
+
+    <!-- FORM ERROR -->
+
+    <div
+      class="form-error"
+      *ngIf="errorMessage">
+
+      {{ errorMessage }}
+
+    </div>
+
+
+    <div class="form-grid">
+
+      <!-- STAFF ID -->
+
+      <div class="form-group">
+
+        <label for="newStaffId">
+          Staff ID
+        </label>
+
+        <input
+          id="newStaffId"
+          type="text"
+          [(ngModel)]="newStaff.staffId"
+          placeholder="Auto-generated if left empty">
+
+        <small>
+          Example: DL-ST-123456
+        </small>
+
+      </div>
+
+
+      <!-- FULL NAME -->
+
+      <div class="form-group">
+
+        <label for="newFullName">
+          Full Name <span>*</span>
+        </label>
+
+        <input
+          id="newFullName"
+          type="text"
+          [(ngModel)]="newStaff.fullName"
+          placeholder="Enter full name">
+
+      </div>
+
+
+      <!-- EMAIL -->
+
+      <div class="form-group">
+
+        <label for="newEmail">
+          Email
+        </label>
+
+        <input
+          id="newEmail"
+          type="email"
+          [(ngModel)]="newStaff.email"
+          placeholder="staff@example.com">
+
+      </div>
+
+
+      <!-- PHONE -->
+
+      <div class="form-group">
+
+        <label for="newPhone">
+          Phone <span>*</span>
+        </label>
+
+        <input
+          id="newPhone"
+          type="tel"
+          [(ngModel)]="newStaff.phone"
+          placeholder="Enter phone number">
+
+      </div>
+
+
+      <!-- GENDER -->
+
+      <div class="form-group">
+
+        <label for="newGender">
+          Gender
+        </label>
+
+        <select
+          id="newGender"
+          [(ngModel)]="newStaff.gender">
+
+          <option value="">
+            Select Gender
+          </option>
+
+          <option value="Male">
+            Male
+          </option>
+
+          <option value="Female">
+            Female
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- POSITION -->
+
+      <div class="form-group">
+
+        <label for="newPosition">
+          Position <span>*</span>
+        </label>
+
+        <select
+          id="newPosition"
+          [(ngModel)]="newStaff.position">
+
+          <option value="">
+            Select Position
+          </option>
+
+          <option value="Teacher">
+            Teacher
+          </option>
+
+          <option value="Head Teacher">
+            Head Teacher
+          </option>
+
+          <option value="Principal">
+            Principal
+          </option>
+
+          <option value="Vice Principal">
+            Vice Principal
+          </option>
+
+          <option value="Administrator">
+            Administrator
+          </option>
+
+          <option value="Accountant">
+            Accountant
+          </option>
+
+          <option value="Secretary">
+            Secretary
+          </option>
+
+          <option value="Librarian">
+            Librarian
+          </option>
+
+          <option value="Counsellor">
+            Counsellor
+          </option>
+
+          <option value="Security">
+            Security
+          </option>
+
+          <option value="Cleaner">
+            Cleaner
+          </option>
+
+          <option value="Driver">
+            Driver
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DEPARTMENT -->
+
+      <div class="form-group">
+
+        <label for="newDepartment">
+          Department
+        </label>
+
+        <select
+          id="newDepartment"
+          [(ngModel)]="newStaff.department">
+
+          <option value="">
+            Select Department
+          </option>
+
+          <option value="Academic">
+            Academic
+          </option>
+
+          <option value="Administration">
+            Administration
+          </option>
+
+          <option value="Finance">
+            Finance
+          </option>
+
+          <option value="Student Affairs">
+            Student Affairs
+          </option>
+
+          <option value="Library">
+            Library
+          </option>
+
+          <option value="Maintenance">
+            Maintenance
+          </option>
+
+          <option value="Security">
+            Security
+          </option>
+
+          <option value="Transport">
+            Transport
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- QUALIFICATION -->
+
+      <div class="form-group">
+
+        <label for="newQualification">
+          Qualification
+        </label>
+
+        <input
+          id="newQualification"
+          type="text"
+          [(ngModel)]="newStaff.qualification"
+          placeholder="e.g. B.Ed, NCE, B.Sc">
+
+      </div>
+
+
+      <!-- EMPLOYMENT DATE -->
+
+      <div class="form-group">
+
+        <label for="newEmploymentDate">
+          Employment Date
+        </label>
+
+        <input
+          id="newEmploymentDate"
+          type="date"
+          [(ngModel)]="newStaff.employmentDate">
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label for="newStatus">
+          Status
+        </label>
+
+        <select
+          id="newStatus"
+          [(ngModel)]="newStaff.status">
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="inactive">
+            Inactive
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- EMERGENCY CONTACT -->
+
+      <div class="form-group">
+
+        <label for="newEmergencyContact">
+          Emergency Contact
+        </label>
+
+        <input
+          id="newEmergencyContact"
+          type="text"
+          [(ngModel)]="newStaff.emergencyContact"
+          placeholder="Name and phone number">
+
+      </div>
+
+
+      <!-- ADDRESS -->
+
+      <div class="form-group full-width">
+
+        <label for="newAddress">
+          Address
+        </label>
+
+        <textarea
+          id="newAddress"
+          rows="3"
+          [(ngModel)]="newStaff.address"
+          placeholder="Enter residential address"></textarea>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="saving"
+      (click)="closeAddStaff()">
+
+      Cancel
+
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="saving"
+      (click)="saveStaff()">
+
+      <span *ngIf="!saving">
+        Add Staff
+      </span>
+
+      <span *ngIf="saving">
+        Saving...
+      </span>
+
+    </button>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       VIEW STAFF MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showStaffDetails && selectedStaff"
+    (click)="closeStaffDetails()">
+
+<div
+  class="modal modal-large"
+  (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+
+    <div class="profile-header">
+
+      <div class="large-avatar">
+
+        {{ selectedStaff.fullName.charAt(0).toUpperCase() }}
+
+      </div>
+
+      <div>
+
+        <span class="modal-label">
+          STAFF PROFILE
+        </span>
+
+        <h2>
+          {{ selectedStaff.fullName }}
+        </h2>
+
+        <p>
+          {{ selectedStaff.position }}
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="modal-close"
+      (click)="closeStaffDetails()">
+
+      ×
+
+    </button>
+
+  </div>
+
+
+  <div class="modal-body">
+
+    <div class="details-grid">
+
+      <div class="detail-item">
+
+        <span>
+          Staff ID
+        </span>
+
+        <strong>
+          {{ selectedStaff.staffId }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Status
+        </span>
+
+        <strong>
+
+          <span
+            class="status-badge"
+            [class.status-active]="selectedStaff.status === 'active'"
+            [class.status-inactive]="selectedStaff.status === 'inactive'">
+
+            <span class="status-dot"></span>
+
+            {{ selectedStaff.status | titlecase }}
+
+          </span>
+
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Email
+        </span>
+
+        <strong>
+          {{ selectedStaff.email || 'Not provided' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Phone
+        </span>
+
+        <strong>
+          {{ selectedStaff.phone }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Gender
+        </span>
+
+        <strong>
+          {{ selectedStaff.gender || 'Not provided' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Department
+        </span>
+
+        <strong>
+          {{ selectedStaff.department || 'Not assigned' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Qualification
+        </span>
+
+        <strong>
+          {{ selectedStaff.qualification || 'Not provided' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Employment Date
+        </span>
+
+        <strong>
+          {{ selectedStaff.employmentDate || 'Not provided' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item full-width">
+
+        <span>
+          Emergency Contact
+        </span>
+
+        <strong>
+          {{ selectedStaff.emergencyContact || 'Not provided' }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item full-width">
+
+        <span>
+          Address
+        </span>
+
+        <strong>
+          {{ selectedStaff.address || 'Not provided' }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="closeStaffDetails()">
+
+      Close
+
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="closeStaffDetails(); editStaff(selectedStaff!)">
+
+      Edit Staff
+
+    </button>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       EDIT STAFF MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showEditStaff && selectedStaff"
+    (click)="closeEditStaff()">
+
+
+<div
+  class="modal modal-large"
+  (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+
+    <div>
+
+      <span class="modal-label">
+        STAFF MANAGEMENT
+      </span>
+
+      <h2>
+        Edit Staff Member
+      </h2>
+
+      <p>
+        Update the staff member's information.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="modal-close"
+      (click)="closeEditStaff()">
+
+      ×
+
+    </button>
+
+  </div>
+
+
+  <div class="modal-body">
+
+    <div
+      class="form-error"
+      *ngIf="errorMessage">
+
+      {{ errorMessage }}
+
+    </div>
+
+
+    <div class="form-grid">
+
+      <!-- STAFF ID -->
+
+      <div class="form-group">
+
+        <label>
+          Staff ID
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="selectedStaff.staffId">
+
+      </div>
+
+
+      <!-- FULL NAME -->
+
+      <div class="form-group">
+
+        <label>
+          Full Name <span>*</span>
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="selectedStaff.fullName">
+
+      </div>
+
+
+      <!-- EMAIL -->
+
+      <div class="form-group">
+
+        <label>
+          Email
+        </label>
+
+        <input
+          type="email"
+          [(ngModel)]="selectedStaff.email">
+
+      </div>
+
+
+      <!-- PHONE -->
+
+      <div class="form-group">
+
+        <label>
+          Phone <span>*</span>
+        </label>
+
+        <input
+          type="tel"
+          [(ngModel)]="selectedStaff.phone">
+
+      </div>
+
+
+      <!-- GENDER -->
+
+      <div class="form-group">
+
+        <label>
+          Gender
+        </label>
+
+        <select
+          [(ngModel)]="selectedStaff.gender">
+
+          <option value="">
+            Select Gender
+          </option>
+
+          <option value="Male">
+            Male
+          </option>
+
+          <option value="Female">
+            Female
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- POSITION -->
+
+      <div class="form-group">
+
+        <label>
+          Position <span>*</span>
+        </label>
+
+        <select
+          [(ngModel)]="selectedStaff.position">
+
+          <option value="">
+            Select Position
+          </option>
+
+          <option value="Teacher">
+            Teacher
+          </option>
+
+          <option value="Head Teacher">
+            Head Teacher
+          </option>
+
+          <option value="Principal">
+            Principal
+          </option>
+
+          <option value="Vice Principal">
+            Vice Principal
+          </option>
+
+          <option value="Administrator">
+            Administrator
+          </option>
+
+          <option value="Accountant">
+            Accountant
+          </option>
+
+          <option value="Secretary">
+            Secretary
+          </option>
+
+          <option value="Librarian">
+            Librarian
+          </option>
+
+          <option value="Counsellor">
+            Counsellor
+          </option>
+
+          <option value="Security">
+            Security
+          </option>
+
+          <option value="Cleaner">
+            Cleaner
+          </option>
+
+          <option value="Driver">
+            Driver
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DEPARTMENT -->
+
+      <div class="form-group">
+
+        <label>
+          Department
+        </label>
+
+        <select
+          [(ngModel)]="selectedStaff.department">
+
+          <option value="">
+            Select Department
+          </option>
+
+          <option value="Academic">
+            Academic
+          </option>
+
+          <option value="Administration">
+            Administration
+          </option>
+
+          <option value="Finance">
+            Finance
+          </option>
+
+          <option value="Student Affairs">
+            Student Affairs
+          </option>
+
+          <option value="Library">
+            Library
+          </option>
+
+          <option value="Maintenance">
+            Maintenance
+          </option>
+
+          <option value="Security">
+            Security
+          </option>
+
+          <option value="Transport">
+            Transport
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- QUALIFICATION -->
+
+      <div class="form-group">
+
+        <label>
+          Qualification
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="selectedStaff.qualification">
+
+      </div>
+
+
+      <!-- EMPLOYMENT DATE -->
+
+      <div class="form-group">
+
+        <label>
+          Employment Date
+        </label>
+
+        <input
+          type="date"
+          [(ngModel)]="selectedStaff.employmentDate">
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label>
+          Status
+        </label>
+
+        <select
+          [(ngModel)]="selectedStaff.status">
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="inactive">
+            Inactive
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- EMERGENCY CONTACT -->
+
+      <div class="form-group">
+
+        <label>
+          Emergency Contact
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="selectedStaff.emergencyContact">
+
+      </div>
+
+
+      <!-- ADDRESS -->
+
+      <div class="form-group full-width">
+
+        <label>
+          Address
+        </label>
+
+        <textarea
+          rows="3"
+          [(ngModel)]="selectedStaff.address"></textarea>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="updating"
+      (click)="closeEditStaff()">
+
+      Cancel
+
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="updating"
+      (click)="updateStaff()">
+
+      <span *ngIf="!updating">
+        Save Changes
+      </span>
+
+      <span *ngIf="updating">
+        Updating...
+      </span>
+
+    </button>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       DELETE MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showDeleteStaff && staffToDelete"
+    (click)="closeDeleteStaff()">
+
+
+<div
+  class="modal delete-modal"
+  (click)="$event.stopPropagation()">
+
+  <div class="delete-icon">
+    🗑️
+  </div>
+
+  <h2>
+    Delete Staff Member?
+  </h2>
+
+  <p>
+    Are you sure you want to delete
+    <strong>
+      {{ staffToDelete.fullName }}
+    </strong>
+    from the staff directory?
+  </p>
+
+  <p class="delete-warning">
+    This action cannot be undone.
+  </p>
+
+
+  <div
+    class="form-error"
+    *ngIf="deleteErrorMessage">
+
+    {{ deleteErrorMessage }}
+
+  </div>
+
+
+  <div class="modal-footer delete-actions">
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="deleting"
+      (click)="closeDeleteStaff()">
+
+      Cancel
+
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-danger"
+      [disabled]="deleting"
+      (click)="deleteStaff()">
+
+      <span *ngIf="!deleting">
+        Delete Staff
+      </span>
+
+      <span *ngIf="deleting">
+        Deleting...
+      </span>
+
+    </button>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+</div>
+

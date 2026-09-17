@@ -1,0 +1,1078 @@
+<div class="report-cards-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       SCREEN ONLY
+  ====================================================== -->
+
+  <div class="page-header no-print">
+
+    <div class="header-content">
+
+      <div class="header-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+
+      <div>
+
+        <h1>
+          Report Cards
+        </h1>
+
+        <p>
+          Generate and view student academic report cards.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ALERTS
+       SCREEN ONLY
+  ====================================================== -->
+
+  <div
+    class="alert alert-success no-print"
+    *ngIf="successMessage">
+
+    <i class="fas fa-check-circle"></i>
+
+    <span>
+      {{ successMessage }}
+    </span>
+
+    <button
+      type="button"
+      (click)="successMessage = ''">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="alert alert-error no-print"
+    *ngIf="errorMessage">
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+    <button
+      type="button"
+      (click)="errorMessage = ''">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       REPORT FILTERS
+       SCREEN ONLY
+  ====================================================== -->
+
+  <div class="filter-card no-print">
+
+    <div class="card-header">
+
+      <div>
+
+        <h2>
+          <i class="fas fa-filter"></i>
+          Select Report
+        </h2>
+
+        <p>
+          Choose the session, term, class and student.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="filter-grid">
+
+      <!-- SESSION -->
+
+      <div class="form-group">
+
+        <label>
+          Academic Session
+          <span>*</span>
+        </label>
+
+        <select
+          [(ngModel)]="selectedSessionId"
+          (ngModelChange)="onSessionChange()">
+
+          <option value="">
+            Select Session
+          </option>
+
+          <option
+            *ngFor="let session of sessions"
+            [value]="session.id">
+
+            {{ session.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- TERM -->
+
+      <div class="form-group">
+
+        <label>
+          Academic Term
+          <span>*</span>
+        </label>
+
+        <select
+          [(ngModel)]="selectedTermId">
+
+          <option value="">
+            Select Term
+          </option>
+
+          <option
+            *ngFor="let term of filteredTerms"
+            [value]="term.id">
+
+            {{ term.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- CLASS -->
+
+      <div class="form-group">
+
+        <label>
+          Class
+          <span>*</span>
+        </label>
+
+        <select
+          [(ngModel)]="selectedClassId"
+          (ngModelChange)="onClassChange()">
+
+          <option value="">
+            Select Class
+          </option>
+
+          <option
+            *ngFor="let schoolClass of classes"
+            [value]="schoolClass.id">
+
+            {{ schoolClass.className }}
+
+            {{
+              schoolClass.section
+                ? ' - ' + schoolClass.section
+                : ''
+            }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- STUDENT -->
+
+      <div class="form-group">
+
+        <label>
+          Student
+          <span>*</span>
+        </label>
+
+        <select
+          [(ngModel)]="selectedStudentId"
+          (ngModelChange)="onStudentChange()"
+          [disabled]="!selectedClassId">
+
+          <option value="">
+
+            {{
+              selectedClassId
+                ? 'Select Student'
+                : 'Select Class First'
+            }}
+
+          </option>
+
+          <option
+            *ngFor="let student of filteredStudents"
+            [value]="student.id">
+
+            {{ student.fullName }}
+
+            {{
+              student.studentId
+                ? ' (' + student.studentId + ')'
+                : ''
+            }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <!-- GENERATE -->
+
+    <div class="filter-actions">
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="generateReport()"
+        [disabled]="generating">
+
+        <span *ngIf="!generating">
+
+          <i class="fas fa-file-alt"></i>
+
+          Generate Report
+
+        </span>
+
+        <span *ngIf="generating">
+
+          <i class="fas fa-spinner fa-spin"></i>
+
+          Generating...
+
+        </span>
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+       SCREEN ONLY
+  ====================================================== -->
+
+  <div
+    class="loading-state no-print"
+    *ngIf="loading">
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading academic data...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       NORMAL SCREEN REPORT
+       SCREEN ONLY
+  ====================================================== -->
+
+  <div
+    class="screen-report no-print"
+    *ngIf="reportGenerated && selectedStudent">
+
+    <div class="report-container">
+
+
+      <!-- REPORT HEADER -->
+
+      <div class="report-header">
+
+        <div class="school-brand">
+
+          <div class="school-logo">
+            DL
+          </div>
+
+          <div>
+
+            <h2>
+              D Little Private School
+            </h2>
+
+            <p>
+              Student Academic Report Card
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="report-meta">
+
+          <div>
+
+            <span>
+              Session
+            </span>
+
+            <strong>
+              {{ selectedSession?.name || '-' }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Term
+            </span>
+
+            <strong>
+              {{ selectedTerm?.name || '-' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- STUDENT INFORMATION -->
+
+      <div class="student-information">
+
+        <div class="student-profile">
+
+          <div class="student-avatar">
+
+            <i class="fas fa-user-graduate"></i>
+
+          </div>
+
+          <div>
+
+            <h2>
+              {{ selectedStudent.fullName }}
+            </h2>
+
+            <p>
+
+              Student ID:
+
+              <strong>
+                {{ selectedStudent.studentId }}
+              </strong>
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="student-details">
+
+          <div class="detail-item">
+
+            <span>
+              Class
+            </span>
+
+            <strong>
+
+              {{ selectedClass?.className || '-' }}
+
+              {{
+                selectedClass?.section
+                  ? ' - ' + selectedClass?.section
+                  : ''
+              }}
+
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Academic Session
+            </span>
+
+            <strong>
+              {{ selectedSession?.name || '-' }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Term
+            </span>
+
+            <strong>
+              {{ selectedTerm?.name || '-' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- PERFORMANCE SUMMARY -->
+
+      <div class="summary-grid">
+
+        <div class="summary-card">
+
+          <div class="summary-icon">
+            <i class="fas fa-book"></i>
+          </div>
+
+          <div>
+
+            <span>
+              Subjects
+            </span>
+
+            <strong>
+              {{ totalSubjects }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <div class="summary-icon">
+            <i class="fas fa-calculator"></i>
+          </div>
+
+          <div>
+
+            <span>
+              Total Marks
+            </span>
+
+            <strong>
+              {{ totalMarks }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <div class="summary-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+
+          <div>
+
+            <span>
+              Average
+            </span>
+
+            <strong>
+              {{ averageScore | number:'1.1-2' }}%
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+          <div class="summary-icon">
+            <i class="fas fa-award"></i>
+          </div>
+
+          <div>
+
+            <span>
+              Overall Grade
+            </span>
+
+            <strong class="overall-grade">
+              {{ overallGrade }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- RESULTS -->
+
+      <div class="results-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h2>
+              Academic Performance
+            </h2>
+
+            <p>
+              Subject-by-subject performance for the selected term.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="table-wrapper"
+          *ngIf="reportSubjects.length > 0">
+
+          <table>
+
+            <thead>
+
+              <tr>
+
+                <th>#</th>
+
+                <th>Subject</th>
+
+                <th>Teacher</th>
+
+                <th>CA1</th>
+
+                <th>CA2</th>
+
+                <th>Exam</th>
+
+                <th>Total</th>
+
+                <th>Grade</th>
+
+                <th>Remark</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              <tr
+                *ngFor="
+                  let subject of reportSubjects;
+                  let i = index
+                ">
+
+                <td>
+                  {{ i + 1 }}
+                </td>
+
+                <td>
+                  <strong>
+                    {{ subject.subjectName }}
+                  </strong>
+                </td>
+
+                <td>
+                  {{ subject.teacherName }}
+                </td>
+
+                <td>
+                  {{ subject.ca1 }}
+                </td>
+
+                <td>
+                  {{ subject.ca2 }}
+                </td>
+
+                <td>
+                  {{ subject.exam }}
+                </td>
+
+                <td>
+                  <strong>
+                    {{ subject.total }}
+                  </strong>
+                </td>
+
+                <td>
+                  {{ subject.grade }}
+                </td>
+
+                <td>
+                  {{ subject.remark }}
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+
+        <div
+          class="empty-report"
+          *ngIf="reportSubjects.length === 0">
+
+          <div class="empty-icon">
+
+            <i class="fas fa-file-circle-exclamation"></i>
+
+          </div>
+
+          <h3>
+            No Published Results
+          </h3>
+
+          <p>
+            There are no published academic results
+            for this student in the selected session and term.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- OVERALL REMARK -->
+
+      <div class="overall-remark-card">
+
+        <div class="remark-icon">
+
+          <i class="fas fa-comment-dots"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Overall Performance
+          </span>
+
+          <h3>
+            {{ overallRemark }}
+          </h3>
+
+          <p>
+            Based on the student's average performance
+            across all published subjects.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- FOOTER -->
+
+      <div class="report-footer">
+
+        <div class="signature-box">
+
+          <div class="signature-line"></div>
+
+          <span>
+            Class Teacher
+          </span>
+
+        </div>
+
+
+        <div class="signature-box">
+
+          <div class="signature-line"></div>
+
+          <span>
+            Head Teacher / Principal
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- PRINT BUTTON -->
+
+      <div class="report-actions">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="printReport()">
+
+          <i class="fas fa-print"></i>
+
+          Print Result
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       EXCEL-STYLE PRINT RECORD
+       THIS IS THE ONLY THING THAT WILL PRINT
+  ====================================================== -->
+
+  <div
+    class="excel-print-record"
+    *ngIf="
+      reportGenerated &&
+      selectedStudent &&
+      reportSubjects.length > 0
+    ">
+
+
+    <!-- SCHOOL TITLE -->
+
+    <div class="print-school-header">
+
+      <h1>
+        D LITTLE PRIVATE SCHOOL
+      </h1>
+
+      <h2>
+        STUDENT ACADEMIC RESULT RECORD
+      </h2>
+
+    </div>
+
+
+    <!-- STUDENT INFORMATION -->
+
+    <table class="print-student-info">
+
+      <tbody>
+
+        <tr>
+
+          <td class="label-cell">
+            Student Name
+          </td>
+
+          <td>
+            {{ selectedStudent.fullName }}
+          </td>
+
+          <td class="label-cell">
+            Student ID
+          </td>
+
+          <td>
+            {{ selectedStudent.studentId }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td class="label-cell">
+            Class
+          </td>
+
+          <td>
+
+            {{ selectedClass?.className || '-' }}
+
+            {{
+              selectedClass?.section
+                ? ' - ' + selectedClass?.section
+                : ''
+            }}
+
+          </td>
+
+          <td class="label-cell">
+            Academic Session
+          </td>
+
+          <td>
+            {{ selectedSession?.name || '-' }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td class="label-cell">
+            Term
+          </td>
+
+          <td colspan="3">
+            {{ selectedTerm?.name || '-' }}
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+
+    <!-- ===================================================
+         RESULT TABLE
+    ==================================================== -->
+
+    <table class="excel-results-table">
+
+      <thead>
+
+        <tr>
+
+          <th>No.</th>
+
+          <th>Subject</th>
+
+          <th>Teacher</th>
+
+          <th>CA1</th>
+
+          <th>CA2</th>
+
+          <th>Exam</th>
+
+          <th>Total</th>
+
+          <th>Grade</th>
+
+          <th>Remark</th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <tr
+          *ngFor="
+            let subject of reportSubjects;
+            let i = index
+          ">
+
+          <td>
+            {{ i + 1 }}
+          </td>
+
+          <td>
+            {{ subject.subjectName }}
+          </td>
+
+          <td>
+            {{ subject.teacherName }}
+          </td>
+
+          <td>
+            {{ subject.ca1 }}
+          </td>
+
+          <td>
+            {{ subject.ca2 }}
+          </td>
+
+          <td>
+            {{ subject.exam }}
+          </td>
+
+          <td>
+            {{ subject.total }}
+          </td>
+
+          <td>
+            {{ subject.grade }}
+          </td>
+
+          <td>
+            {{ subject.remark }}
+          </td>
+
+        </tr>
+
+
+        <!-- TOTAL -->
+
+        <tr class="results-total-row">
+
+          <td
+            colspan="6"
+            class="total-label">
+
+            TOTAL
+
+          </td>
+
+          <td>
+            {{ totalMarks }}
+          </td>
+
+          <td>
+            {{ overallGrade }}
+          </td>
+
+          <td>
+            {{ overallRemark }}
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+
+    <!-- ===================================================
+         SUMMARY
+    ==================================================== -->
+
+    <table class="print-summary-table">
+
+      <tbody>
+
+        <tr>
+
+          <td>
+            Total Subjects
+          </td>
+
+          <td>
+            {{ totalSubjects }}
+          </td>
+
+          <td>
+            Total Marks
+          </td>
+
+          <td>
+            {{ totalMarks }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td>
+            Average
+          </td>
+
+          <td>
+            {{ averageScore | number:'1.1-2' }}%
+          </td>
+
+          <td>
+            Overall Grade
+          </td>
+
+          <td>
+            {{ overallGrade }}
+          </td>
+
+        </tr>
+
+
+        <tr>
+
+          <td>
+            Overall Remark
+          </td>
+
+          <td colspan="3">
+            {{ overallRemark }}
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+
+    <!-- ===================================================
+         SIGNATURES
+    ==================================================== -->
+
+    <table class="print-signatures">
+
+      <tbody>
+
+        <tr>
+
+          <td>
+
+            __________________________
+
+            <br>
+
+            Class Teacher
+
+          </td>
+
+
+          <td>
+
+            __________________________
+
+            <br>
+
+            Head Teacher / Principal
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+
+  </div>
+
+</div>

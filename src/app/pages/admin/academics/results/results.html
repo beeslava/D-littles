@@ -1,0 +1,2242 @@
+<div class="results-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+    <div class="page-header-content">
+
+      <span class="page-label">
+        ACADEMICS
+      </span>
+
+      <h1>
+        Academic Results
+      </h1>
+
+      <p>
+        Enter, manage and monitor student academic results.
+      </p>
+
+    </div>
+
+
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openAddResult()">
+
+        <i class="fas fa-plus"></i>
+
+        Add Result
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ALERTS
+  ====================================================== -->
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success">
+
+    <i class="fas fa-check-circle"></i>
+
+    <span>
+      {{ successMessage }}
+    </span>
+
+    <button
+      type="button"
+      class="alert-close"
+      (click)="successMessage = ''">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-error">
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+    <button
+      type="button"
+      class="alert-close"
+      (click)="errorMessage = ''">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+  ====================================================== -->
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+
+      <div class="stat-icon results-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Total Results
+        </span>
+
+        <strong>
+          {{ totalResults }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon published-icon">
+        <i class="fas fa-check-double"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Published
+        </span>
+
+        <strong>
+          {{ publishedResults }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon draft-icon">
+        <i class="fas fa-edit"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Drafts
+        </span>
+
+        <strong>
+          {{ draftResults }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon passed-icon">
+        <i class="fas fa-thumbs-up"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Passed
+        </span>
+
+        <strong>
+          {{ passedResults }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon failed-icon">
+        <i class="fas fa-times-circle"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Failed
+        </span>
+
+        <strong>
+          {{ failedResults }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       FILTERS
+  ====================================================== -->
+
+  <div class="filter-card">
+
+    <div class="filter-header">
+
+      <div>
+
+        <span class="section-label">
+          RESULTS
+        </span>
+
+        <h2>
+          Search & Filter
+        </h2>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="clearFilters()">
+
+        <i class="fas fa-undo"></i>
+
+        Clear Filters
+
+      </button>
+
+    </div>
+
+
+    <div class="filters-grid">
+
+      <!-- SEARCH -->
+
+      <div class="form-group search-group">
+
+        <label>
+          Search
+        </label>
+
+        <div class="input-with-icon">
+
+          <i class="fas fa-search"></i>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Student, subject, class or teacher">
+
+        </div>
+
+      </div>
+
+
+      <!-- CLASS -->
+
+      <div class="form-group">
+
+        <label>
+          Class
+        </label>
+
+        <select
+          [(ngModel)]="classFilter">
+
+          <option value="">
+            All Classes
+          </option>
+
+          <option
+            *ngFor="let schoolClass of classes"
+            [value]="schoolClass.id">
+
+            {{ schoolClass.className }}
+
+            <span *ngIf="schoolClass.section">
+              - {{ schoolClass.section }}
+            </span>
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- SUBJECT -->
+
+      <div class="form-group">
+
+        <label>
+          Subject
+        </label>
+
+        <select
+          [(ngModel)]="subjectFilter">
+
+          <option value="">
+            All Subjects
+          </option>
+
+          <option
+            *ngFor="let subject of subjects"
+            [value]="subject.id">
+
+            {{ subject.subjectName }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- SESSION -->
+
+      <div class="form-group">
+
+        <label>
+          Academic Session
+        </label>
+
+        <select
+          [(ngModel)]="sessionFilter">
+
+          <option value="">
+            All Sessions
+          </option>
+
+          <option
+            *ngFor="let session of sessions"
+            [value]="session.id">
+
+            {{ session.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- TERM -->
+
+      <div class="form-group">
+
+        <label>
+          Term
+        </label>
+
+        <select
+          [(ngModel)]="termFilter">
+
+          <option value="">
+            All Terms
+          </option>
+
+          <option
+            *ngFor="let term of terms"
+            [value]="term.id">
+
+            {{ term.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label>
+          Status
+        </label>
+
+        <select
+          [(ngModel)]="statusFilter">
+
+          <option value="">
+            All Status
+          </option>
+
+          <option value="draft">
+            Draft
+          </option>
+
+          <option value="published">
+            Published
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    *ngIf="loading"
+    class="loading-state">
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading academic results...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       RESULTS TABLE
+  ====================================================== -->
+
+  <div
+    *ngIf="!loading"
+    class="table-card">
+
+    <div class="table-header">
+
+      <div>
+
+        <span class="section-label">
+          RECORDS
+        </span>
+
+        <h2>
+          Student Results
+        </h2>
+
+      </div>
+
+      <span class="record-count">
+        {{ filteredResults.length }} result(s)
+      </span>
+
+    </div>
+
+
+    <!-- EMPTY STATE -->
+
+    <div
+      *ngIf="filteredResults.length === 0"
+      class="empty-state">
+
+      <div class="empty-icon">
+
+        <i class="fas fa-file-signature"></i>
+
+      </div>
+
+      <h3>
+        No Results Found
+      </h3>
+
+      <p>
+        No academic results match your current filters.
+      </p>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openAddResult()">
+
+        <i class="fas fa-plus"></i>
+
+        Add First Result
+
+      </button>
+
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div
+      *ngIf="filteredResults.length > 0"
+      class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Student
+            </th>
+
+            <th>
+              Class
+            </th>
+
+            <th>
+              Subject
+            </th>
+
+            <th>
+              Teacher
+            </th>
+
+            <th>
+              Session / Term
+            </th>
+
+            <th>
+              CA1
+            </th>
+
+            <th>
+              CA2
+            </th>
+
+            <th>
+              Exam
+            </th>
+
+            <th>
+              Total
+            </th>
+
+            <th>
+              Grade
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let result of filteredResults">
+
+            <!-- STUDENT -->
+
+            <td>
+
+              <div class="student-info">
+
+                <div class="student-avatar">
+
+                  <i class="fas fa-user-graduate"></i>
+
+                </div>
+
+                <div>
+
+                  <strong>
+                    {{ result.studentName }}
+                  </strong>
+
+                  <small>
+                    {{ result.studentId }}
+                  </small>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- CLASS -->
+
+            <td>
+
+              <span class="class-badge">
+
+                {{ result.className }}
+
+              </span>
+
+            </td>
+
+
+            <!-- SUBJECT -->
+
+            <td>
+
+              <div class="subject-info">
+
+                <strong>
+                  {{ result.subjectName }}
+                </strong>
+
+              </div>
+
+            </td>
+
+
+            <!-- TEACHER -->
+
+            <td>
+
+              <div class="teacher-info">
+
+                <div class="teacher-avatar">
+
+                  <i class="fas fa-chalkboard-teacher"></i>
+
+                </div>
+
+                <span>
+                  {{ result.teacherName }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <!-- SESSION / TERM -->
+
+            <td>
+
+              <div class="academic-period">
+
+                <strong>
+                  {{ result.sessionName }}
+                </strong>
+
+                <span>
+                  {{ result.termName }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <!-- CA1 -->
+
+            <td>
+
+              <span class="score-value">
+
+                {{ result.ca1 }}
+
+                <small>
+                  /20
+                </small>
+
+              </span>
+
+            </td>
+
+
+            <!-- CA2 -->
+
+            <td>
+
+              <span class="score-value">
+
+                {{ result.ca2 }}
+
+                <small>
+                  /20
+                </small>
+
+              </span>
+
+            </td>
+
+
+            <!-- EXAM -->
+
+            <td>
+
+              <span class="score-value">
+
+                {{ result.exam }}
+
+                <small>
+                  /60
+                </small>
+
+              </span>
+
+            </td>
+
+
+            <!-- TOTAL -->
+
+            <td>
+
+              <strong class="total-score">
+
+                {{ result.total }}
+
+                <small>
+                  /100
+                </small>
+
+              </strong>
+
+            </td>
+
+
+            <!-- GRADE -->
+
+            <td>
+
+              <span
+                class="grade-badge"
+                [class.grade-a]="result.grade === 'A'"
+                [class.grade-b]="result.grade === 'B'"
+                [class.grade-c]="result.grade === 'C'"
+                [class.grade-d]="result.grade === 'D'"
+                [class.grade-e]="result.grade === 'E'"
+                [class.grade-f]="result.grade === 'F'">
+
+                {{ result.grade }}
+
+              </span>
+
+            </td>
+
+
+            <!-- STATUS -->
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.status-published]="result.status === 'published'"
+                [class.status-draft]="result.status === 'draft'">
+
+                <i
+                  class="fas"
+                  [class.fa-check-circle]="result.status === 'published'"
+                  [class.fa-edit]="result.status === 'draft'">
+                </i>
+
+                {{ result.status }}
+
+              </span>
+
+            </td>
+
+
+            <!-- ACTIONS -->
+
+            <td>
+
+              <div class="action-buttons">
+
+                <button
+                  type="button"
+                  class="action-btn view-btn"
+                  title="View Result"
+                  (click)="viewResult(result)">
+
+                  <i class="fas fa-eye"></i>
+
+                  <span>
+                    View
+                  </span>
+
+                </button>
+
+
+                <button
+                  type="button"
+                  class="action-btn edit-btn"
+                  title="Edit Result"
+                  (click)="openEditResult(result)">
+
+                  <i class="fas fa-edit"></i>
+
+                  <span>
+                    Edit
+                  </span>
+
+                </button>
+
+
+                <button
+                  type="button"
+                  class="action-btn delete-btn"
+                  title="Delete Result"
+                  (click)="openDeleteResult(result)">
+
+                  <i class="fas fa-trash"></i>
+
+                  <span>
+                    Delete
+                  </span>
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ADD RESULT MODAL
+  ====================================================== -->
+
+  <div
+    *ngIf="showAddResult"
+    class="modal-overlay"
+    (click)="closeAddResult()">
+
+    <div
+      class="modal-card large-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            NEW RESULT
+          </span>
+
+          <h2>
+            Add Academic Result
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeAddResult()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <!-- STUDENT & CLASS -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <i class="fas fa-user-graduate"></i>
+
+            <span>
+              Student Information
+            </span>
+
+          </div>
+
+
+          <div class="form-grid">
+
+
+            <!-- CLASS -->
+
+            <div class="form-group">
+
+              <label>
+                Class
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="newResult.classId"
+                (ngModelChange)="onNewClassChange()">
+
+                <option value="">
+                  Select Class
+                </option>
+
+                <option
+                  *ngFor="let schoolClass of classes"
+                  [value]="schoolClass.id">
+
+                  {{ schoolClass.className }}
+
+                  <span *ngIf="schoolClass.section">
+                    - {{ schoolClass.section }}
+                  </span>
+
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- STUDENT -->
+
+            <div class="form-group">
+
+              <label>
+                Student
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="newResult.studentId"
+                [disabled]="!newResult.classId">
+
+                <option value="">
+                  Select Student
+                </option>
+
+                <option
+                  *ngFor="let student of studentsForSelectedClass"
+                  [value]="student.id">
+
+                  {{ student.fullName }}
+
+                </option>
+
+              </select>
+
+              <small
+                *ngIf="!newResult.classId"
+                class="field-hint">
+
+                Select a class first.
+
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ACADEMIC INFORMATION -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <i class="fas fa-graduation-cap"></i>
+
+            <span>
+              Academic Information
+            </span>
+
+          </div>
+
+
+          <div class="form-grid">
+
+
+            <!-- SUBJECT -->
+
+            <div class="form-group">
+
+              <label>
+                Subject
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="newResult.subjectId"
+                (ngModelChange)="onNewSubjectChange()"
+                [disabled]="!newResult.classId">
+
+                <option value="">
+                  Select Subject
+                </option>
+
+                <option
+                  *ngFor="let subject of availableSubjects"
+                  [value]="subject.id">
+
+                  {{ subject.subjectName }}
+
+                </option>
+
+              </select>
+
+              <small
+                *ngIf="newResult.classId && availableSubjects.length === 0"
+                class="field-hint error-text">
+
+                No subjects have been assigned to this class.
+
+              </small>
+
+            </div>
+
+
+            <!-- TEACHER -->
+
+            <div class="form-group">
+
+              <label>
+                Assigned Teacher
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="newResult.teacherId"
+                [disabled]="!newResult.subjectId">
+
+                <option value="">
+                  Select Teacher
+                </option>
+
+                <option
+                  *ngFor="let teacher of availableTeachers"
+                  [value]="teacher.id">
+
+                  {{ teacher.fullName }}
+
+                </option>
+
+              </select>
+
+              <small
+                *ngIf="newResult.subjectId && availableTeachers.length === 0"
+                class="field-hint error-text">
+
+                No teacher is assigned to this subject.
+
+              </small>
+
+            </div>
+
+
+            <!-- SESSION -->
+
+            <div class="form-group">
+
+              <label>
+                Academic Session
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="newResult.sessionId">
+
+                <option value="">
+                  Select Session
+                </option>
+
+                <option
+                  *ngFor="let session of sessions"
+                  [value]="session.id">
+
+                  {{ session.name }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- TERM -->
+
+            <div class="form-group">
+
+              <label>
+                Term
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="newResult.termId">
+
+                <option value="">
+                  Select Term
+                </option>
+
+                <option
+                  *ngFor="let term of terms"
+                  [value]="term.id">
+
+                  {{ term.name }}
+                  - {{ term.sessionName }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- SCORES -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <i class="fas fa-chart-line"></i>
+
+            <span>
+              Student Scores
+            </span>
+
+          </div>
+
+
+          <div class="score-grid">
+
+
+            <!-- CA1 -->
+
+            <div class="score-input-card">
+
+              <label>
+                CA 1
+                <small>
+                  /20
+                </small>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                max="20"
+                [(ngModel)]="newResult.ca1">
+
+              <span class="score-limit">
+                Maximum: 20
+              </span>
+
+            </div>
+
+
+            <!-- CA2 -->
+
+            <div class="score-input-card">
+
+              <label>
+                CA 2
+                <small>
+                  /20
+                </small>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                max="20"
+                [(ngModel)]="newResult.ca2">
+
+              <span class="score-limit">
+                Maximum: 20
+              </span>
+
+            </div>
+
+
+            <!-- EXAM -->
+
+            <div class="score-input-card">
+
+              <label>
+                Examination
+                <small>
+                  /60
+                </small>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                max="60"
+                [(ngModel)]="newResult.exam">
+
+              <span class="score-limit">
+                Maximum: 60
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- RESULT PREVIEW -->
+
+          <div class="result-preview">
+
+            <div class="preview-item">
+
+              <span>
+                Total
+              </span>
+
+              <strong>
+                {{ getNewResultTotal() }}/100
+              </strong>
+
+            </div>
+
+
+            <div class="preview-item">
+
+              <span>
+                Grade
+              </span>
+
+              <strong
+                class="preview-grade"
+                [class.grade-a]="getNewResultGrade() === 'A'"
+                [class.grade-b]="getNewResultGrade() === 'B'"
+                [class.grade-c]="getNewResultGrade() === 'C'"
+                [class.grade-d]="getNewResultGrade() === 'D'"
+                [class.grade-e]="getNewResultGrade() === 'E'"
+                [class.grade-f]="getNewResultGrade() === 'F'">
+
+                {{ getNewResultGrade() }}
+
+              </strong>
+
+            </div>
+
+
+            <div class="preview-item">
+
+              <span>
+                Remark
+              </span>
+
+              <strong>
+                {{ getNewResultRemark() }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="form-section">
+
+          <div class="form-group">
+
+            <label>
+              Result Status
+            </label>
+
+            <select
+              [(ngModel)]="newResult.status">
+
+              <option value="draft">
+                Draft
+              </option>
+
+              <option value="published">
+                Published
+              </option>
+
+            </select>
+
+            <small class="field-hint">
+
+              Draft results can be reviewed before publishing.
+
+            </small>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeAddResult()"
+          [disabled]="saving">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="saveResult()"
+          [disabled]="saving">
+
+          <span
+            *ngIf="saving"
+            class="button-spinner">
+          </span>
+
+          <i
+            *ngIf="!saving"
+            class="fas fa-save">
+          </i>
+
+          {{ saving ? 'Saving...' : 'Save Result' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       VIEW RESULT MODAL
+  ====================================================== -->
+
+  <div
+    *ngIf="showResultDetails && selectedResult"
+    class="modal-overlay"
+    (click)="closeResultDetails()">
+
+    <div
+      class="modal-card details-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            RESULT DETAILS
+          </span>
+
+          <h2>
+            {{ selectedResult.studentName }}
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeResultDetails()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+
+        <div class="result-hero">
+
+          <div class="result-large-icon">
+
+            <i class="fas fa-user-graduate"></i>
+
+          </div>
+
+          <div>
+
+            <h3>
+              {{ selectedResult.studentName }}
+            </h3>
+
+            <p>
+              {{ selectedResult.studentId }}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="details-grid">
+
+
+          <div class="detail-item">
+
+            <span>
+              Class
+            </span>
+
+            <strong>
+              {{ selectedResult.className }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Subject
+            </span>
+
+            <strong>
+              {{ selectedResult.subjectName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Teacher
+            </span>
+
+            <strong>
+              {{ selectedResult.teacherName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Session
+            </span>
+
+            <strong>
+              {{ selectedResult.sessionName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Term
+            </span>
+
+            <strong>
+              {{ selectedResult.termName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Status
+            </span>
+
+            <span
+              class="status-badge"
+              [class.status-published]="selectedResult.status === 'published'"
+              [class.status-draft]="selectedResult.status === 'draft'">
+
+              {{ selectedResult.status }}
+
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- SCORE DETAILS -->
+
+        <div class="score-details">
+
+          <div class="score-detail-card">
+
+            <span>
+              CA 1
+            </span>
+
+            <strong>
+              {{ selectedResult.ca1 }}/20
+            </strong>
+
+          </div>
+
+
+          <div class="score-detail-card">
+
+            <span>
+              CA 2
+            </span>
+
+            <strong>
+              {{ selectedResult.ca2 }}/20
+            </strong>
+
+          </div>
+
+
+          <div class="score-detail-card">
+
+            <span>
+              Examination
+            </span>
+
+            <strong>
+              {{ selectedResult.exam }}/60
+            </strong>
+
+          </div>
+
+
+          <div class="score-detail-card total-card">
+
+            <span>
+              Total
+            </span>
+
+            <strong>
+              {{ selectedResult.total }}/100
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="grade-result">
+
+          <div>
+
+            <span>
+              Grade
+            </span>
+
+            <strong
+              class="large-grade"
+              [class.grade-a]="selectedResult.grade === 'A'"
+              [class.grade-b]="selectedResult.grade === 'B'"
+              [class.grade-c]="selectedResult.grade === 'C'"
+              [class.grade-d]="selectedResult.grade === 'D'"
+              [class.grade-e]="selectedResult.grade === 'E'"
+              [class.grade-f]="selectedResult.grade === 'F'">
+
+              {{ selectedResult.grade }}
+
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Remark
+            </span>
+
+            <strong>
+              {{ selectedResult.remark }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeResultDetails()">
+
+          Close
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="closeResultDetails(); openEditResult(selectedResult!)">
+
+          <i class="fas fa-edit"></i>
+
+          Edit Result
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       EDIT RESULT MODAL
+  ====================================================== -->
+
+  <div
+    *ngIf="showEditResult"
+    class="modal-overlay"
+    (click)="closeEditResult()">
+
+    <div
+      class="modal-card large-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            EDIT RESULT
+          </span>
+
+          <h2>
+            Update Academic Result
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeEditResult()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+
+        <!-- STUDENT INFORMATION -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <i class="fas fa-user-graduate"></i>
+
+            <span>
+              Student Information
+            </span>
+
+          </div>
+
+
+          <div class="form-grid">
+
+
+            <!-- CLASS -->
+
+            <div class="form-group">
+
+              <label>
+                Class
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="editResultData.classId"
+                (ngModelChange)="onEditClassChange()">
+
+                <option value="">
+                  Select Class
+                </option>
+
+                <option
+                  *ngFor="let schoolClass of classes"
+                  [value]="schoolClass.id">
+
+                  {{ schoolClass.className }}
+
+                  <span *ngIf="schoolClass.section">
+                    - {{ schoolClass.section }}
+                  </span>
+
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- STUDENT -->
+
+            <div class="form-group">
+
+              <label>
+                Student
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="editResultData.studentId"
+                [disabled]="!editResultData.classId">
+
+                <option value="">
+                  Select Student
+                </option>
+
+                <option
+                  *ngFor="let student of studentsForEditClass"
+                  [value]="student.id">
+
+                  {{ student.fullName }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ACADEMIC INFORMATION -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <i class="fas fa-graduation-cap"></i>
+
+            <span>
+              Academic Information
+            </span>
+
+          </div>
+
+
+          <div class="form-grid">
+
+
+            <!-- SUBJECT -->
+
+            <div class="form-group">
+
+              <label>
+                Subject
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="editResultData.subjectId"
+                (ngModelChange)="onEditSubjectChange()"
+                [disabled]="!editResultData.classId">
+
+                <option value="">
+                  Select Subject
+                </option>
+
+                <option
+                  *ngFor="let subject of availableEditSubjects"
+                  [value]="subject.id">
+
+                  {{ subject.subjectName }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- TEACHER -->
+
+            <div class="form-group">
+
+              <label>
+                Assigned Teacher
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="editResultData.teacherId"
+                [disabled]="!editResultData.subjectId">
+
+                <option value="">
+                  Select Teacher
+                </option>
+
+                <option
+                  *ngFor="let teacher of availableEditTeachers"
+                  [value]="teacher.id">
+
+                  {{ teacher.fullName }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- SESSION -->
+
+            <div class="form-group">
+
+              <label>
+                Academic Session
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="editResultData.sessionId">
+
+                <option value="">
+                  Select Session
+                </option>
+
+                <option
+                  *ngFor="let session of sessions"
+                  [value]="session.id">
+
+                  {{ session.name }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- TERM -->
+
+            <div class="form-group">
+
+              <label>
+                Term
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="editResultData.termId">
+
+                <option value="">
+                  Select Term
+                </option>
+
+                <option
+                  *ngFor="let term of terms"
+                  [value]="term.id">
+
+                  {{ term.name }}
+                  - {{ term.sessionName }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- SCORES -->
+
+        <div class="form-section">
+
+          <div class="form-section-title">
+
+            <i class="fas fa-chart-line"></i>
+
+            <span>
+              Student Scores
+            </span>
+
+          </div>
+
+
+          <div class="score-grid">
+
+
+            <div class="score-input-card">
+
+              <label>
+                CA 1
+                <small>
+                  /20
+                </small>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                max="20"
+                [(ngModel)]="editResultData.ca1">
+
+              <span class="score-limit">
+                Maximum: 20
+              </span>
+
+            </div>
+
+
+            <div class="score-input-card">
+
+              <label>
+                CA 2
+                <small>
+                  /20
+                </small>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                max="20"
+                [(ngModel)]="editResultData.ca2">
+
+              <span class="score-limit">
+                Maximum: 20
+              </span>
+
+            </div>
+
+
+            <div class="score-input-card">
+
+              <label>
+                Examination
+                <small>
+                  /60
+                </small>
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                max="60"
+                [(ngModel)]="editResultData.exam">
+
+              <span class="score-limit">
+                Maximum: 60
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="result-preview">
+
+            <div class="preview-item">
+
+              <span>
+                Total
+              </span>
+
+              <strong>
+                {{ getEditResultTotal() }}/100
+              </strong>
+
+            </div>
+
+
+            <div class="preview-item">
+
+              <span>
+                Grade
+              </span>
+
+              <strong
+                class="preview-grade"
+                [class.grade-a]="getEditResultGrade() === 'A'"
+                [class.grade-b]="getEditResultGrade() === 'B'"
+                [class.grade-c]="getEditResultGrade() === 'C'"
+                [class.grade-d]="getEditResultGrade() === 'D'"
+                [class.grade-e]="getEditResultGrade() === 'E'"
+                [class.grade-f]="getEditResultGrade() === 'F'">
+
+                {{ getEditResultGrade() }}
+
+              </strong>
+
+            </div>
+
+
+            <div class="preview-item">
+
+              <span>
+                Remark
+              </span>
+
+              <strong>
+                {{ getEditResultRemark() }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="form-section">
+
+          <div class="form-group">
+
+            <label>
+              Result Status
+            </label>
+
+            <select
+              [(ngModel)]="editResultData.status">
+
+              <option value="draft">
+                Draft
+              </option>
+
+              <option value="published">
+                Published
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeEditResult()"
+          [disabled]="updating">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="updateResult()"
+          [disabled]="updating">
+
+          <span
+            *ngIf="updating"
+            class="button-spinner">
+          </span>
+
+          <i
+            *ngIf="!updating"
+            class="fas fa-save">
+          </i>
+
+          {{ updating ? 'Updating...' : 'Update Result' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       DELETE RESULT MODAL
+  ====================================================== -->
+
+  <div
+    *ngIf="showDeleteResult && resultToDelete"
+    class="modal-overlay"
+    (click)="closeDeleteResult()">
+
+    <div
+      class="modal-card delete-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            DELETE RESULT
+          </span>
+
+          <h2>
+            Delete Academic Result
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeDeleteResult()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body delete-body">
+
+        <div class="delete-icon">
+
+          <i class="fas fa-trash-alt"></i>
+
+        </div>
+
+
+        <h3>
+          Are you sure?
+        </h3>
+
+
+        <p>
+          You are about to permanently delete the result for:
+        </p>
+
+
+        <div class="delete-result-info">
+
+          <strong>
+            {{ resultToDelete.studentName }}
+          </strong>
+
+          <span>
+            {{ resultToDelete.subjectName }}
+          </span>
+
+          <span>
+            {{ resultToDelete.className }}
+            ·
+            {{ resultToDelete.termName }}
+          </span>
+
+        </div>
+
+
+        <p class="warning-text">
+
+          This action cannot be undone.
+
+        </p>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeDeleteResult()"
+          [disabled]="deleting">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="deleteResult()"
+          [disabled]="deleting">
+
+          <span
+            *ngIf="deleting"
+            class="button-spinner">
+          </span>
+
+          <i
+            *ngIf="!deleting"
+            class="fas fa-trash">
+          </i>
+
+          {{ deleting ? 'Deleting...' : 'Delete Result' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

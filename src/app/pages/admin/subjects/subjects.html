@@ -1,0 +1,1299 @@
+<div class="subjects-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header">
+
+
+<div class="header-content">
+
+  <div class="header-icon">
+    <i class="fas fa-book-open"></i>
+  </div>
+
+  <div>
+    <h1>Subjects</h1>
+
+    <p>
+      Manage school subjects and academic courses.
+    </p>
+  </div>
+
+</div>
+
+<button
+  type="button"
+  class="btn btn-primary"
+  (click)="openAddSubject()">
+
+  <i class="fas fa-plus"></i>
+
+  Add Subject
+
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert alert-success"
+    *ngIf="successMessage">
+
+
+<i class="fas fa-check-circle"></i>
+
+<span>
+  {{ successMessage }}
+</span>
+
+<button
+  type="button"
+  class="alert-close"
+  (click)="successMessage = ''">
+
+  <i class="fas fa-times"></i>
+
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       ERROR MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert alert-error"
+    *ngIf="errorMessage">
+
+
+<i class="fas fa-exclamation-circle"></i>
+
+<span>
+  {{ errorMessage }}
+</span>
+
+<button
+  type="button"
+  class="alert-close"
+  (click)="errorMessage = ''">
+
+  <i class="fas fa-times"></i>
+
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       STATISTICS
+       ===================================================== -->
+
+  <div class="stats-grid">
+
+<!-- TOTAL -->
+
+<div class="stat-card">
+
+  <div class="stat-icon total">
+    <i class="fas fa-book"></i>
+  </div>
+
+  <div class="stat-content">
+
+    <span class="stat-label">
+      Total Subjects
+    </span>
+
+    <strong class="stat-value">
+      {{ totalSubjects }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- ACTIVE -->
+
+<div class="stat-card">
+
+  <div class="stat-icon active">
+    <i class="fas fa-check-circle"></i>
+  </div>
+
+  <div class="stat-content">
+
+    <span class="stat-label">
+      Active Subjects
+    </span>
+
+    <strong class="stat-value">
+      {{ activeSubjects }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- INACTIVE -->
+
+<div class="stat-card">
+
+  <div class="stat-icon inactive">
+    <i class="fas fa-ban"></i>
+  </div>
+
+  <div class="stat-content">
+
+    <span class="stat-label">
+      Inactive Subjects
+    </span>
+
+    <strong class="stat-value">
+      {{ inactiveSubjects }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       FILTERS
+       ===================================================== -->
+
+  <div class="filters-card">
+
+<div class="filters-header">
+
+  <div>
+
+    <h2>
+      <i class="fas fa-filter"></i>
+      Search & Filter
+    </h2>
+
+    <p>
+      Find subjects quickly.
+    </p>
+
+  </div>
+
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="clearFilters()">
+
+    <i class="fas fa-rotate-left"></i>
+
+    Clear Filters
+
+  </button>
+
+</div>
+
+
+<div class="filters-grid">
+
+  <!-- SEARCH -->
+
+  <div class="form-group search-group">
+
+    <label for="subjectSearch">
+      Search Subjects
+    </label>
+
+    <div class="input-icon">
+
+      <i class="fas fa-search"></i>
+
+      <input
+        id="subjectSearch"
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search by subject name, code or category..."
+      />
+
+    </div>
+
+  </div>
+
+
+  <!-- CATEGORY -->
+
+  <div class="form-group">
+
+    <label for="categoryFilter">
+      Category
+    </label>
+
+    <select
+      id="categoryFilter"
+      [(ngModel)]="selectedCategory">
+
+      <option value="">
+        All Categories
+      </option>
+
+      <option value="Core">
+        Core
+      </option>
+
+      <option value="Science">
+        Science
+      </option>
+
+      <option value="Arts">
+        Arts
+      </option>
+
+      <option value="Commercial">
+        Commercial
+      </option>
+
+      <option value="Vocational">
+        Vocational
+      </option>
+
+      <option value="Language">
+        Language
+      </option>
+
+      <option value="ICT">
+        ICT
+      </option>
+
+      <option value="Other">
+        Other
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- STATUS -->
+
+  <div class="form-group">
+
+    <label for="statusFilter">
+      Status
+    </label>
+
+    <select
+      id="statusFilter"
+      [(ngModel)]="selectedStatus">
+
+      <option value="">
+        All Statuses
+      </option>
+
+      <option value="active">
+        Active
+      </option>
+
+      <option value="inactive">
+        Inactive
+      </option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       SUBJECTS TABLE
+       ===================================================== -->
+
+  <div class="subjects-card">
+
+<div class="table-header">
+
+  <div>
+
+    <h2>
+      School Subjects
+    </h2>
+
+    <p>
+      {{ filteredSubjects.length }} subject(s) found
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- LOADING -->
+
+<div
+  class="loading-state"
+  *ngIf="loading">
+
+  <div class="spinner"></div>
+
+  <p>
+    Loading subjects...
+  </p>
+
+</div>
+
+
+<!-- TABLE -->
+
+<div
+  class="table-wrapper"
+  *ngIf="!loading && filteredSubjects.length > 0">
+
+  <table>
+
+    <thead>
+
+      <tr>
+
+        <th>
+          Subject Code
+        </th>
+
+        <th>
+          Subject Name
+        </th>
+
+        <th>
+          Category
+        </th>
+
+        <th>
+          Description
+        </th>
+
+        <th>
+          Status
+        </th>
+
+        <th>
+          Actions
+        </th>
+
+      </tr>
+
+    </thead>
+
+
+    <tbody>
+
+      <tr
+        *ngFor="let subject of filteredSubjects">
+
+        <!-- CODE -->
+
+        <td>
+
+          <span class="subject-code">
+            {{ subject.subjectCode }}
+          </span>
+
+        </td>
+
+
+        <!-- NAME -->
+
+        <td>
+
+          <div class="subject-name">
+
+            <div class="subject-icon">
+              <i class="fas fa-book"></i>
+            </div>
+
+            <strong>
+              {{ subject.subjectName }}
+            </strong>
+
+          </div>
+
+        </td>
+
+
+        <!-- CATEGORY -->
+
+        <td>
+
+          <span class="category-badge">
+            {{ subject.category }}
+          </span>
+
+        </td>
+
+
+        <!-- DESCRIPTION -->
+
+        <td>
+
+          <span
+            class="description-text"
+            [title]="subject.description">
+
+            {{ subject.description || 'No description' }}
+
+          </span>
+
+        </td>
+
+
+        <!-- STATUS -->
+
+        <td>
+
+          <span
+            class="status-badge"
+            [class.status-active]="subject.status === 'active'"
+            [class.status-inactive]="subject.status === 'inactive'">
+
+            <i
+              class="fas"
+              [class.fa-check-circle]="subject.status === 'active'"
+              [class.fa-ban]="subject.status === 'inactive'">
+            </i>
+
+            {{ subject.status | titlecase }}
+
+          </span>
+
+        </td>
+
+
+        <!-- ACTIONS -->
+
+        <td>
+
+          <div class="action-buttons">
+
+            <button
+              type="button"
+              class="action-btn view"
+              title="View Subject"
+              (click)="viewSubject(subject)">
+
+              <i class="fas fa-eye"></i>
+
+            </button>
+
+
+            <button
+              type="button"
+              class="action-btn edit"
+              title="Edit Subject"
+              (click)="editSubject(subject)">
+
+              <i class="fas fa-edit"></i>
+
+            </button>
+
+
+            <button
+              type="button"
+              class="action-btn delete"
+              title="Delete Subject"
+              (click)="openDeleteSubject(subject)">
+
+              <i class="fas fa-trash"></i>
+
+            </button>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+
+<!-- EMPTY STATE -->
+
+<div
+  class="empty-state"
+  *ngIf="!loading && filteredSubjects.length === 0">
+
+  <div class="empty-icon">
+    <i class="fas fa-book-open"></i>
+  </div>
+
+  <h3>
+    No Subjects Found
+  </h3>
+
+  <p>
+    There are no subjects matching your current search or filters.
+  </p>
+
+  <button
+    type="button"
+    class="btn btn-primary"
+    (click)="openAddSubject()">
+
+    <i class="fas fa-plus"></i>
+
+    Add First Subject
+
+  </button>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       ADD SUBJECT MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAddSubject"
+    (click)="closeAddSubject()">
+
+```
+<div
+  class="modal"
+  (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+
+    <div>
+
+      <h2>
+        <i class="fas fa-plus-circle"></i>
+        Add Subject
+      </h2>
+
+      <p>
+        Create a new school subject.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="modal-close"
+      (click)="closeAddSubject()">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <form
+    class="modal-body"
+    (ngSubmit)="saveSubject()">
+
+    <div class="form-grid">
+
+      <!-- SUBJECT CODE -->
+
+      <div class="form-group">
+
+        <label for="newSubjectCode">
+          Subject Code
+        </label>
+
+        <input
+          id="newSubjectCode"
+          type="text"
+          [(ngModel)]="newSubject.subjectCode"
+          name="subjectCode"
+          readonly
+        />
+
+        <small>
+          Automatically generated.
+        </small>
+
+      </div>
+
+
+      <!-- SUBJECT NAME -->
+
+      <div class="form-group">
+
+        <label for="newSubjectName">
+          Subject Name
+          <span>*</span>
+        </label>
+
+        <input
+          id="newSubjectName"
+          type="text"
+          [(ngModel)]="newSubject.subjectName"
+          name="subjectName"
+          placeholder="e.g. Mathematics"
+          required
+        />
+
+      </div>
+
+
+      <!-- CATEGORY -->
+
+      <div class="form-group">
+
+        <label for="newSubjectCategory">
+          Category
+          <span>*</span>
+        </label>
+
+        <select
+          id="newSubjectCategory"
+          [(ngModel)]="newSubject.category"
+          name="category"
+          required>
+
+          <option value="">
+            Select Category
+          </option>
+
+          <option value="Core">
+            Core
+          </option>
+
+          <option value="Science">
+            Science
+          </option>
+
+          <option value="Arts">
+            Arts
+          </option>
+
+          <option value="Commercial">
+            Commercial
+          </option>
+
+          <option value="Vocational">
+            Vocational
+          </option>
+
+          <option value="Language">
+            Language
+          </option>
+
+          <option value="ICT">
+            ICT
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label for="newSubjectStatus">
+          Status
+        </label>
+
+        <select
+          id="newSubjectStatus"
+          [(ngModel)]="newSubject.status"
+          name="status">
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="inactive">
+            Inactive
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DESCRIPTION -->
+
+      <div class="form-group full-width">
+
+        <label for="newSubjectDescription">
+          Description
+        </label>
+
+        <textarea
+          id="newSubjectDescription"
+          [(ngModel)]="newSubject.description"
+          name="description"
+          rows="4"
+          placeholder="Enter a short description of the subject...">
+        </textarea>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-footer">
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="closeAddSubject()"
+        [disabled]="saving">
+
+        Cancel
+
+      </button>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="saving">
+
+        <i
+          class="fas"
+          [class.fa-save]="!saving"
+          [class.fa-spinner]="saving"
+          [class.fa-spin]="saving">
+        </i>
+
+        {{ saving ? 'Saving...' : 'Save Subject' }}
+
+      </button>
+
+    </div>
+
+  </form>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       VIEW SUBJECT MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showSubjectDetails"
+    (click)="closeSubjectDetails()">
+
+<div
+  class="modal details-modal"
+  (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+
+    <div>
+
+      <h2>
+        <i class="fas fa-book-open"></i>
+        Subject Details
+      </h2>
+
+      <p>
+        View subject information.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="modal-close"
+      (click)="closeSubjectDetails()">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="modal-body"
+    *ngIf="selectedSubject">
+
+    <div class="details-hero">
+
+      <div class="details-icon">
+        <i class="fas fa-book"></i>
+      </div>
+
+      <div>
+
+        <h3>
+          {{ selectedSubject.subjectName }}
+        </h3>
+
+        <p>
+          {{ selectedSubject.subjectCode }}
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="details-grid">
+
+      <div class="detail-item">
+
+        <span>
+          Subject Code
+        </span>
+
+        <strong>
+          {{ selectedSubject.subjectCode }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Subject Name
+        </span>
+
+        <strong>
+          {{ selectedSubject.subjectName }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Category
+        </span>
+
+        <strong>
+          {{ selectedSubject.category }}
+        </strong>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Status
+        </span>
+
+        <span
+          class="status-badge"
+          [class.status-active]="selectedSubject.status === 'active'"
+          [class.status-inactive]="selectedSubject.status === 'inactive'">
+
+          {{ selectedSubject.status | titlecase }}
+
+        </span>
+
+      </div>
+
+
+      <div class="detail-item full-width">
+
+        <span>
+          Description
+        </span>
+
+        <p>
+          {{ selectedSubject.description || 'No description provided.' }}
+        </p>
+
+      </div>
+
+
+      <div class="detail-item">
+
+        <span>
+          Created
+        </span>
+
+        <strong>
+          {{ selectedSubject.createdAt | date:'medium' }}
+        </strong>
+
+      </div>
+
+
+      <div
+        class="detail-item"
+        *ngIf="selectedSubject.updatedAt">
+
+        <span>
+          Last Updated
+        </span>
+
+        <strong>
+          {{ selectedSubject.updatedAt | date:'medium' }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-footer">
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="closeSubjectDetails()">
+
+        Close
+
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="editSubject(selectedSubject)">
+
+        <i class="fas fa-edit"></i>
+
+        Edit Subject
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       EDIT SUBJECT MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showEditSubject"
+    (click)="closeEditSubject()">
+
+<div
+  class="modal"
+  (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+
+    <div>
+
+      <h2>
+        <i class="fas fa-edit"></i>
+        Edit Subject
+      </h2>
+
+      <p>
+        Update subject information.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="modal-close"
+      (click)="closeEditSubject()">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <form
+    class="modal-body"
+    (ngSubmit)="updateSubject()">
+
+    <div class="form-grid">
+
+      <!-- SUBJECT CODE -->
+
+      <div class="form-group">
+
+        <label for="editSubjectCode">
+          Subject Code
+        </label>
+
+        <input
+          id="editSubjectCode"
+          type="text"
+          [(ngModel)]="editSubjectData.subjectCode"
+          name="editSubjectCode"
+          readonly
+        />
+
+      </div>
+
+
+      <!-- SUBJECT NAME -->
+
+      <div class="form-group">
+
+        <label for="editSubjectName">
+          Subject Name
+          <span>*</span>
+        </label>
+
+        <input
+          id="editSubjectName"
+          type="text"
+          [(ngModel)]="editSubjectData.subjectName"
+          name="editSubjectName"
+          placeholder="Enter subject name"
+          required
+        />
+
+      </div>
+
+
+      <!-- CATEGORY -->
+
+      <div class="form-group">
+
+        <label for="editSubjectCategory">
+          Category
+          <span>*</span>
+        </label>
+
+        <select
+          id="editSubjectCategory"
+          [(ngModel)]="editSubjectData.category"
+          name="editSubjectCategory"
+          required>
+
+          <option value="">
+            Select Category
+          </option>
+
+          <option value="Core">
+            Core
+          </option>
+
+          <option value="Science">
+            Science
+          </option>
+
+          <option value="Arts">
+            Arts
+          </option>
+
+          <option value="Commercial">
+            Commercial
+          </option>
+
+          <option value="Vocational">
+            Vocational
+          </option>
+
+          <option value="Language">
+            Language
+          </option>
+
+          <option value="ICT">
+            ICT
+          </option>
+
+          <option value="Other">
+            Other
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label for="editSubjectStatus">
+          Status
+        </label>
+
+        <select
+          id="editSubjectStatus"
+          [(ngModel)]="editSubjectData.status"
+          name="editSubjectStatus">
+
+          <option value="active">
+            Active
+          </option>
+
+          <option value="inactive">
+            Inactive
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DESCRIPTION -->
+
+      <div class="form-group full-width">
+
+        <label for="editSubjectDescription">
+          Description
+        </label>
+
+        <textarea
+          id="editSubjectDescription"
+          [(ngModel)]="editSubjectData.description"
+          name="editSubjectDescription"
+          rows="4"
+          placeholder="Enter a short description...">
+        </textarea>
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-footer">
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="closeEditSubject()"
+        [disabled]="updating">
+
+        Cancel
+
+      </button>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="updating">
+
+        <i
+          class="fas"
+          [class.fa-save]="!updating"
+          [class.fa-spinner]="updating"
+          [class.fa-spin]="updating">
+        </i>
+
+        {{ updating ? 'Updating...' : 'Update Subject' }}
+
+      </button>
+
+    </div>
+
+  </form>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       DELETE SUBJECT MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showDeleteSubject"
+    (click)="closeDeleteSubject()">
+
+
+<div
+  class="modal delete-modal"
+  (click)="$event.stopPropagation()">
+
+  <div class="delete-icon">
+
+    <i class="fas fa-trash"></i>
+
+  </div>
+
+
+  <h2>
+    Delete Subject?
+  </h2>
+
+
+  <p *ngIf="subjectToDelete">
+
+    Are you sure you want to delete
+
+    <strong>
+      {{ subjectToDelete.subjectName }}
+    </strong>?
+
+    <br />
+
+    This action cannot be undone.
+
+  </p>
+
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="closeDeleteSubject()"
+      [disabled]="deleting">
+
+      Cancel
+
+    </button>
+
+
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="deleteSubject()"
+      [disabled]="deleting">
+
+      <i
+        class="fas"
+        [class.fa-trash]="!deleting"
+        [class.fa-spinner]="deleting"
+        [class.fa-spin]="deleting">
+      </i>
+
+      {{ deleting ? 'Deleting...' : 'Delete Subject' }}
+
+    </button>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+</div>
+

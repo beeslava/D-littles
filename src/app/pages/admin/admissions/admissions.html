@@ -1,0 +1,892 @@
+<div class="admissions-page">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="page-header">
+
+    <div>
+
+      <a
+        routerLink="/admin/dashboard"
+        class="back-link"
+      >
+        ← Dashboard
+      </a>
+
+      <span class="header-label">
+        SCHOOL ADMINISTRATION
+      </span>
+
+      <h1>
+        Admissions
+      </h1>
+
+      <p>
+        Review and manage student admission applications.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="loadApplications()"
+      [disabled]="loading"
+    >
+
+      @if (!loading) {
+        ↻ Refresh
+      } @else {
+        Loading...
+      }
+
+    </button>
+
+  </header>
+
+
+  <!-- =====================================================
+       ERROR
+  ====================================================== -->
+
+  @if (errorMessage) {
+
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+
+  }
+
+
+  <!-- =====================================================
+       STATISTICS
+  ====================================================== -->
+
+  <section class="stats-grid">
+
+    <div class="stat-card total">
+
+      <span>
+        Total Applications
+      </span>
+
+      <strong>
+        {{ totalApplications }}
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card pending">
+
+      <span>
+        Pending
+      </span>
+
+      <strong>
+        {{ pendingApplications }}
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card approved">
+
+      <span>
+        Approved
+      </span>
+
+      <strong>
+        {{ approvedApplications }}
+      </strong>
+
+    </div>
+
+
+    <div class="stat-card rejected">
+
+      <span>
+        Rejected
+      </span>
+
+      <strong>
+        {{ rejectedApplications }}
+      </strong>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       APPLICATIONS
+  ====================================================== -->
+
+  <section class="applications-card">
+
+    <div class="card-header">
+
+      <div>
+
+        <span>
+          ADMISSIONS
+        </span>
+
+        <h2>
+          Applications
+        </h2>
+
+      </div>
+
+
+      <div class="search-box">
+
+        <input
+          type="search"
+          [(ngModel)]="searchTerm"
+          (input)="filterApplications()"
+          placeholder="Search applications..."
+          aria-label="Search applications"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    @if (loading) {
+
+      <div class="empty-state">
+
+        <div class="loader"></div>
+
+        <h3>
+          Loading applications
+        </h3>
+
+        <p>
+          Please wait while we retrieve the applications.
+        </p>
+
+      </div>
+
+    }
+
+
+    <!-- ===================================================
+         EMPTY
+    ==================================================== -->
+
+    @else if (filteredApplications.length === 0) {
+
+      <div class="empty-state">
+
+        <div class="empty-icon">
+          —
+        </div>
+
+        @if (searchTerm) {
+
+          <h3>
+            No applications found
+          </h3>
+
+          <p>
+            Try a different search term.
+          </p>
+
+        } @else {
+
+          <h3>
+            No admission applications
+          </h3>
+
+          <p>
+            Applications submitted through the school website
+            will appear here.
+          </p>
+
+        }
+
+      </div>
+
+    }
+
+
+    <!-- ===================================================
+         TABLE
+    ==================================================== -->
+
+    @else {
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Application
+              </th>
+
+              <th>
+                Student
+              </th>
+
+              <th>
+                Class
+              </th>
+
+              <th>
+                Parent / Guardian
+              </th>
+
+              <th>
+                Submitted
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Action
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            @for (
+              application of filteredApplications;
+              track application.applicationId
+            ) {
+
+              <tr>
+
+                <td>
+
+                  <strong class="application-number">
+                    {{ application.applicationNumber }}
+                  </strong>
+
+                </td>
+
+
+                <td>
+
+                  <strong>
+                    {{ getStudentName(application) }}
+                  </strong>
+
+                  <span class="secondary-text">
+                    {{ application.student.gender }}
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <span class="class-badge">
+                    {{ application.student.classApplied || 'N/A' }}
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <strong>
+                    {{ application.parentGuardian.name }}
+                  </strong>
+
+                  <span class="secondary-text">
+                    {{ application.parentGuardian.phone }}
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <span class="date-text">
+                    {{ formatDate(application.submittedAt) }}
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="status-badge"
+                    [class]="getStatusClass(application.status)"
+                  >
+                    {{ application.status }}
+                  </span>
+
+                </td>
+
+
+                <td>
+
+                  <button
+                    type="button"
+                    class="view-button"
+                    (click)="viewApplication(application)"
+                  >
+                    View
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </section>
+
+</div>
+
+
+<!-- =========================================================
+     APPLICATION DETAILS MODAL
+========================================================== -->
+
+@if (selectedApplication) {
+
+  <div
+    class="modal-overlay"
+    (click)="closeApplication()"
+  >
+
+    <div
+      class="application-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- ===================================================
+           MODAL HEADER
+      ==================================================== -->
+
+      <div class="modal-header">
+
+        <div>
+
+          <span>
+            APPLICATION DETAILS
+          </span>
+
+          <h2>
+            {{ selectedApplication.applicationNumber }}
+          </h2>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeApplication()"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- ===================================================
+           MODAL BODY
+      ==================================================== -->
+
+      <div class="modal-body">
+
+
+        <!-- =================================================
+             STATUS
+        ================================================== -->
+
+        <div class="detail-status">
+
+          <span>
+            Application Status
+          </span>
+
+          <strong
+            class="status-badge"
+            [class]="getStatusClass(selectedApplication.status)"
+          >
+            {{ selectedApplication.status }}
+          </strong>
+
+        </div>
+
+
+        <!-- =================================================
+             GENERATED RECORD IDS
+        ================================================== -->
+
+        @if (
+          selectedApplication.status.toLowerCase() ===
+          'approved'
+        ) {
+
+          <section class="record-created-box">
+
+            <div class="record-created-header">
+
+              <span>
+                ✓
+              </span>
+
+              <div>
+
+                <strong>
+                  Student Record Created
+                </strong>
+
+                <p>
+                  This application has been converted
+                  into a school student record.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="record-id-grid">
+
+              <div class="record-id-item">
+
+                <span>
+                  Student ID
+                </span>
+
+                <strong>
+                  {{ selectedApplication.studentId || 'N/A' }}
+                </strong>
+
+              </div>
+
+
+              <div class="record-id-item">
+
+                <span>
+                  Parent ID
+                </span>
+
+                <strong>
+                  {{ selectedApplication.parentId || 'N/A' }}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        }
+
+
+        <!-- =================================================
+             STUDENT
+        ================================================== -->
+
+        <section class="detail-section">
+
+          <div class="detail-heading">
+
+            <span>
+              01
+            </span>
+
+            <h3>
+              Student Information
+            </h3>
+
+          </div>
+
+
+          <div class="detail-grid">
+
+            <div class="detail-item">
+
+              <span>
+                Full Name
+              </span>
+
+              <strong>
+                {{ getStudentName(selectedApplication) }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Date of Birth
+              </span>
+
+              <strong>
+                {{ selectedApplication.student.dateOfBirth || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Gender
+              </span>
+
+              <strong>
+                {{ selectedApplication.student.gender || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Class Applied For
+              </span>
+
+              <strong>
+                {{ selectedApplication.student.classApplied || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            @if (selectedApplication.studentId) {
+
+              <div class="detail-item">
+
+                <span>
+                  Student ID
+                </span>
+
+                <strong>
+                  {{ selectedApplication.studentId }}
+                </strong>
+
+              </div>
+
+            }
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             PARENT
+        ================================================== -->
+
+        <section class="detail-section">
+
+          <div class="detail-heading">
+
+            <span>
+              02
+            </span>
+
+            <h3>
+              Parent / Guardian
+            </h3>
+
+          </div>
+
+
+          <div class="detail-grid">
+
+            <div class="detail-item">
+
+              <span>
+                Name
+              </span>
+
+              <strong>
+                {{ selectedApplication.parentGuardian.name }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Relationship
+              </span>
+
+              <strong>
+                {{ selectedApplication.parentGuardian.relationship || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Phone
+              </span>
+
+              <strong>
+                {{ selectedApplication.parentGuardian.phone }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Email
+              </span>
+
+              <strong>
+                {{ selectedApplication.parentGuardian.email || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            @if (selectedApplication.parentId) {
+
+              <div class="detail-item">
+
+                <span>
+                  Parent ID
+                </span>
+
+                <strong>
+                  {{ selectedApplication.parentId }}
+                </strong>
+
+              </div>
+
+            }
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             PREVIOUS SCHOOL
+        ================================================== -->
+
+        <section class="detail-section">
+
+          <div class="detail-heading">
+
+            <span>
+              03
+            </span>
+
+            <h3>
+              Previous School
+            </h3>
+
+          </div>
+
+
+          <div class="detail-grid">
+
+            <div class="detail-item">
+
+              <span>
+                School
+              </span>
+
+              <strong>
+                {{ selectedApplication.previousSchool.name || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Previous Class
+              </span>
+
+              <strong>
+                {{ selectedApplication.previousSchool.previousClass || 'N/A' }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             EMERGENCY
+        ================================================== -->
+
+        <section class="detail-section">
+
+          <div class="detail-heading">
+
+            <span>
+              04
+            </span>
+
+            <h3>
+              Emergency Contact
+            </h3>
+
+          </div>
+
+
+          <div class="detail-grid">
+
+            <div class="detail-item">
+
+              <span>
+                Name
+              </span>
+
+              <strong>
+                {{ selectedApplication.emergencyContact.name || 'N/A' }}
+              </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+              <span>
+                Phone
+              </span>
+
+              <strong>
+                {{ selectedApplication.emergencyContact.phone || 'N/A' }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =================================================
+             NOTES
+        ================================================== -->
+
+        <section class="detail-section">
+
+          <div class="detail-heading">
+
+            <span>
+              05
+            </span>
+
+            <h3>
+              Additional Notes
+            </h3>
+
+          </div>
+
+
+          <div class="notes-box">
+
+            {{ selectedApplication.additionalNotes || 'No additional notes provided.' }}
+
+          </div>
+
+        </section>
+
+
+      </div>
+
+
+      <!-- ===================================================
+           MODAL FOOTER
+      ==================================================== -->
+
+      <div class="modal-footer">
+
+        @if (
+          selectedApplication.status.toLowerCase() === 'pending'
+        ) {
+
+          <button
+            type="button"
+            class="reject-button"
+            (click)="rejectApplication(selectedApplication)"
+            [disabled]="updating"
+          >
+
+            @if (!updating) {
+              Reject
+            } @else {
+              Processing...
+            }
+
+          </button>
+
+
+          <button
+            type="button"
+            class="approve-button"
+            (click)="approveApplication(selectedApplication)"
+            [disabled]="updating"
+          >
+
+            @if (!updating) {
+              Approve & Create Student
+            } @else {
+              Creating Records...
+            }
+
+          </button>
+
+        } @else {
+
+          <span class="status-message">
+
+            This application has already been
+            {{ selectedApplication.status }}.
+
+          </span>
+
+        }
+
+      </div>
+
+    </div>
+
+  </div>
+
+}

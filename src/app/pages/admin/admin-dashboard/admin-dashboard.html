@@ -1,0 +1,591 @@
+<div class="admin-layout">
+
+  <!-- =====================================================
+       SIDEBAR
+       ===================================================== -->
+
+  <aside class="admin-sidebar">
+
+    <!-- BRAND -->
+
+    <div class="sidebar-brand">
+
+      <div class="sidebar-logo">
+        DL
+      </div>
+
+      <div>
+        <strong>
+          D Little
+        </strong>
+
+        <span>
+          Administration
+        </span>
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         NAVIGATION
+         ================================================= -->
+
+    <nav class="admin-nav">
+
+      <!-- DASHBOARD -->
+
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-home"></i>
+        </span>
+
+        <span class="nav-text">
+          Dashboard
+        </span>
+
+      </a>
+
+
+      <!-- ADMISSIONS -->
+
+      <a
+        routerLink="/admin/admissions"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-user-plus"></i>
+        </span>
+
+        <span class="nav-text">
+          Admissions
+        </span>
+
+      </a>
+
+
+      <!-- STUDENTS -->
+
+      <a
+        routerLink="/admin/students"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-user-graduate"></i>
+        </span>
+
+        <span class="nav-text">
+          Students
+        </span>
+
+      </a>
+
+
+      <!-- PARENTS & GUARDIANS -->
+
+      <a
+        routerLink="/admin/parents"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-user-friends"></i>
+        </span>
+
+        <span class="nav-text">
+          Parents & Guardians
+        </span>
+
+      </a>
+
+
+      <!-- TEACHERS & STAFF -->
+
+      <a
+        routerLink="/admin/staff"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </span>
+
+        <span class="nav-text">
+          Teachers & Staff
+        </span>
+
+      </a>
+
+
+      <!-- CLASSES -->
+
+      <a
+        routerLink="/admin/classes"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-school"></i>
+        </span>
+
+        <span class="nav-text">
+          Classes
+        </span>
+
+      </a>
+
+
+      <!-- SUBJECTS -->
+
+      <a
+        routerLink="/admin/subjects"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-book-open"></i>
+        </span>
+
+        <span class="nav-text">
+          Subjects
+        </span>
+
+      </a>
+
+
+      <!-- TEACHING ASSIGNMENTS -->
+
+      <a
+        routerLink="/admin/teaching-assignments"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </span>
+
+        <span class="nav-text">
+          Teaching Assignments
+        </span>
+
+      </a>
+
+
+      <!-- =================================================
+           ACADEMICS DROPDOWN
+           ================================================= -->
+
+      <div
+        class="nav-dropdown"
+        [class.open]="academicsOpen"
+      >
+
+        <!-- ACADEMICS HEADER -->
+
+        <button
+          type="button"
+          class="nav-dropdown-toggle"
+          (click)="toggleAcademics()"
+        >
+
+          <span class="nav-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </span>
+
+          <span class="nav-text">
+            Academics 
+          </span>
+
+          <span class="dropdown-arrow">
+            <i
+              class="fas"
+              [class.fa-chevron-down]="!academicsOpen"
+              [class.fa-chevron-up]="academicsOpen">
+            </i>
+          </span>
+
+        </button>
+
+
+        <!-- ACADEMICS SUBMENU -->
+
+        <div
+          class="nav-submenu"
+          *ngIf="academicsOpen"
+        >
+
+          <!-- ACADEMIC MANAGEMENT -->
+
+          <a
+            routerLink="/admin/academics"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+
+            <span class="submenu-icon">
+              <i class="fas fa-calendar-alt"></i>
+            </span>
+
+            <span>
+              Academic Management
+            </span>
+
+          </a>
+
+
+          <!-- ACADEMIC RESULTS -->
+
+          <a
+            routerLink="/admin/academics/results"
+            routerLinkActive="active"
+          >
+
+            <span class="submenu-icon">
+              <i class="fas fa-chart-line"></i>
+            </span>
+
+            <span>
+              Academic Results
+            </span>
+
+          </a>
+
+
+          <!-- REPORT CARDS -->
+
+          <a
+            routerLink="/admin/academics/report-cards"
+            routerLinkActive="active"
+          >
+
+            <span class="submenu-icon">
+              <i class="fas fa-file-alt"></i>
+            </span>
+
+            <span>
+              Report Cards
+            </span>
+
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <!-- NEWS -->
+
+      <a
+        routerLink="/admin/news"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-newspaper"></i>
+        </span>
+
+        <span class="nav-text">
+          News
+        </span>
+
+      </a>
+
+
+      <!-- EVENTS -->
+
+      <a
+        routerLink="/admin/events"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </span>
+
+        <span class="nav-text">
+          Events
+        </span>
+
+      </a>
+
+
+      <!-- GALLERY -->
+
+      <a
+        routerLink="/admin/gallery"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-images"></i>
+        </span>
+
+        <span class="nav-text">
+          Gallery
+        </span>
+
+      </a>
+
+
+      <!-- SCHOOL FEES -->
+
+      <a
+        routerLink="/admin/fees"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-money-bill-wave"></i>
+        </span>
+
+        <span class="nav-text">
+          School Fees
+        </span>
+
+      </a>
+
+
+      <!-- MESSAGES -->
+
+      <a
+        routerLink="/admin/messages"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-envelope"></i>
+        </span>
+
+        <span class="nav-text">
+          Messages
+        </span>
+
+      </a>
+
+
+      <!-- SETTINGS -->
+
+      <a
+        routerLink="/admin/settings"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-cog"></i>
+        </span>
+
+        <span class="nav-text">
+          Settings
+        </span>
+
+      </a>
+
+    </nav>
+
+
+    <!-- =================================================
+         SIDEBAR BOTTOM
+         ================================================= -->
+
+    <div class="sidebar-bottom">
+
+      <button
+        type="button"
+        (click)="logout()"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-sign-out-alt"></i>
+        </span>
+
+        <span class="nav-text">
+          Logout
+        </span>
+
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+       ===================================================== -->
+
+  <main class="admin-main">
+
+    <!-- =================================================
+         HEADER
+         ================================================= -->
+
+    <header class="admin-header">
+
+      <div>
+
+        <span class="header-label">
+          SCHOOL ADMINISTRATION
+        </span>
+
+        <h1>
+          Dashboard
+        </h1>
+
+      </div>
+
+
+      <!-- ADMIN USER -->
+
+      <div class="admin-user">
+
+        <div class="user-avatar">
+          DL
+        </div>
+
+        <div>
+
+          <strong>
+            {{ adminName }}
+          </strong>
+
+          <span>
+            Administrator
+          </span>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- =================================================
+         WELCOME
+         ================================================= -->
+
+    <section class="welcome-card">
+
+      <div>
+
+        <span>
+          WELCOME BACK
+        </span>
+
+        <h2>
+          D Little Private School
+        </h2>
+
+        <p>
+          Manage admissions, students, staff,
+          academics and school activities from
+          your administration portal.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         STATISTICS
+         ================================================= -->
+
+    <section class="dashboard-section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <span>
+            OVERVIEW
+          </span>
+
+          <h2>
+            School Statistics
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <!-- STATS GRID -->
+
+      <div class="stats-grid">
+
+
+        <!-- STUDENTS -->
+
+        <div class="stat-card">
+
+          <span class="stat-label">
+            Total Students
+          </span>
+
+          <strong>
+            {{ totalStudents }}
+          </strong>
+
+        </div>
+
+
+        <!-- APPLICATIONS -->
+
+        <div class="stat-card">
+
+          <span class="stat-label">
+            Applications
+          </span>
+
+          <strong>
+            {{ totalApplications }}
+          </strong>
+
+        </div>
+
+
+        <!-- PENDING ADMISSIONS -->
+
+        <div class="stat-card">
+
+          <span class="stat-label">
+            Pending Admissions
+          </span>
+
+          <strong>
+            {{ pendingAdmissions }}
+          </strong>
+
+        </div>
+
+
+        <!-- STAFF -->
+
+        <div class="stat-card">
+
+          <span class="stat-label">
+            Staff
+          </span>
+
+          <strong>
+            {{ totalStaff }}
+          </strong>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+</div>

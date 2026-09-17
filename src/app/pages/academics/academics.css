@@ -1,0 +1,295 @@
+/* =========================================================
+   HERO
+========================================================= */
+
+.academics-hero {
+  padding: 110px 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--school-primary),
+      var(--school-primary-dark)
+    );
+
+  color: #ffffff;
+}
+
+.academics-hero .hero-eyebrow {
+  color: var(--school-secondary);
+}
+
+.academics-hero h1 {
+  max-width: 750px;
+  margin-bottom: 20px;
+
+  font-size: clamp(42px, 6vw, 64px);
+}
+
+.academics-hero p {
+  max-width: 650px;
+  margin: 0;
+
+  color: #cbd5e1;
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   APPROACH
+========================================================= */
+
+.academics-intro {
+  background: #ffffff;
+}
+
+.approach-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.approach-card {
+  padding: 30px 25px;
+
+  border: 1px solid var(--school-border);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition: 0.2s ease;
+}
+
+.approach-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+}
+
+.approach-number {
+  margin-bottom: 20px;
+
+  color: var(--school-secondary-dark);
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.approach-card h3 {
+  margin-bottom: 12px;
+  color: var(--school-primary);
+}
+
+.approach-card p {
+  margin: 0;
+  color: var(--school-muted);
+}
+
+
+/* =========================================================
+   ACADEMIC LEVELS
+========================================================= */
+
+.programs-section {
+  background: var(--school-background);
+}
+
+.academic-levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.academic-level {
+  padding: 35px 30px;
+
+  background: #ffffff;
+  border: 1px solid var(--school-border);
+  border-radius: 10px;
+}
+
+.level-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  margin-bottom: 18px;
+}
+
+.level-header span {
+  color: var(--school-secondary-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.level-header h3 {
+  margin: 0;
+  color: var(--school-primary);
+  font-size: 23px;
+}
+
+.academic-level > p {
+  color: var(--school-muted);
+}
+
+.academic-level ul {
+  margin: 24px 0 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.academic-level li {
+  padding: 10px 0;
+
+  border-bottom: 1px solid var(--school-border);
+
+  color: var(--school-text);
+  font-size: 14px;
+}
+
+.academic-level li:last-child {
+  border-bottom: none;
+}
+
+
+/* =========================================================
+   LEARNING EXPERIENCE
+========================================================= */
+
+.learning-section {
+  background: #ffffff;
+}
+
+.learning-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.learning-content h2 {
+  margin-bottom: 22px;
+
+  color: var(--school-primary);
+  font-size: clamp(30px, 4vw, 44px);
+}
+
+.learning-content p {
+  margin-bottom: 18px;
+  color: var(--school-muted);
+}
+
+.learning-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.learning-item {
+  display: flex;
+  gap: 18px;
+
+  padding: 20px;
+
+  border: 1px solid var(--school-border);
+  border-radius: 8px;
+
+  background: var(--school-background);
+}
+
+.learning-item > span {
+  flex-shrink: 0;
+
+  color: var(--school-secondary-dark);
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.learning-item h3 {
+  margin-bottom: 5px;
+  color: var(--school-primary);
+  font-size: 17px;
+}
+
+.learning-item p {
+  margin: 0;
+  color: var(--school-muted);
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   CTA
+========================================================= */
+
+.academics-cta {
+  background: var(--school-background);
+}
+
+.cta-content {
+  max-width: 800px;
+  margin: 0 auto;
+
+  padding: 65px 40px;
+
+  text-align: center;
+
+  background: var(--school-primary);
+  border-radius: 12px;
+}
+
+.cta-content h2 {
+  margin-bottom: 16px;
+
+  color: #ffffff;
+  font-size: clamp(30px, 4vw, 44px);
+}
+
+.cta-content p {
+  margin: 0 auto 28px;
+  color: #cbd5e1;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .approach-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .academic-levels {
+    grid-template-columns: 1fr;
+  }
+
+  .learning-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .academics-hero {
+    padding: 80px 0;
+  }
+
+  .approach-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .approach-card,
+  .academic-level {
+    padding: 28px 22px;
+  }
+
+  .cta-content {
+    padding: 45px 25px;
+  }
+
+}

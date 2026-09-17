@@ -1,0 +1,1968 @@
+<div class="academics-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header">
+
+    <div class="page-header-content">
+
+      <div>
+
+        <span class="page-label">
+          ACADEMIC MANAGEMENT
+        </span>
+
+        <h1>
+          Academics
+        </h1>
+
+        <p>
+          Manage academic sessions and school terms.
+        </p>
+
+      </div>
+
+
+      <div class="header-actions">
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="openAddSession()">
+
+          <i class="fas fa-calendar-plus"></i>
+
+          <span>
+            Add Session
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="openAddTerm()">
+
+          <i class="fas fa-plus"></i>
+
+          <span>
+            Add Term
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ALERTS
+       ===================================================== -->
+
+  <div
+    class="alert alert-success"
+    *ngIf="successMessage">
+
+    <i class="fas fa-check-circle"></i>
+
+    <span>
+      {{ successMessage }}
+    </span>
+
+    <button
+      type="button"
+      class="alert-close"
+      (click)="successMessage = ''">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="alert alert-error"
+    *ngIf="errorMessage">
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+    <button
+      type="button"
+      class="alert-close"
+      (click)="errorMessage = ''">
+
+      <i class="fas fa-times"></i>
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+       ===================================================== -->
+
+  <div class="stats-grid">
+
+
+    <!-- TOTAL SESSIONS -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon sessions-icon">
+
+        <i class="fas fa-calendar-alt"></i>
+
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Total Sessions
+        </span>
+
+        <strong>
+          {{ totalSessions }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- ACTIVE SESSIONS -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon active-icon">
+
+        <i class="fas fa-calendar-check"></i>
+
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Active Sessions
+        </span>
+
+        <strong>
+          {{ activeSessions }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- TOTAL TERMS -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon terms-icon">
+
+        <i class="fas fa-book-open"></i>
+
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Total Terms
+        </span>
+
+        <strong>
+          {{ totalTerms }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- ACTIVE TERMS -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon current-icon">
+
+        <i class="fas fa-graduation-cap"></i>
+
+      </div>
+
+      <div class="stat-content">
+
+        <span>
+          Active Terms
+        </span>
+
+        <strong>
+          {{ activeTerms }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading">
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading academic data...
+    </p>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       ACADEMIC SESSIONS
+       ===================================================== -->
+
+  <section
+    class="management-section"
+    *ngIf="!loading">
+
+
+    <div class="section-header">
+
+      <div>
+
+        <span class="section-label">
+          SESSION MANAGEMENT
+        </span>
+
+        <h2>
+          Academic Sessions
+        </h2>
+
+        <p>
+          Manage school academic years and their status.
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openAddSession()">
+
+        <i class="fas fa-plus"></i>
+
+        <span>
+          Add Session
+        </span>
+
+      </button>
+
+    </div>
+
+
+
+    <!-- SESSION FILTERS -->
+
+    <div class="filter-card">
+
+      <div class="filter-row">
+
+
+        <div class="form-group search-group">
+
+          <label>
+            Search Sessions
+          </label>
+
+          <div class="input-with-icon">
+
+            <i class="fas fa-search"></i>
+
+            <input
+              type="text"
+              [(ngModel)]="sessionSearchTerm"
+              placeholder="Search academic session...">
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="sessionStatusFilter">
+
+            <option value="">
+              All Statuses
+            </option>
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="filter-action">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="clearSessionFilters()">
+
+            <i class="fas fa-rotate-left"></i>
+
+            Clear
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- SESSION EMPTY STATE -->
+
+    <div
+      class="empty-state"
+      *ngIf="filteredSessions.length === 0">
+
+      <div class="empty-icon">
+
+        <i class="fas fa-calendar-xmark"></i>
+
+      </div>
+
+      <h3>
+        No Academic Sessions Found
+      </h3>
+
+      <p>
+        Add an academic session to get started.
+      </p>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="openAddSession()">
+
+        <i class="fas fa-plus"></i>
+
+        Add Session
+
+      </button>
+
+    </div>
+
+
+
+    <!-- SESSION TABLE -->
+
+    <div
+      class="table-card"
+      *ngIf="filteredSessions.length > 0">
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Academic Session
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Created
+              </th>
+
+              <th>
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let session of filteredSessions;
+                let i = index
+              ">
+
+              <td>
+                {{ i + 1 }}
+              </td>
+
+
+              <td>
+
+                <div class="session-info">
+
+                  <div class="session-icon">
+
+                    <i class="fas fa-calendar"></i>
+
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      {{ session.name }}
+                    </strong>
+
+                    <span>
+                      Academic Year
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="status-badge"
+                  [class.status-active]="
+                    session.status === 'active'
+                  "
+                  [class.status-inactive]="
+                    session.status === 'inactive'
+                  ">
+
+                  <i
+                    class="fas"
+                    [class.fa-circle-check]="
+                      session.status === 'active'
+                    "
+                    [class.fa-circle-xmark]="
+                      session.status === 'inactive'
+                    ">
+                  </i>
+
+                  {{ session.status }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <span class="date-text">
+
+                  {{ session.createdAt | date:'mediumDate' }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <div class="action-buttons">
+
+                  <button
+                    type="button"
+                    class="action-btn view-btn"
+                    title="View"
+                    (click)="viewSession(session)">
+
+                    <i class="fas fa-eye"></i>
+
+                    <span>
+                      View
+                    </span>
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="action-btn edit-btn"
+                    title="Edit"
+                    (click)="openEditSession(session)">
+
+                    <i class="fas fa-pen"></i>
+
+                    <span>
+                      Edit
+                    </span>
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="action-btn delete-btn"
+                    title="Delete"
+                    (click)="openDeleteSession(session)">
+
+                    <i class="fas fa-trash"></i>
+
+                    <span>
+                      Delete
+                    </span>
+
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ACADEMIC TERMS
+       ===================================================== -->
+
+  <section
+    class="management-section"
+    *ngIf="!loading">
+
+
+    <div class="section-header">
+
+      <div>
+
+        <span class="section-label">
+          TERM MANAGEMENT
+        </span>
+
+        <h2>
+          Academic Terms
+        </h2>
+
+        <p>
+          Manage First, Second and Third Terms.
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="openAddTerm()">
+
+        <i class="fas fa-plus"></i>
+
+        <span>
+          Add Term
+        </span>
+
+      </button>
+
+    </div>
+
+
+
+    <!-- TERM FILTERS -->
+
+    <div class="filter-card">
+
+      <div class="filter-row">
+
+
+        <div class="form-group search-group">
+
+          <label>
+            Search Terms
+          </label>
+
+          <div class="input-with-icon">
+
+            <i class="fas fa-search"></i>
+
+            <input
+              type="text"
+              [(ngModel)]="termSearchTerm"
+              placeholder="Search term or session...">
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="termStatusFilter">
+
+            <option value="">
+              All Statuses
+            </option>
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="filter-action">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="clearTermFilters()">
+
+            <i class="fas fa-rotate-left"></i>
+
+            Clear
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- TERM EMPTY STATE -->
+
+    <div
+      class="empty-state"
+      *ngIf="filteredTerms.length === 0">
+
+      <div class="empty-icon">
+
+        <i class="fas fa-book-open"></i>
+
+      </div>
+
+      <h3>
+        No Academic Terms Found
+      </h3>
+
+      <p>
+        Add a term and connect it to an academic session.
+      </p>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="openAddTerm()">
+
+        <i class="fas fa-plus"></i>
+
+        Add Term
+
+      </button>
+
+    </div>
+
+
+
+    <!-- TERM TABLE -->
+
+    <div
+      class="table-card"
+      *ngIf="filteredTerms.length > 0">
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Term
+              </th>
+
+              <th>
+                Academic Session
+              </th>
+
+              <th>
+                Status
+              </th>
+
+              <th>
+                Created
+              </th>
+
+              <th>
+                Actions
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let term of filteredTerms;
+                let i = index
+              ">
+
+
+              <td>
+                {{ i + 1 }}
+              </td>
+
+
+              <td>
+
+                <div class="term-info">
+
+                  <div class="term-icon">
+
+                    <i class="fas fa-book-open"></i>
+
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      {{ term.name }}
+                    </strong>
+
+                    <span>
+                      Academic Term
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+
+              <td>
+
+                <span class="session-badge">
+
+                  <i class="fas fa-calendar"></i>
+
+                  {{ term.sessionName }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="status-badge"
+                  [class.status-active]="
+                    term.status === 'active'
+                  "
+                  [class.status-inactive]="
+                    term.status === 'inactive'
+                  ">
+
+                  <i
+                    class="fas"
+                    [class.fa-circle-check]="
+                      term.status === 'active'
+                    "
+                    [class.fa-circle-xmark]="
+                      term.status === 'inactive'
+                    ">
+                  </i>
+
+                  {{ term.status }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <span class="date-text">
+
+                  {{ term.createdAt | date:'mediumDate' }}
+
+                </span>
+
+              </td>
+
+
+              <td>
+
+                <div class="action-buttons">
+
+                  <button
+                    type="button"
+                    class="action-btn view-btn"
+                    title="View"
+                    (click)="viewTerm(term)">
+
+                    <i class="fas fa-eye"></i>
+
+                    <span>
+                      View
+                    </span>
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="action-btn edit-btn"
+                    title="Edit"
+                    (click)="openEditTerm(term)">
+
+                    <i class="fas fa-pen"></i>
+
+                    <span>
+                      Edit
+                    </span>
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="action-btn delete-btn"
+                    title="Delete"
+                    (click)="openDeleteTerm(term)">
+
+                    <i class="fas fa-trash"></i>
+
+                    <span>
+                      Delete
+                    </span>
+
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =====================================================
+       ADD SESSION MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAddSession">
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ACADEMIC MANAGEMENT
+          </span>
+
+          <h2>
+            Add Academic Session
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeAddSession()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>
+            Academic Session
+            <span>*</span>
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="newSession.name"
+            placeholder="e.g. 2026/2027">
+
+          <small>
+            Enter the academic year or session name.
+          </small>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="newSession.status">
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeAddSession()"
+          [disabled]="savingSession">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="saveSession()"
+          [disabled]="savingSession">
+
+          <span
+            class="button-spinner"
+            *ngIf="savingSession">
+          </span>
+
+          <i
+            class="fas fa-save"
+            *ngIf="!savingSession">
+          </i>
+
+          {{ savingSession ? 'Saving...' : 'Save Session' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       VIEW SESSION MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showSessionDetails">
+
+    <div class="modal-card details-modal">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            SESSION DETAILS
+          </span>
+
+          <h2>
+            Academic Session
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeSessionDetails()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div
+        class="modal-body"
+        *ngIf="selectedSession">
+
+        <div class="details-hero">
+
+          <div class="large-icon">
+
+            <i class="fas fa-calendar-alt"></i>
+
+          </div>
+
+          <div>
+
+            <h3>
+              {{ selectedSession.name }}
+            </h3>
+
+            <span>
+              Academic Session
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="details-grid">
+
+          <div class="detail-item">
+
+            <span>
+              Session
+            </span>
+
+            <strong>
+              {{ selectedSession.name }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Status
+            </span>
+
+            <strong
+              [class.text-active]="
+                selectedSession.status === 'active'
+              "
+              [class.text-inactive]="
+                selectedSession.status === 'inactive'
+              ">
+
+              {{ selectedSession.status }}
+
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Created
+            </span>
+
+            <strong>
+              {{ selectedSession.createdAt | date:'medium' }}
+            </strong>
+
+          </div>
+
+
+          <div
+            class="detail-item"
+            *ngIf="selectedSession.updatedAt">
+
+            <span>
+              Last Updated
+            </span>
+
+            <strong>
+              {{ selectedSession.updatedAt | date:'medium' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeSessionDetails()">
+
+          Close
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       EDIT SESSION MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showEditSession">
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ACADEMIC MANAGEMENT
+          </span>
+
+          <h2>
+            Edit Academic Session
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeEditSession()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>
+            Academic Session
+            <span>*</span>
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="editSessionData.name"
+            placeholder="e.g. 2026/2027">
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="editSessionData.status">
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeEditSession()"
+          [disabled]="updatingSession">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="updateSession()"
+          [disabled]="updatingSession">
+
+          <span
+            class="button-spinner"
+            *ngIf="updatingSession">
+          </span>
+
+          <i
+            class="fas fa-save"
+            *ngIf="!updatingSession">
+          </i>
+
+          {{ updatingSession ? 'Updating...' : 'Update Session' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       DELETE SESSION MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showDeleteSession">
+
+    <div class="modal-card delete-modal">
+
+      <div class="delete-icon">
+
+        <i class="fas fa-trash"></i>
+
+      </div>
+
+
+      <h2>
+        Delete Academic Session?
+      </h2>
+
+
+      <p>
+        Are you sure you want to delete this academic session?
+        This action cannot be undone.
+      </p>
+
+
+      <div
+        class="delete-record-info"
+        *ngIf="sessionToDelete">
+
+        <strong>
+          {{ sessionToDelete.name }}
+        </strong>
+
+        <span>
+          Academic Session
+        </span>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeDeleteSession()"
+          [disabled]="deletingSession">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="deleteSession()"
+          [disabled]="deletingSession">
+
+          <span
+            class="button-spinner"
+            *ngIf="deletingSession">
+          </span>
+
+          <i
+            class="fas fa-trash"
+            *ngIf="!deletingSession">
+          </i>
+
+          {{ deletingSession ? 'Deleting...' : 'Delete Session' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       ADD TERM MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAddTerm">
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ACADEMIC MANAGEMENT
+          </span>
+
+          <h2>
+            Add Academic Term
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeAddTerm()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>
+            Academic Session
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="newTerm.sessionId">
+
+            <option value="">
+              Select Academic Session
+            </option>
+
+            <option
+              *ngFor="let session of sessions"
+              [value]="session.id">
+
+              {{ session.name }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Term
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="newTerm.name">
+
+            <option value="">
+              Select Term
+            </option>
+
+            <option
+              *ngFor="let term of termOptions"
+              [value]="term">
+
+              {{ term }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="newTerm.status">
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeAddTerm()"
+          [disabled]="savingTerm">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="saveTerm()"
+          [disabled]="savingTerm">
+
+          <span
+            class="button-spinner"
+            *ngIf="savingTerm">
+          </span>
+
+          <i
+            class="fas fa-save"
+            *ngIf="!savingTerm">
+          </i>
+
+          {{ savingTerm ? 'Saving...' : 'Save Term' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       VIEW TERM MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showTermDetails">
+
+    <div class="modal-card details-modal">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            TERM DETAILS
+          </span>
+
+          <h2>
+            Academic Term
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeTermDetails()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div
+        class="modal-body"
+        *ngIf="selectedTerm">
+
+        <div class="details-hero">
+
+          <div class="large-icon">
+
+            <i class="fas fa-book-open"></i>
+
+          </div>
+
+          <div>
+
+            <h3>
+              {{ selectedTerm.name }}
+            </h3>
+
+            <span>
+              {{ selectedTerm.sessionName }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="details-grid">
+
+          <div class="detail-item">
+
+            <span>
+              Term
+            </span>
+
+            <strong>
+              {{ selectedTerm.name }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Academic Session
+            </span>
+
+            <strong>
+              {{ selectedTerm.sessionName }}
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Status
+            </span>
+
+            <strong
+              [class.text-active]="
+                selectedTerm.status === 'active'
+              "
+              [class.text-inactive]="
+                selectedTerm.status === 'inactive'
+              ">
+
+              {{ selectedTerm.status }}
+
+            </strong>
+
+          </div>
+
+
+          <div class="detail-item">
+
+            <span>
+              Created
+            </span>
+
+            <strong>
+              {{ selectedTerm.createdAt | date:'medium' }}
+            </strong>
+
+          </div>
+
+
+          <div
+            class="detail-item"
+            *ngIf="selectedTerm.updatedAt">
+
+            <span>
+              Last Updated
+            </span>
+
+            <strong>
+              {{ selectedTerm.updatedAt | date:'medium' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeTermDetails()">
+
+          Close
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       EDIT TERM MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showEditTerm">
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            ACADEMIC MANAGEMENT
+          </span>
+
+          <h2>
+            Edit Academic Term
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeEditTerm()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="form-group">
+
+          <label>
+            Academic Session
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="editTermData.sessionId">
+
+            <option value="">
+              Select Academic Session
+            </option>
+
+            <option
+              *ngFor="let session of sessions"
+              [value]="session.id">
+
+              {{ session.name }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Term
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="editTermData.name">
+
+            <option value="">
+              Select Term
+            </option>
+
+            <option
+              *ngFor="let term of termOptions"
+              [value]="term">
+
+              {{ term }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="editTermData.status">
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeEditTerm()"
+          [disabled]="updatingTerm">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="updateTerm()"
+          [disabled]="updatingTerm">
+
+          <span
+            class="button-spinner"
+            *ngIf="updatingTerm">
+          </span>
+
+          <i
+            class="fas fa-save"
+            *ngIf="!updatingTerm">
+          </i>
+
+          {{ updatingTerm ? 'Updating...' : 'Update Term' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       DELETE TERM MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showDeleteTerm">
+
+    <div class="modal-card delete-modal">
+
+      <div class="delete-icon">
+
+        <i class="fas fa-trash"></i>
+
+      </div>
+
+
+      <h2>
+        Delete Academic Term?
+      </h2>
+
+
+      <p>
+        Are you sure you want to delete this academic term?
+        This action cannot be undone.
+      </p>
+
+
+      <div
+        class="delete-record-info"
+        *ngIf="termToDelete">
+
+        <strong>
+          {{ termToDelete.name }}
+        </strong>
+
+        <span>
+          {{ termToDelete.sessionName }}
+        </span>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeDeleteTerm()"
+          [disabled]="deletingTerm">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="deleteTerm()"
+          [disabled]="deletingTerm">
+
+          <span
+            class="button-spinner"
+            *ngIf="deletingTerm">
+          </span>
+
+          <i
+            class="fas fa-trash"
+            *ngIf="!deletingTerm">
+          </i>
+
+          {{ deletingTerm ? 'Deleting...' : 'Delete Term' }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+

@@ -1,0 +1,641 @@
+<!-- =========================================================
+     APPLICATION HERO
+========================================================= -->
+
+<section class="application-hero">
+
+  <div class="container">
+
+<span class="hero-eyebrow">
+  ONLINE ADMISSION
+</span>
+
+<h1>
+  Apply to D Little Private School
+</h1>
+
+<p>
+  Complete the form below to begin your child's
+  admission application.
+</p>
+
+
+  </div>
+
+</section>
+
+<!-- =========================================================
+     APPLICATION CONTENT
+========================================================= -->
+
+<section class="section application-page">
+
+  <div class="container">
+
+
+@if (submitted) {
+
+  <!-- ===================================================
+       SUCCESS MESSAGE
+  ==================================================== -->
+
+  <div class="success-message">
+
+    <div class="success-icon">
+      ✓
+    </div>
+
+    <h2>
+      Application Submitted
+    </h2>
+
+    <p>
+      Thank you for applying to D Little Private School.
+      Your application has been successfully received.
+    </p>
+
+    <div class="application-number">
+
+      <span>
+        Application Number
+      </span>
+
+      <strong>
+        {{ applicationNumber }}
+      </strong>
+
+    </div>
+
+    <p>
+      Please keep this application number for your records.
+      Your application is currently being reviewed by the school.
+    </p>
+
+    <a
+      routerLink="/home"
+      class="btn btn-primary"
+    >
+      Return Home
+    </a>
+
+  </div>
+
+} @else {
+
+  <!-- ===================================================
+       APPLICATION FORM
+  ==================================================== -->
+
+  <form
+    #applicationForm="ngForm"
+    (ngSubmit)="submitApplication()"
+    class="application-form"
+  >
+
+    <!-- =================================================
+         STUDENT INFORMATION
+    ================================================== -->
+
+    <div class="form-section">
+
+      <div class="form-section-heading">
+
+        <span class="section-number">
+          01
+        </span>
+
+        <div>
+
+          <h2>
+            Student Information
+          </h2>
+
+          <p>
+            Tell us about the child applying for admission.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label for="studentFirstName">
+            First Name *
+          </label>
+
+          <input
+            id="studentFirstName"
+            type="text"
+            name="studentFirstName"
+            [(ngModel)]="application.studentFirstName"
+            required
+            placeholder="Enter first name"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="studentMiddleName">
+            Middle Name
+          </label>
+
+          <input
+            id="studentMiddleName"
+            type="text"
+            name="studentMiddleName"
+            [(ngModel)]="application.studentMiddleName"
+            placeholder="Enter middle name"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="studentLastName">
+            Last Name *
+          </label>
+
+          <input
+            id="studentLastName"
+            type="text"
+            name="studentLastName"
+            [(ngModel)]="application.studentLastName"
+            required
+            placeholder="Enter last name"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="dateOfBirth">
+            Date of Birth *
+          </label>
+
+          <input
+            id="dateOfBirth"
+            type="date"
+            name="dateOfBirth"
+            [(ngModel)]="application.dateOfBirth"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="gender">
+            Gender *
+          </label>
+
+          <select
+            id="gender"
+            name="gender"
+            [(ngModel)]="application.gender"
+            required
+          >
+
+            <option value="">
+              Select gender
+            </option>
+
+            <option value="male">
+              Male
+            </option>
+
+            <option value="female">
+              Female
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="classApplied">
+            Class Applying For *
+          </label>
+
+          <select
+            id="classApplied"
+            name="classApplied"
+            [(ngModel)]="application.classApplied"
+            required
+          >
+
+            <option value="">
+              Select class
+            </option>
+
+            <option value="early-years">
+              Early Years
+            </option>
+
+            <option value="primary">
+              Primary
+            </option>
+
+            <option value="secondary">
+              Secondary
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         PARENT / GUARDIAN
+    ================================================== -->
+
+    <div class="form-section">
+
+      <div class="form-section-heading">
+
+        <span class="section-number">
+          02
+        </span>
+
+        <div>
+
+          <h2>
+            Parent / Guardian Information
+          </h2>
+
+          <p>
+            Provide the contact information of a parent
+            or guardian.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group full-width">
+
+          <label for="parentName">
+            Parent / Guardian Full Name *
+          </label>
+
+          <input
+            id="parentName"
+            type="text"
+            name="parentName"
+            [(ngModel)]="application.parentName"
+            required
+            placeholder="Enter full name"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="parentPhone">
+            Phone Number *
+          </label>
+
+          <input
+            id="parentPhone"
+            type="tel"
+            name="parentPhone"
+            [(ngModel)]="application.parentPhone"
+            required
+            placeholder="Enter phone number"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="parentEmail">
+            Email Address
+          </label>
+
+          <input
+            id="parentEmail"
+            type="email"
+            name="parentEmail"
+            [(ngModel)]="application.parentEmail"
+            placeholder="Enter email address"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="relationship">
+            Relationship to Student *
+          </label>
+
+          <select
+            id="relationship"
+            name="relationship"
+            [(ngModel)]="application.relationship"
+            required
+          >
+
+            <option value="">
+              Select relationship
+            </option>
+
+            <option value="father">
+              Father
+            </option>
+
+            <option value="mother">
+              Mother
+            </option>
+
+            <option value="guardian">
+              Guardian
+            </option>
+
+            <option value="other">
+              Other
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         PREVIOUS SCHOOL
+    ================================================== -->
+
+    <div class="form-section">
+
+      <div class="form-section-heading">
+
+        <span class="section-number">
+          03
+        </span>
+
+        <div>
+
+          <h2>
+            Previous School
+          </h2>
+
+          <p>
+            Provide previous school information where
+            applicable.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label for="previousSchool">
+            Previous School
+          </label>
+
+          <input
+            id="previousSchool"
+            type="text"
+            name="previousSchool"
+            [(ngModel)]="application.previousSchool"
+            placeholder="School name"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="previousClass">
+            Previous Class
+          </label>
+
+          <input
+            id="previousClass"
+            type="text"
+            name="previousClass"
+            [(ngModel)]="application.previousClass"
+            placeholder="Previous class"
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         EMERGENCY CONTACT
+    ================================================== -->
+
+    <div class="form-section">
+
+      <div class="form-section-heading">
+
+        <span class="section-number">
+          04
+        </span>
+
+        <div>
+
+          <h2>
+            Emergency Contact
+          </h2>
+
+          <p>
+            Provide an additional person the school can
+            contact when necessary.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label for="emergencyName">
+            Contact Name
+          </label>
+
+          <input
+            id="emergencyName"
+            type="text"
+            name="emergencyName"
+            [(ngModel)]="application.emergencyName"
+            placeholder="Enter contact name"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="emergencyPhone">
+            Contact Phone
+          </label>
+
+          <input
+            id="emergencyPhone"
+            type="tel"
+            name="emergencyPhone"
+            [(ngModel)]="application.emergencyPhone"
+            placeholder="Enter phone number"
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         ADDITIONAL INFORMATION
+    ================================================== -->
+
+    <div class="form-section">
+
+      <div class="form-section-heading">
+
+        <span class="section-number">
+          05
+        </span>
+
+        <div>
+
+          <h2>
+            Additional Information
+          </h2>
+
+          <p>
+            Share anything else the school should know
+            about the application.
+          </p>
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="additionalNotes">
+          Additional Notes
+        </label>
+
+        <textarea
+          id="additionalNotes"
+          name="additionalNotes"
+          [(ngModel)]="application.additionalNotes"
+          rows="6"
+          placeholder="Enter any additional information..."
+        ></textarea>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================
+         DECLARATION
+    ================================================== -->
+
+    <div class="form-section declaration-section">
+
+      <label class="declaration">
+
+        <input
+          type="checkbox"
+          name="declaration"
+          [(ngModel)]="application.declaration"
+          required
+        >
+
+        <span>
+          I confirm that the information provided in this
+          application is accurate and complete to the best
+          of my knowledge.
+        </span>
+
+      </label>
+
+    </div>
+
+
+    <!-- =================================================
+         ERROR MESSAGE
+    ================================================== -->
+
+    @if (errorMessage) {
+
+      <div class="form-error">
+        {{ errorMessage }}
+      </div>
+
+    }
+
+
+    <!-- =================================================
+         ACTIONS
+    ================================================== -->
+
+    <div class="form-actions">
+
+      <a
+        routerLink="/admissions"
+        class="btn btn-outline"
+      >
+        Back to Admissions
+      </a>
+
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="applicationForm.invalid || submitting"
+      >
+
+        @if (!submitting) {
+          Submit Application
+        } @else {
+          Submitting...
+        }
+
+      </button>
+
+    </div>
+
+  </form>
+
+}
+
+
+  </div>
+
+</section>

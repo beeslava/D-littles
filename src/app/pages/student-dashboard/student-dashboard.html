@@ -1,0 +1,748 @@
+<div class="student-dashboard">
+
+  <!-- =========================================
+       HEADER
+  ========================================== -->
+
+  <header class="dashboard-header">
+
+    <div class="header-content">
+
+      <div>
+
+        <span class="school-label">
+          D LITTLE PRIVATE SCHOOL
+        </span>
+
+        <h1>
+          Student Dashboard
+        </h1>
+
+        <p>
+          Welcome back,
+          <strong>
+            {{ getStudentName() }}
+          </strong>
+        </p>
+
+      </div>
+
+
+      <div class="header-actions">
+
+        <span class="current-date">
+          {{ currentDate | date:'EEEE, MMMM d, y' }}
+        </span>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()">
+
+          <i class="fas fa-sign-out-alt"></i>
+
+          Logout
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================================
+       ERROR
+  ========================================== -->
+
+  <div
+    class="dashboard-container"
+    *ngIf="errorMessage">
+
+    <div class="alert-error">
+
+      <i class="fas fa-exclamation-circle"></i>
+
+      <span>
+        {{ errorMessage }}
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       LOADING
+  ========================================== -->
+
+  <div
+    class="loading-container"
+    *ngIf="loading">
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Loading your dashboard...
+    </p>
+
+  </div>
+
+
+  <!-- =========================================
+       DASHBOARD CONTENT
+  ========================================== -->
+
+  <main
+    class="dashboard-container"
+    *ngIf="!loading && student">
+
+
+    <!-- =======================================
+         STUDENT WELCOME CARD
+    ======================================== -->
+
+    <section class="welcome-card">
+
+      <div class="welcome-info">
+
+        <div class="student-avatar">
+
+          <i class="fas fa-user-graduate"></i>
+
+        </div>
+
+
+        <div>
+
+          <span class="welcome-label">
+            Welcome back
+          </span>
+
+          <h2>
+            {{ getStudentName() }}
+          </h2>
+
+          <p>
+            Keep up the great work with your studies.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="student-status">
+
+        <span class="status-dot"></span>
+
+        <span>
+          {{ student.status || 'Active' }}
+        </span>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================
+         QUICK INFORMATION
+    ======================================== -->
+
+    <section class="info-grid">
+
+
+      <!-- STUDENT ID -->
+
+      <div class="info-card">
+
+        <div class="info-icon blue">
+
+          <i class="fas fa-id-card"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Student ID
+          </span>
+
+          <strong>
+            {{ student.studentId || '-' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- CLASS -->
+
+      <div class="info-card">
+
+        <div class="info-icon green">
+
+          <i class="fas fa-school"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Current Class
+          </span>
+
+          <strong>
+            {{ getClassName() }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- SUBJECTS -->
+
+      <div class="info-card">
+
+        <div class="info-icon purple">
+
+          <i class="fas fa-book"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Published Subjects
+          </span>
+
+          <strong>
+            {{ totalSubjects }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- AVERAGE -->
+
+      <div class="info-card">
+
+        <div class="info-icon orange">
+
+          <i class="fas fa-chart-line"></i>
+
+        </div>
+
+        <div>
+
+          <span>
+            Average Score
+          </span>
+
+          <strong>
+            {{ averageScore | number:'1.1-1' }}%
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =======================================
+         MAIN DASHBOARD GRID
+    ======================================== -->
+
+    <section class="dashboard-grid">
+
+
+      <!-- =====================================
+           PROFILE
+      ====================================== -->
+
+      <div class="dashboard-card profile-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h3>
+              My Profile
+            </h3>
+
+            <p>
+              Your personal information
+            </p>
+
+          </div>
+
+          <i class="fas fa-user"></i>
+
+        </div>
+
+
+        <div class="profile-details">
+
+          <div class="profile-row">
+
+            <span>
+              Full Name
+            </span>
+
+            <strong>
+              {{ getStudentName() }}
+            </strong>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <span>
+              Student ID
+            </span>
+
+            <strong>
+              {{ student.studentId || '-' }}
+            </strong>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <span>
+              Gender
+            </span>
+
+            <strong>
+              {{ student.gender || '-' }}
+            </strong>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <span>
+              Date of Birth
+            </span>
+
+            <strong>
+              {{ student.dateOfBirth || '-' }}
+            </strong>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <span>
+              Parent / Guardian
+            </span>
+
+            <strong>
+              {{ student.parentName || '-' }}
+            </strong>
+
+          </div>
+
+
+          <div class="profile-row">
+
+            <span>
+              Parent Phone
+            </span>
+
+            <strong>
+              {{ student.parentPhone || '-' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           CLASS INFORMATION
+      ====================================== -->
+
+      <div class="dashboard-card class-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h3>
+              My Class
+            </h3>
+
+            <p>
+              Current class information
+            </p>
+
+          </div>
+
+          <i class="fas fa-chalkboard"></i>
+
+        </div>
+
+
+        <div class="class-content"
+          *ngIf="studentClass; else noClass">
+
+          <div class="class-title">
+
+            <span>
+              Class
+            </span>
+
+            <strong>
+              {{ getClassName() }}
+            </strong>
+
+          </div>
+
+
+          <div class="class-details">
+
+            <div>
+
+              <span>
+                Class Code
+              </span>
+
+              <strong>
+                {{ studentClass.classCode || '-' }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Section
+              </span>
+
+              <strong>
+                {{ studentClass.section || '-' }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Academic Year
+              </span>
+
+              <strong>
+                {{ studentClass.academicYear || '-' }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Class Teacher
+              </span>
+
+              <strong>
+                {{ studentClass.classTeacherName || '-' }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <ng-template #noClass>
+
+          <div class="empty-state">
+
+            <i class="fas fa-school"></i>
+
+            <p>
+              No class has been assigned yet.
+            </p>
+
+          </div>
+
+        </ng-template>
+
+      </div>
+
+
+    </section>
+
+
+    <!-- =======================================
+         RECENT RESULTS
+    ======================================== -->
+
+    <section class="dashboard-card results-card">
+
+      <div class="card-header">
+
+        <div>
+
+          <h3>
+            My Results
+          </h3>
+
+          <p>
+            Your published academic results
+          </p>
+
+        </div>
+
+        <i class="fas fa-graduation-cap"></i>
+
+      </div>
+
+
+      <div
+        class="results-table-wrapper"
+        *ngIf="results.length > 0; else noResults">
+
+        <table class="results-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Subject
+              </th>
+
+              <th>
+                Total
+              </th>
+
+              <th>
+                Grade
+              </th>
+
+              <th>
+                Remark
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let result of results;
+                let i = index
+              ">
+
+              <td>
+                {{ i + 1 }}
+              </td>
+
+              <td>
+
+                <strong>
+                  {{ result.subjectName || 'Subject' }}
+                </strong>
+
+              </td>
+
+              <td>
+                {{ result.total || 0 }}
+              </td>
+
+              <td>
+
+                <span class="grade-badge">
+                  {{ result.grade || '-' }}
+                </span>
+
+              </td>
+
+              <td>
+                {{ result.remark || '-' }}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <ng-template #noResults>
+
+        <div class="empty-state">
+
+          <i class="fas fa-chart-bar"></i>
+
+          <h4>
+            No published results yet
+          </h4>
+
+          <p>
+            Your results will appear here once they are published.
+          </p>
+
+        </div>
+
+      </ng-template>
+
+    </section>
+
+
+    <!-- =======================================
+         QUICK ACCESS
+    ======================================== -->
+
+    <section class="quick-section">
+
+      <div class="section-title">
+
+        <h3>
+          Quick Access
+        </h3>
+
+        <p>
+          Access your school information
+        </p>
+
+      </div>
+
+
+      <div class="quick-grid">
+
+
+        <a
+          routerLink="/student/results"
+          class="quick-card">
+
+          <div class="quick-icon blue">
+
+            <i class="fas fa-chart-bar"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              My Results
+            </strong>
+
+            <span>
+              View academic results
+            </span>
+
+          </div>
+
+        </a>
+
+
+        <a
+          routerLink="/student/report-card"
+          class="quick-card">
+
+          <div class="quick-icon green">
+
+            <i class="fas fa-file-alt"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Report Card
+            </strong>
+
+            <span>
+              View your report card
+            </span>
+
+          </div>
+
+        </a>
+
+
+        <a
+          routerLink="/student/fees"
+          class="quick-card">
+
+          <div class="quick-icon orange">
+
+            <i class="fas fa-money-bill-wave"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              School Fees
+            </strong>
+
+            <span>
+              View fees and payments
+            </span>
+
+          </div>
+
+        </a>
+
+
+        <a
+          routerLink="/student/messages"
+          class="quick-card">
+
+          <div class="quick-icon purple">
+
+            <i class="fas fa-envelope"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Messages
+            </strong>
+
+            <span>
+              View school messages
+            </span>
+
+          </div>
+
+        </a>
+
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+</div>

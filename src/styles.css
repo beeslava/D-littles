@@ -1,0 +1,224 @@
+/* You can add global styles to this file, and also import other style files */
+/* =========================================================
+   D LITTLE PRIVATE SCHOOL
+   GLOBAL STYLES
+========================================================= */
+
+:root {
+  --school-primary: #172554;
+  --school-primary-dark: #0f172a;
+  --school-secondary: #d4a017;
+  --school-secondary-dark: #b8860b;
+
+  --school-white: #ffffff;
+  --school-background: #f8fafc;
+  --school-light: #f1f5f9;
+
+  --school-text: #1e293b;
+  --school-muted: #64748b;
+  --school-border: #e2e8f0;
+
+  --school-success: #15803d;
+  --school-danger: #dc2626;
+
+  --container-width: 1200px;
+  --section-padding: 80px;
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  background: var(--school-background);
+  color: var(--school-text);
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   GLOBAL ELEMENTS
+========================================================= */
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.site-main {
+  min-height: calc(100vh - 76px);
+}
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section {
+  padding: var(--section-padding) 0;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 46px;
+  padding: 0 24px;
+
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  text-decoration: none;
+  font-weight: 700;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--school-primary);
+  color: var(--school-white);
+}
+
+.btn-primary:hover {
+  background: var(--school-primary-dark);
+}
+
+.btn-secondary {
+  background: var(--school-secondary);
+  color: var(--school-primary-dark);
+}
+
+.btn-secondary:hover {
+  background: var(--school-secondary-dark);
+  color: var(--school-white);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--school-primary);
+  border-color: var(--school-primary);
+}
+
+.btn-outline:hover {
+  background: var(--school-primary);
+  color: var(--school-white);
+}
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.section-heading {
+  max-width: 700px;
+  margin: 0 auto 45px;
+  text-align: center;
+}
+
+.section-heading .eyebrow {
+  display: block;
+  margin-bottom: 10px;
+
+  color: var(--school-secondary-dark);
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.section-heading h2 {
+  margin-bottom: 15px;
+
+  color: var(--school-primary);
+
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--school-muted);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  :root {
+    --section-padding: 60px;
+  }
+
+  .container {
+    padding: 0 20px;
+  }
+
+}

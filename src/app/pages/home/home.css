@@ -1,0 +1,433 @@
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero {
+  position: relative;
+  min-height: 620px;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.95),
+      rgba(23, 37, 84, 0.82),
+      rgba(23, 37, 84, 0.45)
+    ),
+    linear-gradient(
+      135deg,
+      #172554,
+      #334155
+    );
+
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  color: #ffffff;
+}
+
+.hero-eyebrow,
+.section-eyebrow {
+  display: inline-block;
+  margin-bottom: 16px;
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d4a017;
+}
+
+.hero h1 {
+  max-width: 800px;
+  margin-bottom: 24px;
+
+  font-size: clamp(42px, 6vw, 72px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+}
+
+.hero p {
+  max-width: 650px;
+  margin-bottom: 32px;
+
+  color: #e2e8f0;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.btn-outline-light {
+  color: #ffffff;
+  border-color: #ffffff;
+  background: transparent;
+}
+
+.btn-outline-light:hover {
+  background: #ffffff;
+  color: #172554;
+}
+
+
+/* =========================================================
+   WELCOME
+========================================================= */
+
+.welcome-section {
+  background: #ffffff;
+}
+
+.welcome-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.welcome-content h2 {
+  margin-bottom: 22px;
+
+  color: var(--school-primary);
+  font-size: clamp(30px, 4vw, 44px);
+}
+
+.welcome-content p {
+  margin-bottom: 18px;
+  color: var(--school-muted);
+  font-size: 16px;
+}
+
+.welcome-content .btn {
+  margin-top: 12px;
+}
+
+.welcome-card {
+  padding: 50px 40px;
+
+  background: var(--school-light);
+  border: 1px solid var(--school-border);
+  border-radius: 12px;
+
+  text-align: center;
+}
+
+.welcome-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--school-primary);
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.welcome-card h3 {
+  margin-bottom: 12px;
+  color: var(--school-primary);
+  font-size: 24px;
+}
+
+.welcome-card p {
+  margin: 0;
+  color: var(--school-muted);
+}
+
+
+/* =========================================================
+   FEATURES
+========================================================= */
+
+.features-section {
+  background: var(--school-background);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.feature-card {
+  padding: 30px 24px;
+
+  background: #ffffff;
+  border: 1px solid var(--school-border);
+  border-radius: 10px;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+}
+
+.feature-icon {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #fef3c7;
+  color: var(--school-secondary-dark);
+
+  border-radius: 6px;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.feature-card h3 {
+  margin-bottom: 12px;
+  color: var(--school-primary);
+  font-size: 19px;
+}
+
+.feature-card p {
+  margin: 0;
+  color: var(--school-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   PROGRAMS
+========================================================= */
+
+.programs-section {
+  background: #ffffff;
+}
+
+.programs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.program-card {
+  position: relative;
+
+  padding: 35px 30px;
+
+  border: 1px solid var(--school-border);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  overflow: hidden;
+  transition: 0.2s ease;
+}
+
+.program-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+}
+
+.program-number {
+  margin-bottom: 24px;
+
+  color: var(--school-secondary-dark);
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.program-card h3 {
+  margin-bottom: 14px;
+
+  color: var(--school-primary);
+  font-size: 24px;
+}
+
+.program-card p {
+  margin-bottom: 24px;
+  color: var(--school-muted);
+}
+
+.program-card a {
+  color: var(--school-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.program-card a:hover {
+  color: var(--school-secondary-dark);
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.stats-section {
+  padding: 55px 0;
+
+  background: var(--school-primary);
+  color: #ffffff;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  text-align: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat strong {
+  font-size: clamp(28px, 4vw, 42px);
+  color: #d4a017;
+}
+
+.stat span {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   ADMISSIONS CTA
+========================================================= */
+
+.admissions-cta {
+  background: #f8fafc;
+}
+
+.cta-content {
+  max-width: 800px;
+  margin: 0 auto;
+
+  padding: 65px 40px;
+
+  text-align: center;
+
+  background: var(--school-primary);
+  border-radius: 12px;
+}
+
+.cta-content h2 {
+  margin-bottom: 16px;
+
+  color: #ffffff;
+  font-size: clamp(30px, 4vw, 44px);
+}
+
+.cta-content p {
+  max-width: 600px;
+  margin: 0 auto 28px;
+
+  color: #cbd5e1;
+  font-size: 16px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .welcome-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .hero {
+    min-height: 560px;
+  }
+
+  .hero h1 {
+    font-size: 44px;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .programs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 35px 20px;
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: 520px;
+  }
+
+  .hero h1 {
+    font-size: 38px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .welcome-card {
+    padding: 40px 25px;
+  }
+
+  .cta-content {
+    padding: 45px 25px;
+  }
+
+}

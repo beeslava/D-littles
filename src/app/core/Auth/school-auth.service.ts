@@ -1,369 +1,505 @@
 import { Injectable } from '@angular/core';
 
 import {
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  User
+signInWithEmailAndPassword,
+signOut,
+onAuthStateChanged,
+User
 } from 'firebase/auth';
 
 import {
-  get,
-  ref
+get,
+ref
 } from 'firebase/database';
 
 import { auth, database } from '../firebase.config';
 
-
 export interface SchoolUser {
 
-  uid: string;
+uid: string;
 
-  fullName: string;
+fullName: string;
 
-  email: string;
+email: string;
 
-  role: string;
+role: string;
 
-  phone?: string;
+phone?: string;
 
-  studentId?: string;
+studentId?: string;
 
-  parentId?: string;
+parentId?: string;
 
-  staffId?: string;
+staffId?: string;
 
-  status?: string;
+status?: string;
+
+}
+
+@Injectable({
+providedIn: 'root'
+})
+export class SchoolAuthService {
+
+private currentUser: User | null = null;
+
+private currentUserData: SchoolUser | null = null;
+
+constructor() {
+
+
+onAuthStateChanged(
+  auth,
+  async (user) => {
+
+    this.currentUser = user;
+
+    if (user) {
+
+      await this.loadUserData(
+        user.uid
+      );
+
+    } else {
+
+      this.currentUserData = null;
+
+    }
+
+  }
+);
+
+
+}
+
+/**
+
+* Get currently signed-in Firebase user
+  */
+  getUser(): User | null {
+
+return this.currentUser;
+
+
+}
+
+/**
+
+* Get currently signed-in school user
+  */
+  getUserData(): SchoolUser | null {
+
+
+return this.currentUserData;
+
+
+}
+
+/**
+
+* School user login
+*
+* Students log in using their School ID.
+*
+* Example:
+*
+* DL-S-000001
+*
+* Internally this becomes:
+*
+* [dl-s-000001@students.dlittles.com](mailto:dl-s-000001@students.dlittles.com)
+*
+* This matches the Firebase Auth account
+* created by approveAdmissionApplication.
+  */
+  async login(
+  schoolId: string,
+  password: string
+  ): Promise<User> {
+
+const normalizedId =
+
+  schoolId
+    .trim()
+    .toUpperCase();
+
+
+if (!normalizedId) {
+
+  throw new Error(
+    'School ID is required.'
+  );
 
 }
 
 
-@Injectable({
-  providedIn: 'root'
-})
-export class SchoolAuthService {
+if (!password) {
 
-  private currentUser: User | null = null;
+  throw new Error(
+    'Password is required.'
+  );
 
-  private currentUserData: SchoolUser | null = null;
+}
 
 
-  constructor() {
+/**
+ * Determine Firebase login email.
+ *
+ * Student IDs created by the admission
+ * Cloud Function use:
+ *
+ * DL-S-000001
+ *
+ * and are converted internally to:
+ *
+ * dl-s-000001@students.dlittles.com
+ */
+let loginEmail =
+  normalizedId;
 
-    onAuthStateChanged(auth, async (user) => {
 
-      this.currentUser = user;
+if (
+  normalizedId.startsWith('DL-S-')
+) {
 
-      if (user) {
+  loginEmail =
+    `${normalizedId.toLowerCase()}@students.dlittles.com`;
 
-        await this.loadUserData(user.uid);
+}
 
-      } else {
 
-        this.currentUserData = null;
+/**
+ * Authenticate with Firebase
+ */
+const credential =
+  await signInWithEmailAndPassword(
+    auth,
+    loginEmail,
+    password
+  );
 
-      }
 
-    });
+const user =
+  credential.user;
 
-  }
 
+/**
+ * Load user record
+ */
+const userRef =
+  ref(
+    database,
+    `users/${user.uid}`
+  );
 
-  /**
-   * Get currently signed-in Firebase user
-   */
-  getUser(): User | null {
 
-    return this.currentUser;
+const snapshot =
+  await get(userRef);
 
-  }
 
+if (!snapshot.exists()) {
 
-  /**
-   * Get currently signed-in school user
-   */
-  getUserData(): SchoolUser | null {
+  await signOut(auth);
 
-    return this.currentUserData;
+  throw new Error(
+    'Your account could not be found.'
+  );
 
-  }
+}
 
 
-  /**
-   * School user login
-   */
-  async login(
-    email: string,
-    password: string
-  ): Promise<User> {
+const userData =
+  snapshot.val();
 
-    const credential =
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
 
-    const user = credential.user;
+/**
+ * Allowed school user roles
+ */
+const allowedRoles = [
+  'student',
+  'parent',
+  'teacher'
+];
 
 
-    /**
-     * Load user record
-     */
-    const userRef =
-      ref(
-        database,
-        `users/${user.uid}`
-      );
+if (
+  !allowedRoles.includes(
+    userData.role
+  )
+) {
 
-    const snapshot =
-      await get(userRef);
+  await signOut(auth);
 
+  throw new Error(
+    'This account is not authorized for school user access.'
+  );
 
-    if (!snapshot.exists()) {
+}
 
-      await signOut(auth);
 
-      throw new Error(
-        'Your account could not be found.'
-      );
+/**
+ * Check account status
+ */
+if (
+  userData.status &&
+  userData.status !== 'active'
+) {
 
-    }
+  await signOut(auth);
 
+  throw new Error(
+    'This account is not currently active.'
+  );
 
-    const userData =
-      snapshot.val();
+}
 
 
-    /**
-     * Allowed school user roles
-     */
-    const allowedRoles = [
-      'student',
-      'parent',
-      'teacher'
-    ];
+/**
+ * Store authenticated user
+ */
+this.currentUser =
+  user;
 
 
-    if (
-      !allowedRoles.includes(
-        userData.role
-      )
-    ) {
+this.currentUserData = {
 
-      await signOut(auth);
+  uid:
+    user.uid,
 
-      throw new Error(
-        'This account is not authorized for school user access.'
-      );
+  fullName:
+    userData.fullName ||
+    userData.fullname ||
+    userData.name ||
+    '',
 
-    }
+  email:
+    userData.email ||
+    user.email ||
+    '',
 
+  role:
+    userData.role,
 
-    /**
-     * Check account status
-     */
-    if (
-      userData.status &&
-      userData.status !== 'active'
-    ) {
+  phone:
+    userData.phone ||
+    userData.phoneNumber ||
+    '',
 
-      await signOut(auth);
+  studentId:
+    userData.studentId ||
+    '',
 
-      throw new Error(
-        'This account is not currently active.'
-      );
+  parentId:
+    userData.parentId ||
+    '',
 
-    }
+  staffId:
+    userData.staffId ||
+    '',
 
+  status:
+    userData.status ||
+    'active'
 
-    this.currentUser = user;
+};
 
-    this.currentUserData = {
 
-      uid: user.uid,
+return user;
 
-      fullName:
-        userData.fullName ||
-        userData.fullname ||
-        userData.name ||
-        '',
 
-      email:
-        userData.email ||
-        user.email ||
-        '',
+}
 
-      role:
-        userData.role,
+/**
 
-      phone:
-        userData.phone ||
-        userData.phoneNumber ||
-        '',
-
-      studentId:
-        userData.studentId ||
-        '',
-
-      parentId:
-        userData.parentId ||
-        '',
-
-      staffId:
-        userData.staffId ||
-        '',
-
-      status:
-        userData.status ||
-        'active'
-
-    };
-
-
-    return user;
-
-  }
-
-
-  /**
-   * Load user data from Firebase
-   */
+* Load user data from Firebase
+  */
   private async loadUserData(
-    uid: string
+  uid: string
   ): Promise<void> {
 
-    const userRef =
-      ref(
-        database,
-        `users/${uid}`
-      );
 
-    const snapshot =
-      await get(userRef);
+const userRef =
 
-
-    if (!snapshot.exists()) {
-
-      this.currentUserData = null;
-
-      return;
-
-    }
+  ref(
+    database,
+    `users/${uid}`
+  );
 
 
-    const userData =
-      snapshot.val();
+const snapshot =
+  await get(userRef);
 
 
-    this.currentUserData = {
+if (!snapshot.exists()) {
 
-      uid,
+  this.currentUserData =
+    null;
 
-      fullName:
-        userData.fullName ||
-        userData.fullname ||
-        userData.name ||
-        '',
+  return;
 
-      email:
-        userData.email ||
-        auth.currentUser?.email ||
-        '',
-
-      role:
-        userData.role ||
-        '',
-
-      phone:
-        userData.phone ||
-        userData.phoneNumber ||
-        '',
-
-      studentId:
-        userData.studentId ||
-        '',
-
-      parentId:
-        userData.parentId ||
-        '',
-
-      staffId:
-        userData.staffId ||
-        '',
-
-      status:
-        userData.status ||
-        'active'
-
-    };
-
-  }
+}
 
 
-  /**
-   * School user logout
-   */
+const userData =
+  snapshot.val();
+
+
+this.currentUserData = {
+
+  uid,
+
+  fullName:
+    userData.fullName ||
+    userData.fullname ||
+    userData.name ||
+    '',
+
+  email:
+    userData.email ||
+    auth.currentUser?.email ||
+    '',
+
+  role:
+    userData.role ||
+    '',
+
+  phone:
+    userData.phone ||
+    userData.phoneNumber ||
+    '',
+
+  studentId:
+    userData.studentId ||
+    '',
+
+  parentId:
+    userData.parentId ||
+    '',
+
+  staffId:
+    userData.staffId ||
+    '',
+
+  status:
+    userData.status ||
+    'active'
+
+};
+
+
+}
+
+/**
+
+* Get Firebase ID token for backend authentication
+  */
+  async getIdToken(): Promise<string | null> {
+
+const user =
+
+  auth.currentUser;
+
+
+if (!user) {
+
+  return null;
+
+}
+
+
+return await user.getIdToken();
+
+
+}
+
+/**
+
+* School user logout
+  */
   async logout(): Promise<void> {
 
-    await signOut(auth);
 
-    this.currentUser = null;
+await signOut(auth);
 
-    this.currentUserData = null;
+this.currentUser =
+  null;
 
-  }
+this.currentUserData =
+  null;
 
 
-  /**
-   * Check whether a school user is logged in
-   */
+}
+
+/**
+
+* Check whether a school user is logged in
+  */
   isLoggedIn(): boolean {
 
-    return !!auth.currentUser;
 
-  }
-
-
-  /**
-   * Check current user's role
-   */
-  hasRole(role: string): boolean {
-
-    return (
-      this.currentUserData?.role === role
-    );
-
-  }
+return !!auth.currentUser;
 
 
-  /**
-   * Check whether current user is a student
-   */
+}
+
+/**
+
+* Check current user's role
+  */
+  hasRole(
+  role: string
+  ): boolean {
+
+
+return (
+
+  this.currentUserData?.role ===
+  role
+);
+
+
+}
+
+/**
+
+* Check whether current user is a student
+  */
   isStudent(): boolean {
 
-    return this.hasRole('student');
+return this.hasRole(
 
-  }
+  'student'
+);
 
 
-  /**
-   * Check whether current user is a parent
-   */
+}
+
+/**
+
+* Check whether current user is a parent
+  */
   isParent(): boolean {
 
-    return this.hasRole('parent');
+return this.hasRole(
 
-  }
+  'parent'
+);
 
 
-  /**
-   * Check whether current user is a teacher
-   */
+}
+
+/**
+
+* Check whether current user is a teacher
+  */
   isTeacher(): boolean {
 
-    return this.hasRole('teacher');
+return this.hasRole(
 
-  }
+  'teacher'
+);
+
+
+}
 
 }

@@ -2,117 +2,124 @@
 
   <div class="school-login-card">
 
-    <div class="school-login-brand">
+<div class="school-login-brand">
 
-      <div class="school-logo">
-        DL
-      </div>
+  <div class="school-logo">
+    DL
+  </div>
 
-      <h1>
-        D Little
-      </h1>
+  <h1>
+    D Little
+  </h1>
 
-      <p>
-        Private School
-      </p>
+  <p>
+    Private School
+  </p>
 
-    </div>
-
-
-    <div class="login-heading">
-
-      <h2>
-        School Portal
-      </h2>
-
-      <p>
-        Sign in to access your account
-      </p>
-
-    </div>
+</div>
 
 
-    <div
-      class="login-error"
-      *ngIf="errorMessage">
+<div class="login-heading">
 
-      {{ errorMessage }}
+  <h2>
+    School Portal
+  </h2>
 
-    </div>
+  <p>
+    Sign in to access your account
+  </p>
 
-
-    <form
-      (ngSubmit)="login()"
-      #loginForm="ngForm">
-
-
-      <div class="form-group">
-
-        <label for="email">
-          Email Address
-        </label>
-
-        <input
-          id="email"
-          type="email"
-          name="email"
-          [(ngModel)]="email"
-          placeholder="Enter your email"
-          autocomplete="email"
-          required
-        />
-
-      </div>
+</div>
 
 
-      <div class="form-group">
+<div
+  class="login-error"
+  *ngIf="errorMessage">
 
-        <label for="password">
-          Password
-        </label>
+  {{ errorMessage }}
 
-        <input
-          id="password"
-          type="password"
-          name="password"
-          [(ngModel)]="password"
-          placeholder="Enter your password"
-          autocomplete="current-password"
-          required
-        />
-
-      </div>
+</div>
 
 
-      <button
-        type="submit"
-        class="login-button"
-        [disabled]="loading || loginForm.invalid">
-
-        <span *ngIf="!loading">
-          Sign In
-        </span>
-
-        <span *ngIf="loading">
-          Signing In...
-        </span>
-
-      </button>
-
-    </form>
+<form
+  (ngSubmit)="login()"
+  #loginForm="ngForm">
 
 
-    <div class="login-footer">
+  <!-- SCHOOL ID -->
 
-      <p>
-        D Little Private School
-      </p>
+  <div class="form-group">
 
-      <span>
-        Student • Parent • Teacher Portal
-      </span>
+    <label for="schoolId">
+      School ID
+    </label>
 
-    </div>
+    <input
+      id="schoolId"
+      type="text"
+      name="schoolId"
+      [(ngModel)]="schoolId"
+      placeholder="Enter your School ID"
+      autocomplete="username"
+      required
+    />
+
+  </div>
+
+
+  <!-- PASSWORD -->
+
+  <div class="form-group">
+
+    <label for="password">
+      Password
+    </label>
+
+    <input
+      id="password"
+      type="password"
+      name="password"
+      [(ngModel)]="password"
+      placeholder="Enter your password"
+      autocomplete="current-password"
+      required
+    />
+
+  </div>
+
+
+  <!-- LOGIN BUTTON -->
+
+  <button
+    type="submit"
+    class="login-button"
+    [disabled]="loading || loginForm.invalid">
+
+    <span *ngIf="!loading">
+      Sign In
+    </span>
+
+    <span *ngIf="loading">
+      Signing In...
+    </span>
+
+  </button>
+
+</form>
+
+
+<div class="login-footer">
+
+  <p>
+    D Little Private School
+  </p>
+
+  <span>
+    Student • Parent • Teacher Portal
+  </span>
+
+</div>
+
 
   </div>
 

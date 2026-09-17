@@ -9,9 +9,8 @@ import {
 } from 'firebase/database';
 
 import {
-  getFunctions,
-  httpsCallable
-} from 'firebase/functions';
+  auth
+} from './firebase.config';
 
 import { database } from './firebase.config';
 
@@ -23,17 +22,27 @@ export class FirebaseService {
 
   private readonly db: Database = database;
 
-  private readonly functions = getFunctions();
+  // =========================================================
+  // RENDER BACKEND
+  // =========================================================
+
+  private readonly backendUrl =
+    'https://d-littles.onrender.com';
 
 
   // =========================================================
   // SUBMIT ADMISSION APPLICATION
   // =========================================================
 
-  async submitAdmissionApplication(application: any) {
+  async submitAdmissionApplication(
+    application: any
+  ) {
 
     const admissionsRef =
-      ref(this.db, 'admissions');
+      ref(
+        this.db,
+        'admissions'
+      );
 
     const applicationRef =
       push(admissionsRef);
@@ -42,9 +51,11 @@ export class FirebaseService {
       applicationRef.key;
 
     if (!applicationId) {
+
       throw new Error(
         'Unable to generate application ID.'
       );
+
     }
 
     const applicationNumber =
@@ -56,7 +67,8 @@ export class FirebaseService {
 
       applicationNumber,
 
-      status: 'pending',
+      status:
+        'pending',
 
       submittedAt:
         new Date().toISOString(),
@@ -64,62 +76,82 @@ export class FirebaseService {
       student: {
 
         firstName:
-          application.studentFirstName || '',
+          application.studentFirstName ||
+          '',
 
         middleName:
-          application.studentMiddleName || '',
+          application.studentMiddleName ||
+          '',
 
         lastName:
-          application.studentLastName || '',
+          application.studentLastName ||
+          '',
 
         dateOfBirth:
-          application.dateOfBirth || '',
+          application.dateOfBirth ||
+          '',
 
         gender:
-          application.gender || '',
+          application.gender ||
+          '',
 
         classApplied:
-          application.classApplied || ''
+          application.classApplied ||
+          ''
+
       },
 
       parentGuardian: {
 
         name:
-          application.parentName || '',
+          application.parentName ||
+          '',
 
         phone:
-          application.parentPhone || '',
+          application.parentPhone ||
+          '',
 
         email:
-          application.parentEmail || '',
+          application.parentEmail ||
+          '',
 
         relationship:
-          application.relationship || ''
+          application.relationship ||
+          ''
+
       },
 
       previousSchool: {
 
         name:
-          application.previousSchool || '',
+          application.previousSchool ||
+          '',
 
         previousClass:
-          application.previousClass || ''
+          application.previousClass ||
+          ''
+
       },
 
       emergencyContact: {
 
         name:
-          application.emergencyName || '',
+          application.emergencyName ||
+          '',
 
         phone:
-          application.emergencyPhone || ''
+          application.emergencyPhone ||
+          ''
+
       },
 
       additionalNotes:
-        application.additionalNotes || '',
+        application.additionalNotes ||
+        '',
 
       declarationAccepted:
         true
+
     };
 
 
@@ -134,7 +166,9 @@ export class FirebaseService {
       applicationId,
 
       applicationNumber
+
     };
+
   }
 
 
@@ -142,20 +176,22 @@ export class FirebaseService {
   // APPROVE ADMISSION APPLICATION
   // =========================================================
   //
-  // IMPORTANT:
+  // Approval is now handled by the Render backend.
   //
-  // The actual approval is now handled by the secure
-  // Firebase Cloud Function.
+  // Angular sends the Firebase ID token.
   //
-  // The Angular application does NOT:
+  // The backend:
   //
-  // - create Firebase Auth accounts
-  // - create student login credentials
-  // - generate Student IDs
-  // - create users/{uid}
-  // - directly approve the admission
+  // - verifies the administrator
+  // - generates Student ID
+  // - generates Parent ID
+  // - creates Firebase Auth student account
+  // - creates students/{id}
+  // - creates users/{uid}
+  // - updates the admission
+  // - returns the temporary password
   //
-  // The Cloud Function handles all of those operations.
+  // Firebase Admin credentials NEVER reach Angular.
   // =========================================================
 
   async approveAdmissionApplication(
@@ -167,44 +203,168 @@ export class FirebaseService {
       throw new Error(
         'Application ID is required.'
       );
+
+    }
+
+
+    // -------------------------------------------------------
+    // CHECK CURRENT USER
+    // -------------------------------------------------------
+
+    const currentUser =
+      auth.currentUser;
+
+
+    if (!currentUser) {
+
+      throw new Error(
+        'You must be signed in as an administrator.'
+      );
+
     }
 
 
     try {
 
-      const approveFunction =
-        httpsCallable<
-          { applicationId: string },
+      // -----------------------------------------------------
+      // GET FIREBASE ID TOKEN
+      // -----------------------------------------------------
+
+      const token =
+        await currentUser.getIdToken();
+
+
+      // -----------------------------------------------------
+      // CALL RENDER BACKEND
+      // -----------------------------------------------------
+
+      const response =
+        await fetch(
+          `${this.backendUrl}/api/admissions/approve`,
           {
-            success: boolean;
+            method: 'POST',
 
-            applicationId: string;
+            headers: {
 
-            studentId: string;
+              'Content-Type':
+                'application/json',
 
-            parentId: string;
+              'Authorization':
+                `Bearer ${token}`
 
-            studentUid: string;
+            },
 
-            existingParent: boolean;
+            body:
+              JSON.stringify({
+                applicationId
+              })
 
-            temporaryPassword: string;
-
-            message: string;
           }
-        >(
-          this.functions,
-          'approveAdmissionApplication'
         );
 
 
-      const result =
-        await approveFunction({
-          applicationId
-        });
+      // -----------------------------------------------------
+      // READ RESPONSE
+      // -----------------------------------------------------
+
+      let data: any = null;
 
 
-      return result.data;
+      try {
+
+        data =
+          await response.json();
+
+      } catch {
+
+        data = null;
+
+      }
+
+
+      // -----------------------------------------------------
+      // HANDLE BACKEND ERRORS
+      // -----------------------------------------------------
+
+      if (!response.ok) {
+
+        console.error(
+          'Admission approval backend error:',
+          data
+        );
+
+
+        if (
+          response.status === 401
+        ) {
+
+          throw new Error(
+            'You must be signed in as an administrator.'
+          );
+
+        }
+
+
+        if (
+          response.status === 403
+        ) {
+
+          throw new Error(
+            'You do not have permission to approve admissions.'
+          );
+
+        }
+
+
+        if (
+          response.status === 404
+        ) {
+
+          throw new Error(
+            data?.message ||
+            'Admission application not found.'
+          );
+
+        }
+
+
+        if (
+          response.status === 409
+        ) {
+
+          throw new Error(
+            data?.message ||
+            'This admission has already been approved.'
+          );
+
+        }
+
+
+        if (
+          response.status === 412
+        ) {
+
+          throw new Error(
+            data?.message ||
+            'This admission cannot be approved.'
+          );
+
+        }
+
+
+        throw new Error(
+          data?.message ||
+          'Unable to approve the admission application.'
+        );
+
+      }
+
+
+      // -----------------------------------------------------
+      // SUCCESS
+      // -----------------------------------------------------
+
+      return data;
 
     } catch (error: any) {
 
@@ -214,61 +374,13 @@ export class FirebaseService {
       );
 
 
-      /*
-       * Firebase callable functions normally return
-       * errors using Firebase Functions error codes.
-       */
-
-      if (error?.code === 'functions/unauthenticated') {
-
-        throw new Error(
-          'You must be signed in as an administrator.'
-        );
-      }
-
-
-      if (error?.code === 'functions/permission-denied') {
-
-        throw new Error(
-          'You do not have permission to approve admissions.'
-        );
-      }
-
-
-      if (error?.code === 'functions/not-found') {
-
-        throw new Error(
-          'Admission application not found.'
-        );
-      }
-
-
-      if (error?.code === 'functions/already-exists') {
-
-        throw new Error(
-          error?.message ||
-          'This admission has already been approved.'
-        );
-      }
-
-
-      if (
-        error?.code ===
-        'functions/failed-precondition'
-      ) {
-
-        throw new Error(
-          error?.message ||
-          'This admission cannot be approved.'
-        );
-      }
-
-
       throw new Error(
         error?.message ||
         'Unable to approve the admission application.'
       );
+
     }
+
   }
 
 
@@ -289,7 +401,7 @@ export class FirebaseService {
       );
 
     return `DLP-${year}-${randomNumber}`;
+
   }
 
 }
-

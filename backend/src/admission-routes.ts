@@ -792,7 +792,7 @@ router.post(
 
 
       // ===================================================
-      // CREATE / UPDATE PARENT RECORD
+      // CREATE / UPDATE PARENT RECORD KEY
       // ===================================================
 
       if (!parentRecordKey) {
@@ -820,7 +820,35 @@ router.post(
         new Date().toISOString();
 
 
-      const parentRecord = {
+      // ===================================================
+      // PRESERVE EXISTING CHILDREN
+      // ===================================================
+
+      const existingChildren =
+        (
+          existingParent?.children &&
+          typeof existingParent.children === "object"
+        )
+          ? existingParent.children as FirebaseRecord
+          : {};
+
+
+      const updatedChildren: FirebaseRecord = {
+
+        ...existingChildren,
+
+      };
+
+
+      // Student UID is added after the student Auth
+      // account is created.
+
+
+      // ===================================================
+      // CREATE / UPDATE PARENT RECORD
+      // ===================================================
+
+      const parentRecord: FirebaseRecord = {
 
         id:
           parentRecordKey,
@@ -879,6 +907,9 @@ router.post(
 
         status:
           "active",
+
+        children:
+          updatedChildren,
 
         createdAt:
           String(
@@ -985,6 +1016,18 @@ router.post(
 
 
       // ===================================================
+      // ADD NEW CHILD TO PARENT
+      // ===================================================
+
+      updatedChildren[studentUid] =
+        true;
+
+
+      parentRecord.children =
+        updatedChildren;
+
+
+      // ===================================================
       // CREATE STUDENT RECORD
       // ===================================================
 
@@ -1038,7 +1081,7 @@ router.post(
           student.classApplied || "",
 
         // IMPORTANT:
-        // This is now the Firebase UID of the parent.
+        // This is the Firebase UID of the parent.
         parentId:
           parentUid,
 
@@ -1151,15 +1194,24 @@ router.post(
 
 
       // ===================================================
-      // ADD CHILD LINK TO PARENT
-      // ===================================================
-
-      const childLinkPath =
-        `parents/${parentRecordKey}/children/${studentUid}`;
-
-
-      // ===================================================
       // MULTI-LOCATION UPDATE
+      // ===================================================
+      //
+      // IMPORTANT:
+      //
+      // We MUST NOT update:
+      //
+      // parents/{parentRecordKey}
+      //
+      // and:
+      //
+      // parents/{parentRecordKey}/children/{studentUid}
+      //
+      // separately in the same update.
+      //
+      // The children object is now included inside
+      // parentRecord, so there is only ONE write to
+      // parents/{parentRecordKey}.
       // ===================================================
 
       const updates: {
@@ -1189,12 +1241,6 @@ router.post(
         `students/${firebaseStudentKey}`
       ] =
         studentRecord;
-
-
-      updates[
-        childLinkPath
-      ] =
-        true;
 
 
       updates[

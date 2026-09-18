@@ -67,13 +67,10 @@ async function generateSequentialId(
   const counterRef =
     adminDatabase.ref(counterPath);
 
-
   const counterSnapshot =
     await counterRef.once("value");
 
-
   let highestExistingNumber = 0;
-
 
   if (!counterSnapshot.exists()) {
 
@@ -81,7 +78,6 @@ async function generateSequentialId(
       await adminDatabase
         .ref(recordsPath)
         .once("value");
-
 
     if (recordsSnapshot.exists()) {
 
@@ -91,7 +87,6 @@ async function generateSequentialId(
           FirebaseRecord
         >;
 
-
       Object.values(records).forEach(
         (value: FirebaseRecord) => {
 
@@ -100,7 +95,6 @@ async function generateSequentialId(
               value[fieldName] || ""
             );
 
-
           const match =
             existingId.match(
               new RegExp(
@@ -108,12 +102,10 @@ async function generateSequentialId(
               )
             );
 
-
           if (match) {
 
             const number =
               Number(match[1]);
-
 
             if (
               Number.isInteger(number) &&
@@ -134,7 +126,6 @@ async function generateSequentialId(
 
   }
 
-
   const transactionResult =
     await counterRef.transaction(
       (currentValue: unknown) => {
@@ -145,20 +136,14 @@ async function generateSequentialId(
           currentValue < 1
         ) {
 
-          return (
-            highestExistingNumber + 2
-          );
+          return highestExistingNumber + 2;
 
         }
 
-
-        return (
-          Math.floor(currentValue) + 1
-        );
+        return Math.floor(currentValue) + 1;
 
       }
     );
-
 
   if (!transactionResult.committed) {
 
@@ -168,12 +153,10 @@ async function generateSequentialId(
 
   }
 
-
   const counterValue =
     Number(
       transactionResult.snapshot.val()
     );
-
 
   if (
     !Number.isInteger(counterValue) ||
@@ -186,10 +169,8 @@ async function generateSequentialId(
 
   }
 
-
   const generatedNumber =
     counterValue - 1;
-
 
   return (
     `${prefix}-${String(generatedNumber).padStart(6, "0")}`
@@ -234,7 +215,6 @@ function normalizePhone(
         ""
       );
 
-
   if (
     value.startsWith("0") &&
     value.length === 11
@@ -246,14 +226,12 @@ function normalizePhone(
 
   }
 
-
   if (value.startsWith("+")) {
 
     value =
       value.substring(1);
 
   }
-
 
   return value;
 
@@ -276,9 +254,7 @@ function generateTemporaryPassword(): string {
   const characters =
     "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
-
   let password = "";
-
 
   for (let i = 0; i < 10; i++) {
 
@@ -288,12 +264,10 @@ function generateTemporaryPassword(): string {
         characters.length
       );
 
-
     password +=
       characters[index];
 
   }
-
 
   return password;
 
@@ -319,13 +293,11 @@ function getHttpStatus(
         (error as { code: unknown }).code
       );
 
-
     if (
       code.includes("already-exists")
     ) {
       return 409;
     }
-
 
     if (
       code.includes("not-found")
@@ -333,13 +305,11 @@ function getHttpStatus(
       return 404;
     }
 
-
     if (
       code.includes("permission-denied")
     ) {
       return 403;
     }
-
 
     if (
       code.includes("unauthenticated")
@@ -347,13 +317,11 @@ function getHttpStatus(
       return 401;
     }
 
-
     if (
       code.includes("invalid-argument")
     ) {
       return 400;
     }
-
 
     if (
       code.includes("failed-precondition")
@@ -362,7 +330,6 @@ function getHttpStatus(
     }
 
   }
-
 
   return 500;
 
@@ -384,8 +351,8 @@ function getHttpStatus(
 //
 // {
 //   "applicationId": "..."
-//
 // }
+//
 // =========================================================
 
 router.post(
@@ -396,6 +363,9 @@ router.post(
     res: Response
   ) => {
 
+    let createdStudentUid: string | null = null;
+    let createdParentUid: string | null = null;
+
     try {
 
       // ---------------------------------------------------
@@ -404,7 +374,6 @@ router.post(
 
       const adminUid =
         req.user?.uid;
-
 
       if (!adminUid) {
 
@@ -428,7 +397,6 @@ router.post(
         await adminDatabase
           .ref(`users/${adminUid}`)
           .once("value");
-
 
       if (!adminSnapshot.exists()) {
 
@@ -473,7 +441,6 @@ router.post(
           req.body?.applicationId || ""
         ).trim();
 
-
       if (!applicationId) {
 
         return res.status(400).json({
@@ -497,10 +464,8 @@ router.post(
           `admissions/${applicationId}`
         );
 
-
       const applicationSnapshot =
         await applicationRef.once("value");
-
 
       if (
         !applicationSnapshot.exists()
@@ -565,22 +530,18 @@ router.post(
       const student =
         application.student || {};
 
-
       const parent =
         application.parentGuardian || {};
-
 
       const parentName =
         String(
           parent.name || ""
         ).trim();
 
-
       const normalizedParentPhone =
         normalizePhone(
           String(parent.phone || "")
         );
-
 
       const normalizedParentEmail =
         normalizeEmail(
@@ -616,13 +577,12 @@ router.post(
       }
 
 
-      // ---------------------------------------------------
+      // ===================================================
       // FIND EXISTING PARENT
-      // ---------------------------------------------------
+      // ===================================================
 
-      let existingParentId:
+      let existingParentRecordKey:
         string | null = null;
-
 
       let existingParent:
         FirebaseRecord | null = null;
@@ -657,7 +617,6 @@ router.post(
               )
             );
 
-
           const existingEmail =
             normalizeEmail(
               String(
@@ -673,16 +632,11 @@ router.post(
               existingPhone
           ) {
 
-            existingParentId =
-              String(
-                value.parentId ||
-                key
-              );
-
+            existingParentRecordKey =
+              key;
 
             existingParent =
               value;
-
 
             break;
 
@@ -696,16 +650,11 @@ router.post(
               existingEmail
           ) {
 
-            existingParentId =
-              String(
-                value.parentId ||
-                key
-              );
-
+            existingParentRecordKey =
+              key;
 
             existingParent =
               value;
-
 
             break;
 
@@ -716,20 +665,147 @@ router.post(
       }
 
 
-      // ---------------------------------------------------
-      // CREATE PARENT IF NECESSARY
-      // ---------------------------------------------------
+      // ===================================================
+      // PARENT ACCOUNT VARIABLES
+      // ===================================================
 
-      if (!existingParentId) {
+      let parentRecordKey =
+        existingParentRecordKey;
 
-        const parentKey =
+      let parentCode =
+        String(
+          existingParent?.parentId || ""
+        ).trim();
+
+      let parentUid =
+        String(
+          existingParent?.uid || ""
+        ).trim() || null;
+
+      let parentTemporaryPassword:
+        string | null = null;
+
+      let parentAccountCreated =
+        false;
+
+
+      // ===================================================
+      // CREATE PARENT RECORD ID
+      // ===================================================
+
+      if (!parentCode) {
+
+        parentCode =
+          await generateParentId();
+
+      }
+
+
+      // ===================================================
+      // CREATE PARENT AUTH ACCOUNT
+      // ===================================================
+
+      const parentInternalEmail =
+        `${parentCode.toLowerCase()}@parents.dlittles.com`;
+
+
+      if (!parentUid) {
+
+        parentTemporaryPassword =
+          generateTemporaryPassword();
+
+
+        try {
+
+          const parentUser =
+            await adminAuth.createUser({
+
+              email:
+                parentInternalEmail,
+
+              password:
+                parentTemporaryPassword,
+
+              displayName:
+                parentName,
+
+              disabled:
+                false,
+
+            });
+
+
+          parentUid =
+            parentUser.uid;
+
+          createdParentUid =
+            parentUid;
+
+          parentAccountCreated =
+            true;
+
+        } catch (error: unknown) {
+
+          const errorCode =
+            String(
+              (
+                error as {
+                  code?: unknown;
+                }
+              )?.code || ""
+            );
+
+
+          if (
+            errorCode.includes(
+              "email-already-exists"
+            )
+          ) {
+
+            const existingAuthUser =
+              await adminAuth
+                .getUserByEmail(
+                  parentInternalEmail
+                );
+
+            parentUid =
+              existingAuthUser.uid;
+
+          } else {
+
+            throw error;
+
+          }
+
+        }
+
+      }
+
+
+      if (!parentUid) {
+
+        throw new Error(
+          "Unable to create or identify the parent Firebase account."
+        );
+
+      }
+
+
+      // ===================================================
+      // CREATE / UPDATE PARENT RECORD
+      // ===================================================
+
+      if (!parentRecordKey) {
+
+        const parentRef =
           adminDatabase
             .ref("parents")
-            .push()
-            .key;
+            .push();
 
+        parentRecordKey =
+          parentRef.key;
 
-        if (!parentKey) {
+        if (!parentRecordKey) {
 
           throw new Error(
             "Unable to generate parent record key."
@@ -737,82 +813,93 @@ router.post(
 
         }
 
-
-        const parentId =
-          await generateParentId();
-
-
-        const now =
-          Date.now();
-
-
-        const parentRecord = {
-
-          id:
-            parentKey,
-
-          parentId,
-
-          fullName:
-            parentName,
-
-          relationship:
-            parent.relationship ||
-            "Guardian",
-
-          phone:
-            parent.phone || "",
-
-          email:
-            parent.email || "",
-
-          occupation:
-            "",
-
-          address:
-            "",
-
-          emergencyContact:
-            application
-              .emergencyContact
-              ?.phone || "",
-
-          status:
-            "active",
-
-          createdAt:
-            now,
-
-          updatedAt:
-            now,
-
-        };
-
-
-        await adminDatabase
-          .ref(`parents/${parentKey}`)
-          .set(parentRecord);
-
-
-        existingParentId =
-          parentId;
-
-
-        existingParent =
-          parentRecord;
-
       }
 
 
-      // ---------------------------------------------------
+      const nowIso =
+        new Date().toISOString();
+
+
+      const parentRecord = {
+
+        id:
+          parentRecordKey,
+
+        uid:
+          parentUid,
+
+        parentId:
+          parentCode,
+
+        fullName:
+          String(
+            existingParent?.fullName ||
+            parentName
+          ),
+
+        relationship:
+          String(
+            existingParent?.relationship ||
+            parent.relationship ||
+            "Guardian"
+          ),
+
+        phone:
+          String(
+            existingParent?.phone ||
+            parent.phone ||
+            ""
+          ),
+
+        email:
+          String(
+            existingParent?.email ||
+            parent.email ||
+            ""
+          ),
+
+        occupation:
+          String(
+            existingParent?.occupation ||
+            ""
+          ),
+
+        address:
+          String(
+            existingParent?.address ||
+            ""
+          ),
+
+        emergencyContact:
+          String(
+            existingParent?.emergencyContact ||
+            application.emergencyContact?.phone ||
+            ""
+          ),
+
+        status:
+          "active",
+
+        createdAt:
+          String(
+            existingParent?.createdAt ||
+            nowIso
+          ),
+
+        updatedAt:
+          nowIso,
+
+      };
+
+
+      // ===================================================
       // GENERATE STUDENT INFORMATION
-      // ---------------------------------------------------
+      // ===================================================
 
       const studentId =
         await generateStudentId();
 
-
-      const temporaryPassword =
+      const studentTemporaryPassword =
         generateTemporaryPassword();
 
 
@@ -827,27 +914,26 @@ router.post(
           .trim();
 
 
-      const internalEmail =
+      const studentInternalEmail =
         `${studentId.toLowerCase()}@students.dlittles.com`;
 
 
-      // ---------------------------------------------------
-      // CREATE FIREBASE AUTH USER
-      // ---------------------------------------------------
+      // ===================================================
+      // CREATE STUDENT FIREBASE AUTH ACCOUNT
+      // ===================================================
 
-      let createdUser;
-
+      let createdStudent;
 
       try {
 
-        createdUser =
+        createdStudent =
           await adminAuth.createUser({
 
             email:
-              internalEmail,
+              studentInternalEmail,
 
             password:
-              temporaryPassword,
+              studentTemporaryPassword,
 
             displayName:
               studentFullName,
@@ -886,33 +972,32 @@ router.post(
 
         }
 
-
         throw error;
 
       }
 
 
-      const uid =
-        createdUser.uid;
+      const studentUid =
+        createdStudent.uid;
+
+      createdStudentUid =
+        studentUid;
 
 
-      // ---------------------------------------------------
+      // ===================================================
       // CREATE STUDENT RECORD
-      // ---------------------------------------------------
+      // ===================================================
 
       const studentRef =
         adminDatabase
           .ref("students")
           .push();
 
-
       const firebaseStudentKey =
         studentRef.key;
 
 
       if (!firebaseStudentKey) {
-
-        await adminAuth.deleteUser(uid);
 
         throw new Error(
           "Unable to generate student record key."
@@ -921,16 +1006,13 @@ router.post(
       }
 
 
-      const nowIso =
-        new Date().toISOString();
-
-
       const studentRecord = {
 
         id:
           firebaseStudentKey,
 
-        uid,
+        uid:
+          studentUid,
 
         studentId,
 
@@ -955,28 +1037,23 @@ router.post(
         class:
           student.classApplied || "",
 
+        // IMPORTANT:
+        // This is now the Firebase UID of the parent.
         parentId:
-          existingParentId,
+          parentUid,
+
+        // Human-readable parent school ID.
+        parentCode:
+          parentCode,
 
         parentName:
-          String(
-            existingParent?.fullName ||
-            parentName
-          ),
+          parentRecord.fullName,
 
         parentPhone:
-          String(
-            existingParent?.phone ||
-            parent.phone ||
-            ""
-          ),
+          parentRecord.phone,
 
         parentEmail:
-          String(
-            existingParent?.email ||
-            parent.email ||
-            ""
-          ),
+          parentRecord.email,
 
         address:
           "",
@@ -993,27 +1070,34 @@ router.post(
       };
 
 
-      // ---------------------------------------------------
-      // CREATE USERS RECORD
-      // ---------------------------------------------------
+      // ===================================================
+      // CREATE STUDENT USERS RECORD
+      // ===================================================
 
-      const userRecord = {
+      const studentUserRecord = {
 
-        uid,
+        uid:
+          studentUid,
 
         fullName:
           studentFullName,
 
         email:
-          internalEmail,
+          studentInternalEmail,
 
         role:
           "student",
 
         studentId,
 
+        studentRecordId:
+          firebaseStudentKey,
+
         parentId:
-          existingParentId,
+          parentUid,
+
+        parentCode:
+          parentCode,
 
         status:
           "active",
@@ -1027,13 +1111,78 @@ router.post(
       };
 
 
-      // ---------------------------------------------------
+      // ===================================================
+      // CREATE PARENT USERS RECORD
+      // ===================================================
+
+      const parentUserRecord = {
+
+        uid:
+          parentUid,
+
+        fullName:
+          parentRecord.fullName,
+
+        email:
+          parentInternalEmail,
+
+        role:
+          "parent",
+
+        parentId:
+          parentCode,
+
+        parentRecordId:
+          parentRecordKey,
+
+        status:
+          "active",
+
+        createdAt:
+          String(
+            existingParent?.createdAt ||
+            nowIso
+          ),
+
+        updatedAt:
+          nowIso,
+
+      };
+
+
+      // ===================================================
+      // ADD CHILD LINK TO PARENT
+      // ===================================================
+
+      const childLinkPath =
+        `parents/${parentRecordKey}/children/${studentUid}`;
+
+
+      // ===================================================
       // MULTI-LOCATION UPDATE
-      // ---------------------------------------------------
+      // ===================================================
 
       const updates: {
         [path: string]: unknown;
       } = {};
+
+
+      updates[
+        `parents/${parentRecordKey}`
+      ] =
+        parentRecord;
+
+
+      updates[
+        `users/${studentUid}`
+      ] =
+        studentUserRecord;
+
+
+      updates[
+        `users/${parentUid}`
+      ] =
+        parentUserRecord;
 
 
       updates[
@@ -1043,9 +1192,9 @@ router.post(
 
 
       updates[
-        `users/${uid}`
+        childLinkPath
       ] =
-        userRecord;
+        true;
 
 
       updates[
@@ -1063,7 +1212,19 @@ router.post(
       updates[
         `admissions/${applicationId}/parentId`
       ] =
-        existingParentId;
+        parentCode;
+
+
+      updates[
+        `admissions/${applicationId}/studentUid`
+      ] =
+        studentUid;
+
+
+      updates[
+        `admissions/${applicationId}/parentUid`
+      ] =
+        parentUid;
 
 
       updates[
@@ -1072,11 +1233,9 @@ router.post(
         nowIso;
 
 
-      updates[
-        `admissions/${applicationId}/studentUid`
-      ] =
-        uid;
-
+      // ---------------------------------------------------
+      // SAVE EVERYTHING
+      // ---------------------------------------------------
 
       try {
 
@@ -1087,31 +1246,63 @@ router.post(
       } catch (error) {
 
         // -----------------------------------------------
-        // CLEAN UP AUTH ACCOUNT IF DATABASE UPDATE FAILS
+        // CLEAN UP STUDENT AUTH ACCOUNT
         // -----------------------------------------------
 
-        try {
+        if (createdStudentUid) {
 
-          await adminAuth.deleteUser(uid);
+          try {
 
-        } catch (cleanupError) {
+            await adminAuth.deleteUser(
+              createdStudentUid
+            );
 
-          console.error(
-            "Failed to clean up Firebase Auth user:",
-            cleanupError
-          );
+          } catch (cleanupError) {
+
+            console.error(
+              "Failed to clean up student Auth account:",
+              cleanupError
+            );
+
+          }
 
         }
 
+
+        // -----------------------------------------------
+        // CLEAN UP NEW PARENT AUTH ACCOUNT
+        // -----------------------------------------------
+
+        if (
+          createdParentUid &&
+          parentAccountCreated
+        ) {
+
+          try {
+
+            await adminAuth.deleteUser(
+              createdParentUid
+            );
+
+          } catch (cleanupError) {
+
+            console.error(
+              "Failed to clean up parent Auth account:",
+              cleanupError
+            );
+
+          }
+
+        }
 
         throw error;
 
       }
 
 
-      // ---------------------------------------------------
+      // ===================================================
       // SUCCESS
-      // ---------------------------------------------------
+      // ===================================================
 
       return res.status(200).json({
 
@@ -1120,22 +1311,81 @@ router.post(
 
         applicationId,
 
+        // -----------------------------------------------
+        // STUDENT
+        // -----------------------------------------------
+
+        student: {
+
+          studentId,
+
+          uid:
+            studentUid,
+
+          temporaryPassword:
+            studentTemporaryPassword,
+
+          email:
+            studentInternalEmail,
+
+        },
+
+        // -----------------------------------------------
+        // PARENT
+        // -----------------------------------------------
+
+        parent: {
+
+          parentId:
+            parentCode,
+
+          uid:
+            parentUid,
+
+          temporaryPassword:
+            parentTemporaryPassword,
+
+          email:
+            parentInternalEmail,
+
+          accountCreated:
+            parentAccountCreated,
+
+        },
+
+        // -----------------------------------------------
+        // DATABASE RECORDS
+        // -----------------------------------------------
+
+        studentRecordId:
+          firebaseStudentKey,
+
+        parentRecordId:
+          parentRecordKey,
+
+        // -----------------------------------------------
+        // BACKWARD-COMPATIBLE FIELDS
+        // -----------------------------------------------
+
         studentId,
 
         parentId:
-          existingParentId,
+          parentCode,
 
-        studentUid:
-          uid,
+        studentUid,
+
+        parentUid,
 
         existingParent:
-          !!existingParent &&
-          !!existingParentId,
+          !!existingParentRecordKey,
 
-        temporaryPassword,
+        temporaryPassword:
+          studentTemporaryPassword,
 
         message:
-          "Admission approved and student account created successfully.",
+          parentAccountCreated
+            ? "Admission approved successfully. Student and parent accounts were created."
+            : "Admission approved successfully. Student account was created and the existing parent account was linked.",
 
       });
 

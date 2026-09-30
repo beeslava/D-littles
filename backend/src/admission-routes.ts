@@ -1,4 +1,5 @@
 import { Router, Response } from "express";
+import crypto from "crypto";
 
 import {
   requireAuth,
@@ -22,6 +23,13 @@ interface AdmissionData {
   applicationId?: string;
 
   status?: string;
+
+  applicationFee?: number;
+  paymentStatus?: "unpaid" | "pending" | "paid" | "failed";
+  paymentAmount?: number;
+  paymentReference?: string;
+  paymentDate?: string;
+  paymentVerifiedAt?: number;
 
   student?: {
     firstName?: string;
@@ -334,6 +342,541 @@ function getHttpStatus(
   return 500;
 
 }
+
+
+// =========================================================
+// ADMISSION PAYMENT CONFIGURATION
+// =========================================================
+
+const ADMISSION_FEE_NAIRA = 5000;
+const PAYSTACK_BASE_URL = "https://api.paystack.co";
+
+function getPaystackSecretKey(): string {
+  const key = String(process.env.PAYSTACK_SECRET_KEY || "").trim();
+
+  if (!key) {
+    throw new Error("PAYSTACK_SECRET_KEY is not configured on the backend.");
+  }
+
+  return key;
+}
+
+function getFrontendUrl(): string {
+  return String(
+    process.env.FRONTEND_URL || "http://localhost:4200"
+  ).replace(/\/$/, "");
+}
+
+function getAdmissionPaymentCallbackUrl(applicationId: string): string {
+  return `${getFrontendUrl()}/admissions/payment/${encodeURIComponent(applicationId)}`;
+}
+
+function createPaymentReference(applicationId: string): string {
+  const safeApplicationId = applicationId.replace(/[^a-zA-Z0-9._=-]/g, "");
+  return `DLP-${safeApplicationId}-${Date.now()}`;
+}
+
+async function paystackRequest<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const secretKey = getPaystackSecretKey();
+
+  const response = await fetch(`${PAYSTACK_BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      "Authorization": `Bearer ${secretKey}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  let data: any = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || data?.status !== true) {
+    throw new Error(
+      data?.message ||
+      `Paystack request failed with status ${response.status}.`
+    );
+  }
+
+  return data as T;
+}
+
+interface PaystackInitializeResponse {
+  status: boolean;
+  message: string;
+  data: {
+    authorization_url: string;
+    access_code: string;
+    reference: string;
+  };
+}
+
+interface PaystackVerifyResponse {
+  status: boolean;
+  message: string;
+  data: {
+    id: number;
+    status: string;
+    reference: string;
+    amount: number;
+    currency: string;
+    paid_at?: string | null;
+    channel?: string;
+    customer?: {
+      email?: string;
+      first_name?: string;
+      last_name?: string;
+    };
+    metadata?: unknown;
+  };
+}
+
+async function loadAdmission(
+  applicationId: string
+): Promise<{ ref: any; data: AdmissionData }> {
+  const applicationRef = adminDatabase.ref(`admissions/${applicationId}`);
+  const snapshot = await applicationRef.once("value");
+
+  if (!snapshot.exists()) {
+    const error = new Error("Admission application not found.");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+
+  return {
+    ref: applicationRef,
+    data: snapshot.val() as AdmissionData,
+  };
+}
+
+async function verifyAndRecordAdmissionPayment(
+  applicationId: string,
+  reference: string
+): Promise<{
+  paid: boolean;
+  message: string;
+  paymentStatus: string;
+  reference: string;
+  amount: number;
+}> {
+  const cleanApplicationId = String(applicationId || "").trim();
+  const cleanReference = String(reference || "").trim();
+
+  if (!cleanApplicationId) {
+    throw new Error("Application ID is required.");
+  }
+
+  if (!cleanReference) {
+    throw new Error("Payment reference is required.");
+  }
+
+  const { ref: applicationRef, data: application } =
+    await loadAdmission(cleanApplicationId);
+
+  const storedReference = String(application.paymentReference || "").trim();
+
+  if (storedReference && storedReference !== cleanReference) {
+    const error = new Error(
+      "This payment reference does not belong to this application."
+    );
+    (error as any).statusCode = 409;
+    throw error;
+  }
+
+  const paystackResponse = await paystackRequest<PaystackVerifyResponse>(
+    `/transaction/verify/${encodeURIComponent(cleanReference)}`
+  );
+
+  const transaction = paystackResponse.data;
+  const transactionAmount = Number(transaction.amount);
+  const transactionCurrency = String(transaction.currency || "").toUpperCase();
+  const transactionStatus = String(transaction.status || "").toLowerCase();
+
+  const expectedFee = Number(
+    application.applicationFee || ADMISSION_FEE_NAIRA
+  );
+  const expectedAmountKobo = Math.round(expectedFee * 100);
+
+  if (transaction.reference !== cleanReference) {
+    throw new Error("Paystack returned an invalid transaction reference.");
+  }
+
+  if (transactionCurrency !== "NGN") {
+    const error = new Error("The payment currency is not NGN.");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  if (transactionAmount !== expectedAmountKobo) {
+    const error = new Error(
+      `Payment amount mismatch. Expected ₦${expectedFee.toLocaleString()} but Paystack returned ₦${(transactionAmount / 100).toLocaleString()}.`
+    );
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  if (transactionStatus !== "success") {
+    const failedStatus = transactionStatus || "unknown";
+    const failed = ["failed", "abandoned", "reversed"].includes(failedStatus);
+
+    await applicationRef.update({
+      paymentStatus: failed ? "failed" : "pending",
+      paymentReference: cleanReference,
+      paymentAmount: expectedFee,
+    });
+
+    return {
+      paid: false,
+      message: `Payment has not completed. Paystack status: ${failedStatus}.`,
+      paymentStatus: failed ? "failed" : "pending",
+      reference: cleanReference,
+      amount: expectedFee,
+    };
+  }
+
+  const now = new Date();
+  const paymentDate = transaction.paid_at || now.toISOString();
+
+  await applicationRef.update({
+    paymentStatus: "paid",
+    paymentAmount: expectedFee,
+    paymentReference: cleanReference,
+    paymentDate,
+    paymentVerifiedAt: now.getTime(),
+  });
+
+  return {
+    paid: true,
+    message: "Application fee payment verified successfully.",
+    paymentStatus: "paid",
+    reference: cleanReference,
+    amount: expectedFee,
+  };
+}
+
+function verifyPaystackWebhookSignature(
+  rawBody: Buffer | undefined,
+  signature: string
+): boolean {
+  if (!signature || !rawBody) {
+    return false;
+  }
+
+  const secret = getPaystackSecretKey();
+
+  const expected = crypto
+    .createHmac("sha512", secret)
+    .update(rawBody)
+    .digest("hex");
+
+  const expectedBuffer = Buffer.from(expected, "utf8");
+  const signatureBuffer = Buffer.from(signature, "utf8");
+
+  if (expectedBuffer.length !== signatureBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
+}
+
+// =========================================================
+// INITIALIZE ADMISSION FEE PAYMENT
+// =========================================================
+// POST /api/admissions/payment/initialize
+// Body: { applicationId: "..." }
+// =========================================================
+
+router.post(
+  "/payment/initialize",
+  async (req: any, res: Response) => {
+    try {
+      const applicationId =
+        String(req.body?.applicationId || "").trim();
+
+      if (!applicationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Application ID is required.",
+        });
+      }
+
+      const { ref: applicationRef, data: application } =
+        await loadAdmission(applicationId);
+
+      if (application.status === "rejected") {
+        return res.status(400).json({
+          success: false,
+          message: "A rejected admission application cannot receive a payment.",
+        });
+      }
+
+      if (application.paymentStatus === "paid") {
+        return res.status(409).json({
+          success: false,
+          message: "This application fee has already been paid.",
+          paymentStatus: "paid",
+          paymentReference: application.paymentReference || "",
+        });
+      }
+
+      const applicationFee = Number(
+        application.applicationFee || ADMISSION_FEE_NAIRA
+      );
+
+      if (!Number.isFinite(applicationFee) || applicationFee <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid application fee configured for this admission.",
+        });
+      }
+
+      const parent = application.parentGuardian || {};
+      const student = application.student || {};
+      const email = normalizeEmail(String(parent.email || ""));
+
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "A valid parent or guardian email address is required for payment.",
+        });
+      }
+
+      const reference = createPaymentReference(applicationId);
+
+      const payload = {
+        email,
+        amount: String(Math.round(applicationFee * 100)),
+        currency: "NGN",
+        reference,
+        callback_url: getAdmissionPaymentCallbackUrl(applicationId),
+        metadata: {
+          applicationId,
+          applicationNumber: String(
+            (application as any).applicationNumber || ""
+          ),
+          applicantName: [
+            student.firstName || "",
+            student.middleName || "",
+            student.lastName || "",
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .trim(),
+          paymentType: "admission_application_fee",
+        },
+      };
+
+      const paystackResponse =
+        await paystackRequest<PaystackInitializeResponse>(
+          "/transaction/initialize",
+          {
+            method: "POST",
+            body: JSON.stringify(payload),
+          }
+        );
+
+      const payment = paystackResponse.data;
+
+      await applicationRef.update({
+        paymentStatus: "pending",
+        paymentAmount: applicationFee,
+        paymentReference: payment.reference,
+        paymentDate: "",
+        paymentVerifiedAt: 0,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Payment initialized successfully.",
+        applicationId,
+        applicationFee,
+        amountKobo: Math.round(applicationFee * 100),
+        reference: payment.reference,
+        accessCode: payment.access_code,
+        authorizationUrl: payment.authorization_url,
+      });
+    } catch (error: unknown) {
+      console.error("Initialize admission payment error:", error);
+
+      const statusCode =
+        Number((error as any)?.statusCode) || 500;
+
+      return res.status(statusCode).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to initialize the admission fee payment.",
+      });
+    }
+  }
+);
+
+// =========================================================
+// VERIFY ADMISSION FEE PAYMENT
+// =========================================================
+// GET /api/admissions/payment/verify/:applicationId/:reference
+// =========================================================
+
+router.get(
+  "/payment/verify/:applicationId/:reference",
+  async (req: any, res: Response) => {
+    try {
+      const applicationId =
+        String(req.params.applicationId || "").trim();
+      const reference =
+        String(req.params.reference || "").trim();
+
+      if (!applicationId || !reference) {
+        return res.status(400).json({
+          success: false,
+          message: "Application ID and payment reference are required.",
+        });
+      }
+
+      const result = await verifyAndRecordAdmissionPayment(
+        applicationId,
+        reference
+      );
+
+      return res.status(200).json({
+        success: true,
+        ...result,
+      });
+    } catch (error: unknown) {
+      console.error("Verify admission payment error:", error);
+
+      const statusCode =
+        Number((error as any)?.statusCode) ||
+        (String((error as any)?.message || "").includes("not found") ? 404 : 500);
+
+      return res.status(statusCode).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to verify the admission fee payment.",
+      });
+    }
+  }
+);
+
+// =========================================================
+// PAYSTACK WEBHOOK
+// =========================================================
+// POST /api/admissions/payment/webhook
+// =========================================================
+
+router.post(
+  "/payment/webhook",
+  async (req: any, res: Response) => {
+    try {
+      const signature = String(
+        req.headers["x-paystack-signature"] || ""
+      ).trim();
+
+      if (
+        !verifyPaystackWebhookSignature(
+          req.rawBody,
+          signature
+        )
+      ) {
+        console.warn("Rejected invalid Paystack webhook signature.");
+
+        return res.status(401).json({
+          success: false,
+          message: "Invalid webhook signature.",
+        });
+      }
+
+      // Acknowledge Paystack immediately after validating the signature.
+      res.status(200).json({
+        success: true,
+        received: true,
+      });
+
+      const event = req.body || {};
+
+      if (event.event !== "charge.success") {
+        return;
+      }
+
+      const transaction = event.data || {};
+      const reference = String(transaction.reference || "").trim();
+
+      if (!reference) {
+        console.warn(
+          "Paystack webhook did not contain a transaction reference."
+        );
+        return;
+      }
+
+      let applicationId = String(
+        transaction.metadata?.applicationId ||
+        transaction.metadata?.application_id ||
+        ""
+      ).trim();
+
+      if (!applicationId) {
+        const admissionsSnapshot =
+          await adminDatabase.ref("admissions").once("value");
+
+        if (admissionsSnapshot.exists()) {
+          const admissions =
+            admissionsSnapshot.val() as Record<string, AdmissionData>;
+
+          for (const [id, admission] of Object.entries(admissions)) {
+            if (
+              String(admission.paymentReference || "").trim() ===
+              reference
+            ) {
+              applicationId = id;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!applicationId) {
+        console.warn(
+          "Paystack webhook could not identify an admission for reference:",
+          reference
+        );
+        return;
+      }
+
+      try {
+        await verifyAndRecordAdmissionPayment(
+          applicationId,
+          reference
+        );
+      } catch (verificationError) {
+        console.error(
+          "Admission payment webhook verification failed:",
+          verificationError
+        );
+      }
+    } catch (error) {
+      console.error("Paystack admission webhook error:", error);
+
+      if (!res.headersSent) {
+        return res.status(500).json({
+          success: false,
+          message: "Webhook processing failed.",
+        });
+      }
+    }
+  }
+);
 
 
 // =========================================================

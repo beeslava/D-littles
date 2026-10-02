@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "gmail:test": "tsx src/gmail-test.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "firebase-admin": "^14.4.0"
+    "firebase-admin": "^14.4.0",
+    "googleapis": "^182.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -22,4 +24,3 @@
     "typescript": "^7.0.2"
   }
 }
-

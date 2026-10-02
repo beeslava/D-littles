@@ -11,6 +11,8 @@ import {
   adminDatabase,
 } from "./firebase-admin.js";
 
+import { sendGmailEmail } from "./gmail-service.js";
+
 const router = Router();
 
 // =========================================================
@@ -728,18 +730,6 @@ function verifyPaystackWebhookSignature(
 // NOTIFICATION CONFIGURATION
 // =========================================================
 
-function getResendApiKey(): string {
-  return String(
-    process.env.RESEND_API_KEY || ""
-  ).trim();
-}
-
-function getResendFromEmail(): string {
-  return String(
-    process.env.RESEND_FROM_EMAIL || ""
-  ).trim();
-}
-
 function getTermiiApiKey(): string {
   return String(
     process.env.TERMII_API_KEY || ""
@@ -800,7 +790,7 @@ interface AdmissionNotificationData {
 }
 
 // =========================================================
-// SEND EMAIL WITH RESEND
+// SEND ADMISSION EMAIL WITH GMAIL API
 // =========================================================
 
 async function sendAdmissionEmail(
@@ -809,33 +799,11 @@ async function sendAdmissionEmail(
   sent: boolean;
   reason?: string;
 }> {
-  const apiKey =
-    getResendApiKey();
-
-  const from =
-    getResendFromEmail();
-
   if (!data.parentEmail) {
     return {
       sent: false,
       reason:
         "Parent email address is not available.",
-    };
-  }
-
-  if (!apiKey) {
-    return {
-      sent: false,
-      reason:
-        "RESEND_API_KEY is not configured.",
-    };
-  }
-
-  if (!from) {
-    return {
-      sent: false,
-      reason:
-        "RESEND_FROM_EMAIL is not configured.",
     };
   }
 
@@ -1261,58 +1229,38 @@ async function sendAdmissionEmail(
 </html>
 `;
 
-  const response = await fetch(
-    "https://api.resend.com/emails",
-    {
-      method: "POST",
-
-      headers: {
-        Authorization:
-          `Bearer ${apiKey}`,
-
-        "Content-Type":
-          "application/json",
-      },
-
-      body: JSON.stringify({
-        from,
-
-        to: [
-          data.parentEmail,
-        ],
-
-        subject,
-
-        html,
-      }),
-    }
-  );
-
-  let result: any = null;
-
   try {
-    result =
-      await response.json();
-  } catch {
-    result = null;
-  }
+    await sendGmailEmail({
+      to: data.parentEmail,
+      subject,
+      html,
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      result?.message ||
-        result?.error ||
-        `Email provider returned HTTP ${response.status}.`
+    return {
+      sent: true,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown Gmail error.";
+
+    console.error(
+      "Gmail admission email failed:",
+      error
     );
-  }
 
-  return {
-    sent: true,
-  };
+    return {
+      sent: false,
+      reason: message,
+    };
+  }
 }
 
 // =========================================================
 // SEND SMS WITH TERMII
 // =========================================================
+
 
 async function sendAdmissionSms(
   data: AdmissionNotificationData

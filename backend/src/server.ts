@@ -17,6 +17,7 @@ import {
 
 import admissionRoutes from "./admission-routes.js";
 import staffRoutes from "./staff-routes.js";
+import feesPaymentRoutes from "./fees-payment.routes.js";
 
 
 // =========================================================
@@ -70,7 +71,15 @@ app.use(
 // We therefore keep a copy of the raw request body before
 // Express parses it into req.body.
 //
-// This allows admission-routes.ts to verify:
+// This allows BOTH:
+//
+// admission-routes.ts
+//
+// AND
+//
+// fees-payment-routes.ts
+//
+// to verify:
 //
 // x-paystack-signature
 //
@@ -105,7 +114,7 @@ app.use(
 //
 // /api/admissions
 //
-// Examples:
+// Existing routes:
 //
 // POST /api/admissions/approve
 //
@@ -116,11 +125,51 @@ app.use(
 //
 // POST /api/admissions/payment/webhook
 //
+// IMPORTANT:
+//
+// These routes are already working and are NOT being
+// replaced or modified here.
+//
 // =========================================================
 
 app.use(
   "/api/admissions",
   admissionRoutes
+);
+
+
+// =========================================================
+// SCHOOL FEES PAYMENT ROUTES
+// =========================================================
+//
+// Base URL:
+//
+// /api/fees
+//
+// School-fee payment routes:
+//
+// POST
+// /api/fees/payment/initialize
+//
+// GET
+// /api/fees/payment/verify/:paymentId/:reference
+//
+// POST
+// /api/fees/payment/webhook
+//
+// GET
+// /api/fees/payment/callback/:paymentId
+//
+// These routes allow authenticated:
+//
+// - Parents to pay for their children
+// - Students to pay their own fees
+//
+// =========================================================
+
+app.use(
+  "/api/fees",
+  feesPaymentRoutes
 );
 
 
@@ -324,6 +373,10 @@ app.listen(
 
     console.log(
       "Admission payment API: enabled"
+    );
+
+    console.log(
+      "School fee payment API: enabled"
     );
 
     console.log(

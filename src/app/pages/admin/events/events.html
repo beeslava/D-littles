@@ -1,0 +1,530 @@
+<div class="events-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header">
+
+    <div>
+
+      <span class="page-label">
+        SCHOOL ACTIVITIES
+      </span>
+
+      <h1>
+        Events
+      </h1>
+
+      <p>
+        Create and manage school events and activities.
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="add-event-button"
+      (click)="openCreateForm()"
+      *ngIf="!showForm"
+    >
+      <i class="fas fa-plus"></i>
+      New Event
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       ALERTS
+       ===================================================== -->
+
+  <div
+    class="alert alert-error"
+    *ngIf="errorMessage"
+  >
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+
+
+  <div
+    class="alert alert-success"
+    *ngIf="successMessage"
+  >
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+
+  <!-- =====================================================
+       CREATE / EDIT FORM
+       ===================================================== -->
+
+  <section
+    class="event-form-card"
+    *ngIf="showForm"
+  >
+
+    <div class="form-header">
+
+      <div>
+
+        <h2>
+          {{
+            editingEventId
+              ? 'Edit Event'
+              : 'Create New Event'
+          }}
+        </h2>
+
+        <p>
+          Enter the details of the school event.
+        </p>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeForm()"
+        [disabled]="saving"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+
+    </div>
+
+
+    <div class="form-body">
+
+      <!-- EVENT TITLE -->
+
+      <div class="form-group">
+
+        <label>
+          Event Title
+          <span>*</span>
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formTitle"
+          placeholder="e.g. Inter-House Sports"
+        />
+
+      </div>
+
+
+      <!-- DESCRIPTION -->
+
+      <div class="form-group">
+
+        <label>
+          Description
+          <span>*</span>
+        </label>
+
+        <textarea
+          [(ngModel)]="formDescription"
+          rows="5"
+          placeholder="Enter a description of the event..."
+        ></textarea>
+
+      </div>
+
+
+      <!-- DATE / TIME -->
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label>
+            Event Date
+            <span>*</span>
+          </label>
+
+          <input
+            type="date"
+            [(ngModel)]="formDate"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Start Time
+            <span>*</span>
+          </label>
+
+          <input
+            type="time"
+            [(ngModel)]="formStartTime"
+          />
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            End Time
+          </label>
+
+          <input
+            type="time"
+            [(ngModel)]="formEndTime"
+          />
+
+        </div>
+
+      </div>
+
+
+      <!-- VENUE -->
+
+      <div class="form-group">
+
+        <label>
+          Venue
+          <span>*</span>
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formVenue"
+          placeholder="e.g. School Field"
+        />
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="form-group">
+
+        <label>
+          Status
+        </label>
+
+        <select
+          [(ngModel)]="formStatus"
+        >
+
+          <option value="draft">
+            Draft
+          </option>
+
+          <option value="published">
+            Published
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="closeForm()"
+          [disabled]="saving"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="save-button"
+          (click)="saveEvent()"
+          [disabled]="saving"
+        >
+
+          <span
+            *ngIf="!saving"
+          >
+            <i class="fas fa-save"></i>
+            {{
+              editingEventId
+                ? 'Update Event'
+                : 'Create Event'
+            }}
+          </span>
+
+          <span
+            *ngIf="saving"
+          >
+            Saving...
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       FILTERS
+       ===================================================== -->
+
+  <section class="filters-card">
+
+    <div class="search-box">
+
+      <i class="fas fa-search"></i>
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+        placeholder="Search events..."
+      />
+
+    </div>
+
+
+    <select
+      class="status-filter"
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="applyFilters()"
+    >
+
+      <option value="all">
+        All Events
+      </option>
+
+      <option value="published">
+        Published
+      </option>
+
+      <option value="draft">
+        Draft
+      </option>
+
+    </select>
+
+  </section>
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="spinner"></div>
+
+    <span>
+      Loading events...
+    </span>
+
+  </div>
+
+
+  <!-- =====================================================
+       EMPTY STATE
+       ===================================================== -->
+
+  <div
+    class="empty-state"
+    *ngIf="
+      !loading &&
+      filteredEvents.length === 0
+    "
+  >
+
+    <div class="empty-icon">
+      <i class="fas fa-calendar-alt"></i>
+    </div>
+
+    <h2>
+      No Events Found
+    </h2>
+
+    <p>
+      Create your first school event to get started.
+    </p>
+
+
+    <button
+      type="button"
+      class="empty-button"
+      (click)="openCreateForm()"
+    >
+      <i class="fas fa-plus"></i>
+      Create Event
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       EVENTS
+       ===================================================== -->
+
+  <section
+    class="events-list"
+    *ngIf="
+      !loading &&
+      filteredEvents.length > 0
+    "
+  >
+
+    <div
+      class="event-card"
+      *ngFor="
+        let event of filteredEvents;
+        trackBy: trackByEventId
+      "
+    >
+
+      <!-- EVENT DATE -->
+
+      <div class="event-date">
+
+        <span class="date-day">
+          {{ event.date | date:'dd' }}
+        </span>
+
+        <span class="date-month">
+          {{ event.date | date:'MMM' }}
+        </span>
+
+        <span class="date-year">
+          {{ event.date | date:'yyyy' }}
+        </span>
+
+      </div>
+
+
+      <!-- EVENT CONTENT -->
+
+      <div class="event-content">
+
+        <div class="event-top">
+
+          <div>
+
+            <h2>
+              {{ event.title }}
+            </h2>
+
+            <span
+              class="status-badge"
+              [ngClass]="getStatusClass(event.status)"
+            >
+              {{ event.status }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <p class="event-description">
+          {{ event.description }}
+        </p>
+
+
+        <div class="event-details">
+
+          <span>
+
+            <i class="fas fa-clock"></i>
+
+            {{ formatTime(event.startTime) }}
+
+            <ng-container
+              *ngIf="event.endTime"
+            >
+              -
+              {{ formatTime(event.endTime) }}
+            </ng-container>
+
+          </span>
+
+
+          <span>
+
+            <i class="fas fa-map-marker-alt"></i>
+
+            {{ event.venue }}
+
+          </span>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="event-actions">
+
+          <button
+            type="button"
+            class="edit-button"
+            (click)="openEditForm(event)"
+          >
+            <i class="fas fa-edit"></i>
+            Edit
+          </button>
+
+
+          <button
+            type="button"
+            class="publish-button"
+            [class.unpublish-button]="event.status === 'published'"
+            (click)="togglePublish(event)"
+          >
+
+            <i
+              class="fas"
+              [class.fa-eye]="event.status === 'draft'"
+              [class.fa-eye-slash]="event.status === 'published'"
+            ></i>
+
+            {{
+              event.status === 'published'
+                ? 'Unpublish'
+                : 'Publish'
+            }}
+
+          </button>
+
+
+          <button
+            type="button"
+            class="delete-button"
+            (click)="deleteEvent(event)"
+            [disabled]="deleting"
+          >
+            <i class="fas fa-trash"></i>
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+

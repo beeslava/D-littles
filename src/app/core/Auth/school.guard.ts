@@ -91,7 +91,6 @@ export const schoolGuard: CanActivateFn = async () => {
   const allowedRoles = [
     'student',
     'parent',
-    'teacher'
   ];
 
 

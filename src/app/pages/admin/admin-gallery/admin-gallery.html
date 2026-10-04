@@ -1,0 +1,404 @@
+<div class="admin-gallery">
+
+  <!-- HEADER -->
+  <div class="page-header">
+
+    <div>
+      <h1>Gallery</h1>
+      <p>Manage school photos and gallery collections.</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="openCreateModal()"
+    >
+      <span>+</span>
+      Add Gallery Item
+    </button>
+
+  </div>
+
+  <!-- MESSAGES -->
+  <div
+    class="alert success"
+    *ngIf="successMessage"
+  >
+    {{ successMessage }}
+  </div>
+
+  <div
+    class="alert error"
+    *ngIf="errorMessage"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <!-- STATISTICS -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-icon">🖼️</div>
+      <div>
+        <strong>{{ totalItems }}</strong>
+        <span>Total Photos</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🌐</div>
+      <div>
+        <strong>{{ publishedItems }}</strong>
+        <span>Published</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div>
+        <strong>{{ draftItems }}</strong>
+        <span>Drafts</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search gallery..."
+      />
+    </div>
+
+    <select
+      [(ngModel)]="selectedCategory"
+      (ngModelChange)="applyFilters()"
+    >
+      <option value="all">All Categories</option>
+
+      <option
+        *ngFor="let category of categories"
+        [value]="category"
+      >
+        {{ category }}
+      </option>
+    </select>
+
+    <select
+      [(ngModel)]="selectedStatus"
+      (ngModelChange)="applyFilters()"
+    >
+      <option value="all">All Status</option>
+      <option value="published">Published</option>
+      <option value="draft">Draft</option>
+    </select>
+
+  </div>
+
+  <!-- LOADING -->
+  <div
+    class="loading"
+    *ngIf="loading"
+  >
+    <div class="spinner"></div>
+    <p>Loading gallery...</p>
+  </div>
+
+  <!-- EMPTY -->
+  <div
+    class="empty-state"
+    *ngIf="!loading && filteredItems.length === 0"
+  >
+    <div class="empty-icon">🖼️</div>
+
+    <h3>No gallery items found</h3>
+
+    <p>
+      Add your first school photo to the gallery.
+    </p>
+
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="openCreateModal()"
+    >
+      Add Gallery Item
+    </button>
+  </div>
+
+  <!-- GALLERY GRID -->
+  <div
+    class="gallery-grid"
+    *ngIf="!loading && filteredItems.length > 0"
+  >
+
+    <div
+      class="gallery-card"
+      *ngFor="let item of filteredItems"
+    >
+
+      <div class="image-wrapper">
+
+        <img
+          [src]="item.imageUrl"
+          [alt]="item.title"
+          (error)="handleImageError($event)"
+        />
+
+        <span
+          class="status-badge"
+          [class.published]="item.status === 'published'"
+          [class.draft]="item.status === 'draft'"
+        >
+          {{ item.status }}
+        </span>
+
+      </div>
+
+      <div class="gallery-content">
+
+        <span class="category">
+          {{ item.category }}
+        </span>
+
+        <h3>{{ item.title }}</h3>
+
+        <p>
+          {{ item.description || 'No description provided.' }}
+        </p>
+
+        <small>
+          Created {{ formatDate(item.createdAt) }}
+        </small>
+
+        <div class="actions">
+
+          <button
+            type="button"
+            class="btn-edit"
+            (click)="openEditModal(item)"
+          >
+            Edit
+          </button>
+
+          <button
+            type="button"
+            class="btn-publish"
+            (click)="togglePublish(item)"
+          >
+            {{
+              item.status === 'published'
+                ? 'Unpublish'
+                : 'Publish'
+            }}
+          </button>
+
+          <button
+            type="button"
+            class="btn-delete"
+            (click)="deleteItem(item)"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     CREATE / EDIT MODAL
+========================================================= -->
+
+<div
+  class="modal-backdrop"
+  *ngIf="showModal"
+  (click)="closeModal()"
+>
+
+  <div
+    class="modal"
+    (click)="$event.stopPropagation()"
+  >
+
+    <div class="modal-header">
+
+      <div>
+        <h2>
+          {{
+            editingItem
+              ? 'Edit Gallery Item'
+              : 'Add Gallery Item'
+          }}
+        </h2>
+
+        <p>
+          Add a photo to the school gallery.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-btn"
+        (click)="closeModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <div
+        class="alert error"
+        *ngIf="errorMessage"
+      >
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Title *
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="form.title"
+          placeholder="e.g. Inter-House Sports Day"
+        />
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Image URL *
+        </label>
+
+        <input
+          type="url"
+          [(ngModel)]="form.imageUrl"
+          placeholder="https://example.com/photo.jpg"
+        />
+
+        <small>
+          Enter the public URL of the image.
+        </small>
+
+      </div>
+
+      <div
+        class="image-preview"
+        *ngIf="form.imageUrl"
+      >
+
+        <img
+          [src]="form.imageUrl"
+          [alt]="form.title || 'Gallery preview'"
+        />
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label>
+            Category *
+          </label>
+
+          <select
+            [(ngModel)]="form.category"
+          >
+            <option
+              *ngFor="let category of categories"
+              [value]="category"
+            >
+              {{ category }}
+            </option>
+          </select>
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            Status
+          </label>
+
+          <select
+            [(ngModel)]="form.status"
+          >
+            <option value="draft">
+              Draft
+            </option>
+
+            <option value="published">
+              Published
+            </option>
+          </select>
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Description
+        </label>
+
+        <textarea
+          [(ngModel)]="form.description"
+          rows="5"
+          placeholder="Describe this photo..."
+        ></textarea>
+
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+
+      <button
+        type="button"
+        class="btn-secondary"
+        (click)="closeModal()"
+        [disabled]="saving"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="saveGalleryItem()"
+        [disabled]="saving"
+      >
+        {{
+          saving
+            ? 'Saving...'
+            : editingItem
+              ? 'Update Gallery'
+              : 'Save Gallery Item'
+        }}
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+

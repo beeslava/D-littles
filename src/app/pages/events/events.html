@@ -1,1 +1,417 @@
-<p>events works!</p>
+<div class="events-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+
+  <section class="events-hero">
+
+    <div class="hero-overlay">
+
+      <div class="hero-content">
+
+        <span class="hero-label">
+          D-LITTLES SCHOOL
+        </span>
+
+        <h1>
+          School Events
+        </h1>
+
+        <p>
+          Stay informed about upcoming activities,
+          celebrations, sports and important school events.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       EVENTS CONTENT
+  ====================================================== -->
+
+  <main class="events-container">
+
+    <!-- SEARCH -->
+
+    <div class="events-toolbar">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          🔍
+        </span>
+
+        <input
+          type="text"
+          placeholder="Search events..."
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+        />
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         ERROR
+    ==================================================== -->
+
+    <div
+      class="alert error-alert"
+      *ngIf="errorMessage"
+    >
+      {{ errorMessage }}
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    <div
+      class="loading-state"
+      *ngIf="loading"
+    >
+
+      <div class="loading-spinner"></div>
+
+      <p>
+        Loading events...
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="!loading && filteredEvents.length === 0"
+    >
+
+      <div class="empty-icon">
+        📅
+      </div>
+
+      <h2>
+        No Events Found
+      </h2>
+
+      <p>
+        There are currently no published events matching your search.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         EVENTS GRID
+    ==================================================== -->
+
+    <section
+      class="events-grid"
+      *ngIf="!loading && filteredEvents.length > 0"
+    >
+
+      <article
+        class="event-card"
+        *ngFor="let event of filteredEvents"
+      >
+
+        <!-- DATE -->
+
+        <div class="event-date">
+
+          <span class="event-day">
+            {{ getDay(event.date) }}
+          </span>
+
+          <strong class="event-day-number">
+            {{ getDayNumber(event.date) }}
+          </strong>
+
+          <span class="event-month">
+            {{ getMonth(event.date) }}
+          </span>
+
+        </div>
+
+
+        <!-- EVENT CONTENT -->
+
+        <div class="event-content">
+
+          <span class="event-label">
+            UPCOMING EVENT
+          </span>
+
+          <h2>
+            {{ event.title }}
+          </h2>
+
+          <p class="event-description">
+            {{ event.description }}
+          </p>
+
+
+          <!-- DATE -->
+
+          <div class="event-info">
+
+            <div class="info-item">
+
+              <span class="info-icon">
+                📅
+              </span>
+
+              <div>
+                <small>
+                  Date
+                </small>
+
+                <strong>
+                  {{ formatDate(event.date) }}
+                </strong>
+              </div>
+
+            </div>
+
+
+            <!-- TIME -->
+
+            <div class="info-item">
+
+              <span class="info-icon">
+                🕐
+              </span>
+
+              <div>
+
+                <small>
+                  Time
+                </small>
+
+                <strong>
+                  {{ formatTime(event.startTime) }}
+                  <span *ngIf="event.endTime">
+                    -
+                    {{ formatTime(event.endTime) }}
+                  </span>
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            <!-- VENUE -->
+
+            <div
+              class="info-item"
+              *ngIf="event.venue"
+            >
+
+              <span class="info-icon">
+                📍
+              </span>
+
+              <div>
+
+                <small>
+                  Venue
+                </small>
+
+                <strong>
+                  {{ event.venue }}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- READ MORE -->
+
+          <button
+            type="button"
+            class="read-more-button"
+            (click)="openEvent(event)"
+          >
+            Read More
+            <span>→</span>
+          </button>
+
+        </div>
+
+      </article>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- =======================================================
+     EVENT DETAILS MODAL
+======================================================== -->
+
+<div
+  class="event-modal"
+  *ngIf="selectedEvent"
+  (click)="onBackdropClick($event)"
+>
+
+  <div class="event-modal-content">
+
+    <!-- CLOSE -->
+
+    <button
+      type="button"
+      class="close-button"
+      (click)="closeEvent()"
+      aria-label="Close"
+    >
+      ×
+    </button>
+
+
+    <!-- DATE -->
+
+    <div class="modal-date">
+
+      <span>
+        {{ getDay(selectedEvent.date) }}
+      </span>
+
+      <strong>
+        {{ getDayNumber(selectedEvent.date) }}
+      </strong>
+
+      <span>
+        {{ getMonth(selectedEvent.date) }}
+      </span>
+
+    </div>
+
+
+    <span class="event-label">
+      SCHOOL EVENT
+    </span>
+
+    <h2>
+      {{ selectedEvent.title }}
+    </h2>
+
+
+    <!-- EVENT DETAILS -->
+
+    <div class="modal-event-info">
+
+      <div class="modal-info-item">
+
+        <span>
+          📅
+        </span>
+
+        <div>
+          <small>
+            Date
+          </small>
+
+          <strong>
+            {{ formatDate(selectedEvent.date) }}
+          </strong>
+        </div>
+
+      </div>
+
+
+      <div class="modal-info-item">
+
+        <span>
+          🕐
+        </span>
+
+        <div>
+
+          <small>
+            Time
+          </small>
+
+          <strong>
+            {{ formatTime(selectedEvent.startTime) }}
+
+            <span *ngIf="selectedEvent.endTime">
+              -
+              {{ formatTime(selectedEvent.endTime) }}
+            </span>
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="modal-info-item"
+        *ngIf="selectedEvent.venue"
+      >
+
+        <span>
+          📍
+        </span>
+
+        <div>
+
+          <small>
+            Venue
+          </small>
+
+          <strong>
+            {{ selectedEvent.venue }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- DESCRIPTION -->
+
+    <div class="modal-description">
+
+      <h3>
+        About This Event
+      </h3>
+
+      <p>
+        {{ selectedEvent.description }}
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="modal-close-button"
+      (click)="closeEvent()"
+    >
+      Close
+    </button>
+
+  </div>
+
+</div>

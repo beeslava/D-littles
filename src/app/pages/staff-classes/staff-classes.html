@@ -1,0 +1,355 @@
+<div class="staff-page">
+
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+
+  <header class="page-header">
+
+    <div>
+
+      <a
+        routerLink="/staff/dashboard"
+        class="back-link"
+      >
+        ← Back to Dashboard
+      </a>
+
+      <h1>
+        My Classes
+      </h1>
+
+      <p>
+        Classes assigned to you for teaching.
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="loadClasses()"
+      [disabled]="loading"
+    >
+      ↻ Refresh
+    </button>
+
+  </header>
+
+
+
+  <!-- ================================================= -->
+  <!-- LOADING -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="loading"
+    class="state-card"
+  >
+
+    <div class="spinner"></div>
+
+    <h3>
+      Loading your classes...
+    </h3>
+
+    <p>
+      Please wait while we load your teaching assignments.
+    </p>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- ERROR -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="!loading && errorMessage"
+    class="state-card error-card"
+  >
+
+    <div class="state-icon">
+      ⚠
+    </div>
+
+    <h3>
+      Unable to load classes
+    </h3>
+
+    <p>
+      {{ errorMessage }}
+    </p>
+
+    <button
+      type="button"
+      class="retry-button"
+      (click)="loadClasses()"
+    >
+      Try Again
+    </button>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- EMPTY -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      myClasses.length === 0
+    "
+    class="state-card"
+  >
+
+    <div class="state-icon">
+      🏫
+    </div>
+
+    <h3>
+      No classes assigned
+    </h3>
+
+    <p>
+      You currently do not have any teaching classes assigned to you.
+    </p>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- CLASSES -->
+  <!-- ================================================= -->
+
+  <div
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      myClasses.length > 0
+    "
+    class="classes-grid"
+  >
+
+
+    <article
+      class="class-card"
+      *ngFor="let schoolClass of myClasses"
+    >
+
+
+      <!-- CARD HEADER -->
+
+      <div class="class-card-header">
+
+        <div class="class-icon">
+          🏫
+        </div>
+
+        <div>
+
+          <h2>
+            {{ schoolClass.className }}
+          </h2>
+
+          <span
+            class="class-code"
+          >
+            {{ schoolClass.classCode }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- CLASS DETAILS -->
+
+      <div class="class-details">
+
+
+        <div
+          class="detail-item"
+          *ngIf="schoolClass.section"
+        >
+
+          <span class="detail-label">
+            Section
+          </span>
+
+          <strong>
+            {{ schoolClass.section }}
+          </strong>
+
+        </div>
+
+
+        <div
+          class="detail-item"
+          *ngIf="schoolClass.room"
+        >
+
+          <span class="detail-label">
+            Room
+          </span>
+
+          <strong>
+            {{ schoolClass.room }}
+          </strong>
+
+        </div>
+
+
+        <div
+          class="detail-item"
+          *ngIf="schoolClass.academicYear"
+        >
+
+          <span class="detail-label">
+            Academic Year
+          </span>
+
+          <strong>
+            {{ schoolClass.academicYear }}
+          </strong>
+
+        </div>
+
+
+        <div
+          class="detail-item"
+          *ngIf="schoolClass.capacity"
+        >
+
+          <span class="detail-label">
+            Capacity
+          </span>
+
+          <strong>
+            {{ schoolClass.capacity }}
+          </strong>
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- SUBJECTS -->
+
+      <div class="subjects-section">
+
+        <h3>
+          My Subjects
+        </h3>
+
+
+        <div
+          class="subject-list"
+          *ngIf="
+            getSubjectsForClass(
+              schoolClass.id
+            ).length > 0
+          "
+        >
+
+          <span
+            class="subject-tag"
+            *ngFor="
+              let subject of
+              getSubjectsForClass(
+                schoolClass.id
+              )
+            "
+          >
+            {{ subject }}
+          </span>
+
+        </div>
+
+
+        <p
+          class="no-subjects"
+          *ngIf="
+            getSubjectsForClass(
+              schoolClass.id
+            ).length === 0
+          "
+        >
+          No subjects assigned.
+        </p>
+
+      </div>
+
+
+
+      <!-- CLASS TEACHER -->
+
+      <div
+        class="class-teacher"
+        *ngIf="
+          schoolClass.classTeacherName
+        "
+      >
+
+        <span>
+          Class Teacher
+        </span>
+
+        <strong>
+          {{ schoolClass.classTeacherName }}
+        </strong>
+
+      </div>
+
+
+
+      <!-- ACTIONS -->
+
+      <div class="card-actions">
+
+        <button
+          type="button"
+          class="primary-action"
+          [routerLink]="[
+            '/staff/students'
+          ]"
+          [queryParams]="{
+            classId: schoolClass.id
+          }"
+        >
+          View Students
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-action"
+          [routerLink]="[
+            '/staff/results'
+          ]"
+          [queryParams]="{
+            classId: schoolClass.id
+          }"
+        >
+          View Results
+        </button>
+
+      </div>
+
+
+    </article>
+
+  </div>
+
+
+</div>

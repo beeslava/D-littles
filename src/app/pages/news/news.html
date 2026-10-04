@@ -1,1 +1,334 @@
-<p>news works!</p>
+<div class="news-page">
+
+  <!-- =====================================================
+       HERO
+       ===================================================== -->
+
+  <section class="news-hero">
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        D LITTLE PRIVATE SCHOOL
+      </span>
+
+      <h1>
+        School News
+      </h1>
+
+      <p>
+        Stay informed about the latest
+        news, announcements and activities
+        at D Little Private School.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+       ===================================================== -->
+
+  <main class="news-container">
+
+    <!-- SEARCH / FILTER -->
+
+    <div class="news-controls">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          🔍
+        </span>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search news..."
+        />
+
+      </div>
+
+
+      <div class="category-filter">
+
+        <button
+          type="button"
+          *ngFor="
+            let category of categories
+          "
+          [class.active]="
+            selectedCategory === category
+          "
+          (click)="
+            selectedCategory = category
+          "
+        >
+          {{ category }}
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+         =================================================== -->
+
+    <div
+      class="loading-state"
+      *ngIf="loading"
+    >
+
+      <div class="spinner"></div>
+
+      <p>
+        Loading latest news...
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         ERROR
+         =================================================== -->
+
+    <div
+      class="error-state"
+      *ngIf="
+        !loading &&
+        errorMessage
+      "
+    >
+
+      <div>
+        ⚠️
+      </div>
+
+      <h2>
+        Unable to Load News
+      </h2>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+      <button
+        type="button"
+        (click)="loadNews()"
+      >
+        Try Again
+      </button>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY
+         =================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredNews.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        📰
+      </div>
+
+      <h2>
+        No News Available
+      </h2>
+
+      <p>
+        There are currently no published
+        news articles.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         NEWS GRID
+         =================================================== -->
+
+    <section
+      class="news-grid"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredNews.length > 0
+      "
+    >
+
+      <article
+        class="news-card"
+        *ngFor="
+          let item of filteredNews;
+          trackBy: trackByNewsId
+        "
+        (click)="openNews(item)"
+      >
+
+        <!-- IMAGE -->
+
+        <div class="news-image">
+
+          <img
+            *ngIf="item.imageUrl"
+            [src]="item.imageUrl"
+            [alt]="item.title"
+            (error)="handleImageError($event)"
+          />
+
+          <div
+            class="image-placeholder"
+            *ngIf="!item.imageUrl"
+          >
+            📰
+          </div>
+
+          <span class="category-badge">
+            {{ item.category }}
+          </span>
+
+        </div>
+
+
+        <!-- CONTENT -->
+
+        <div class="news-content">
+
+          <div class="news-date">
+            {{ formatDate(
+              item.publishedAt ||
+              item.createdAt
+            ) }}
+          </div>
+
+          <h2>
+            {{ item.title }}
+          </h2>
+
+          <p>
+            {{ item.excerpt }}
+          </p>
+
+          <button
+            type="button"
+            class="read-more"
+          >
+            Read More
+            <span>→</span>
+          </button>
+
+        </div>
+
+      </article>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       NEWS DETAILS MODAL
+       ===================================================== -->
+
+  <div
+    class="news-modal-backdrop"
+    *ngIf="selectedNews"
+    (click)="closeNews()"
+  >
+
+    <article
+      class="news-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- CLOSE -->
+
+      <button
+        type="button"
+        class="modal-close"
+        (click)="closeNews()"
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+
+      <!-- IMAGE -->
+
+      <div
+        class="modal-image"
+        *ngIf="selectedNews.imageUrl"
+      >
+
+        <img
+          [src]="selectedNews.imageUrl"
+          [alt]="selectedNews.title"
+        />
+
+      </div>
+
+
+      <!-- DETAILS -->
+
+      <div class="modal-content">
+
+        <div class="modal-meta">
+
+          <span class="category-badge">
+            {{ selectedNews.category }}
+          </span>
+
+          <span>
+            {{
+              formatDate(
+                selectedNews.publishedAt ||
+                selectedNews.createdAt
+              )
+            }}
+          </span>
+
+        </div>
+
+
+        <h2>
+          {{ selectedNews.title }}
+        </h2>
+
+
+        <p class="modal-author">
+          Published by
+          <strong>
+            {{ selectedNews.authorName }}
+          </strong>
+        </p>
+
+
+        <div class="modal-body">
+
+          <p>
+            {{ selectedNews.content }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</div>
+
+

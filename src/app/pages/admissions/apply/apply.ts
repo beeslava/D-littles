@@ -1,168 +1,328 @@
 import {
-ChangeDetectorRef,
-Component
+  ChangeDetectorRef,
+  Component
 } from '@angular/core';
 
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import {
+  DecimalPipe
+} from '@angular/common';
 
-import { FirebaseService } from '../../../core/firebase.service';
+import {
+  FormsModule
+} from '@angular/forms';
+
+import {
+  Router,
+  RouterLink
+} from '@angular/router';
+
+import {
+  FirebaseService
+} from '../../../core/firebase.service';
+
 
 @Component({
-selector: 'app-apply',
-standalone: true,
-imports: [
-FormsModule,
-RouterLink
-],
-templateUrl: './apply.html',
-styleUrl: './apply.css'
+  selector: 'app-apply',
+
+  standalone: true,
+
+  imports: [
+    FormsModule,
+    RouterLink,
+    DecimalPipe
+  ],
+
+  templateUrl: './apply.html',
+
+  styleUrl: './apply.css'
 })
 export class Apply {
 
-submitted = false;
-submitting = false;
+  // =========================================================
+  // APPLICATION STATE
+  // =========================================================
 
-applicationNumber = '';
+  submitted = false;
 
-errorMessage = '';
+  submitting = false;
 
-application = {
+  applicationNumber = '';
 
-studentFirstName: '',
-studentMiddleName: '',
-studentLastName: '',
-dateOfBirth: '',
-gender: '',
-classApplied: '',
+  applicationId = '';
 
-parentName: '',
-parentPhone: '',
-parentEmail: '',
-relationship: '',
-
-previousSchool: '',
-previousClass: '',
-
-emergencyName: '',
-emergencyPhone: '',
-
-additionalNotes: '',
-declaration: false
+  errorMessage = '';
 
 
-};
+  // =========================================================
+  // APPLICATION FEE
+  // =========================================================
 
-constructor(
-private readonly firebaseService: FirebaseService,
-private readonly cdr: ChangeDetectorRef
-) {}
-
-async submitApplication() {
+  readonly applicationFee = 5000;
 
 
-console.log('1. Submit button clicked');
+  // =========================================================
+  // APPLICATION FORM
+  // =========================================================
+
+  application = {
+
+    studentFirstName: '',
+
+    studentMiddleName: '',
+
+    studentLastName: '',
+
+    dateOfBirth: '',
+
+    gender: '',
+
+    classApplied: '',
+
+    parentName: '',
+
+    parentPhone: '',
+
+    parentEmail: '',
+
+    relationship: '',
+
+    previousSchool: '',
+
+    previousClass: '',
+
+    emergencyName: '',
+
+    emergencyPhone: '',
+
+    additionalNotes: '',
+
+    declaration: false
+
+  };
 
 
-// Prevent accidental double submission
-if (this.submitting) {
-  return;
-}
+  // =========================================================
+  // CONSTRUCTOR
+  // =========================================================
+
+  constructor(
+
+    private readonly firebaseService:
+      FirebaseService,
+
+    private readonly router:
+      Router,
+
+    private readonly cdr:
+      ChangeDetectorRef
+
+  ) {}
 
 
-// Check declaration
-if (!this.application.declaration) {
+  // =========================================================
+  // SUBMIT APPLICATION
+  // =========================================================
 
-  this.errorMessage =
-    'Please accept the declaration before submitting.';
+  async submitApplication(): Promise<void> {
 
-  this.cdr.detectChanges();
-
-  return;
-}
-
-
-// Start loading
-this.submitting = true;
-this.errorMessage = '';
-
-this.cdr.detectChanges();
+    console.log(
+      '1. Submit button clicked'
+    );
 
 
-try {
+    // ---------------------------------------------------------
+    // PREVENT DOUBLE SUBMISSION
+    // ---------------------------------------------------------
 
-  console.log('2. Calling Firebase service');
+    if (this.submitting) {
+
+      return;
+
+    }
 
 
-  const result =
-    await this.firebaseService
-      .submitAdmissionApplication(
-        this.application
+    // ---------------------------------------------------------
+    // CHECK DECLARATION
+    // ---------------------------------------------------------
+
+    if (!this.application.declaration) {
+
+      this.errorMessage =
+        'Please accept the declaration before submitting.';
+
+      this.cdr.detectChanges();
+
+      return;
+
+    }
+
+
+    // ---------------------------------------------------------
+    // START SUBMISSION
+    // ---------------------------------------------------------
+
+    this.submitting = true;
+
+    this.errorMessage = '';
+
+    this.cdr.detectChanges();
+
+
+    try {
+
+      console.log(
+        '2. Submitting application through backend'
       );
 
 
-  console.log(
-    '3. Firebase result:',
-    result
-  );
+      // -------------------------------------------------------
+      // SAVE APPLICATION THROUGH RENDER BACKEND
+      // -------------------------------------------------------
+      //
+      // The browser does NOT write directly to:
+      //
+      // /admissions
+      //
+      // The Render backend uses Firebase Admin SDK.
+      //
+
+      const result =
+        await this.firebaseService
+          .submitAdmissionApplication(
+            this.application
+          );
 
 
-  // Store application number
-  this.applicationNumber =
-    result.applicationNumber;
+      console.log(
+        '3. Backend application result:',
+        result
+      );
 
 
-  // Show success screen
-  this.submitted = true;
+      // -------------------------------------------------------
+      // VALIDATE APPLICATION ID
+      // -------------------------------------------------------
+
+      if (
+        !result ||
+        !result.applicationId
+      ) {
+
+        throw new Error(
+          'Application was created, but no application ID was returned.'
+        );
+
+      }
 
 
-  // Stop loading immediately
-  this.submitting = false;
+      // -------------------------------------------------------
+      // SAVE APPLICATION DETAILS
+      // -------------------------------------------------------
+
+      this.applicationId =
+        result.applicationId;
+
+      this.applicationNumber =
+        result.applicationNumber || '';
 
 
-  // Force Angular to update the page
-  this.cdr.detectChanges();
+      console.log(
+        'Application ID:',
+        this.applicationId
+      );
+
+      console.log(
+        'Application Number:',
+        this.applicationNumber
+      );
+
+      console.log(
+        'Application Fee:',
+        result.applicationFee ||
+        this.applicationFee
+      );
 
 
-  console.log(
-    '4. Application submitted successfully'
-  );
+      // -------------------------------------------------------
+      // MARK AS SUBMITTED
+      // -------------------------------------------------------
+
+      this.submitted = true;
 
 
-} catch (error) {
+      // -------------------------------------------------------
+      // BUILD PAYMENT URL
+      // -------------------------------------------------------
 
-  console.error(
-    '5. Admission submission error:',
-    error
-  );
-
-
-  this.errorMessage =
-    error instanceof Error
-      ? error.message
-      : String(error);
+      const paymentUrl =
+        `/admissions/payment/${this.applicationId}`;
 
 
-  this.submitting = false;
+      console.log(
+        '4. Navigating to application payment page:',
+        paymentUrl
+      );
 
 
-  this.cdr.detectChanges();
+      // -------------------------------------------------------
+      // NAVIGATE TO PAYMENT PAGE
+      // -------------------------------------------------------
+
+      const navigationSuccessful =
+        await this.router.navigateByUrl(
+          paymentUrl
+        );
 
 
-} finally {
-
-  console.log(
-    '6. Finally reached'
-  );
-
-
-  this.submitting = false;
-
-  this.cdr.detectChanges();
-
-}
+      console.log(
+        'Payment page navigation result:',
+        navigationSuccessful
+      );
 
 
-}
+      // -------------------------------------------------------
+      // CHECK NAVIGATION
+      // -------------------------------------------------------
+
+      if (!navigationSuccessful) {
+
+        throw new Error(
+          'The application was submitted successfully, but the payment page could not be opened.'
+        );
+
+      }
+
+
+    } catch (error) {
+
+      console.error(
+        '5. Admission submission error:',
+        error
+      );
+
+
+      this.errorMessage =
+        error instanceof Error
+          ? error.message
+          : String(error);
+
+
+      this.submitted = false;
+
+
+    } finally {
+
+      console.log(
+        '6. Application submission process finished'
+      );
+
+
+      this.submitting = false;
+
+      this.cdr.detectChanges();
+
+    }
+
+  }
 
 }

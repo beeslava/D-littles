@@ -1,1 +1,385 @@
-<p>staff works!</p>
+<div class="staff-page">
+
+  <!-- =====================================================
+       HERO
+  ====================================================== -->
+
+  <section class="staff-hero">
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        D-LITTLES SCHOOL
+      </span>
+
+      <h1>
+        Our Staff
+      </h1>
+
+      <p>
+        Meet the dedicated teachers and staff who help
+        our students learn, grow and succeed.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       STAFF CONTENT
+  ====================================================== -->
+
+  <main class="staff-container">
+
+    <div class="section-heading">
+
+      <span>
+        OUR TEAM
+      </span>
+
+      <h2>
+        Meet Our Staff
+      </h2>
+
+      <p>
+        Our team is committed to providing quality education,
+        guidance and support to every student at D-Littles.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         ERROR
+    ==================================================== -->
+
+    <div
+      class="alert error-alert"
+      *ngIf="errorMessage"
+    >
+      {{ errorMessage }}
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    <div
+      class="loading-state"
+      *ngIf="loading"
+    >
+
+      <div class="loading-spinner"></div>
+
+      <p>
+        Loading staff...
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="!loading && staff.length === 0"
+    >
+
+      <div class="empty-icon">
+        👨‍🏫
+      </div>
+
+      <h2>
+        Staff Information Coming Soon
+      </h2>
+
+      <p>
+        Our staff information will be available here soon.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         STAFF GRID
+    ==================================================== -->
+
+    <section
+      class="staff-grid"
+      *ngIf="!loading && staff.length > 0"
+    >
+
+      <article
+        class="staff-card"
+        *ngFor="let member of staff"
+      >
+
+        <!-- PHOTO -->
+
+        <div class="staff-photo">
+
+          <img
+            *ngIf="member.photoUrl"
+            [src]="member.photoUrl"
+            [alt]="member.fullName"
+          />
+
+          <div
+            class="staff-initials"
+            *ngIf="!member.photoUrl"
+          >
+            {{ getInitials(member.fullName) }}
+          </div>
+
+        </div>
+
+
+        <!-- CONTENT -->
+
+        <div class="staff-content">
+
+          <span
+            class="staff-position"
+            *ngIf="member.position"
+          >
+            {{ member.position }}
+          </span>
+
+          <h3>
+            {{ member.fullName }}
+          </h3>
+
+          <p
+            class="staff-role"
+            *ngIf="member.role"
+          >
+            {{ member.role }}
+          </p>
+
+          <p
+            class="staff-department"
+            *ngIf="member.department"
+          >
+            {{ member.department }}
+          </p>
+
+          <button
+            type="button"
+            class="view-profile-button"
+            (click)="openStaff(member)"
+          >
+            View Profile
+            <span>→</span>
+          </button>
+
+        </div>
+
+      </article>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- =======================================================
+     STAFF PROFILE MODAL
+======================================================== -->
+
+<div
+  class="staff-modal"
+  *ngIf="selectedStaff"
+  (click)="onBackdropClick($event)"
+>
+
+  <div class="staff-modal-content">
+
+    <!-- CLOSE -->
+
+    <button
+      type="button"
+      class="close-button"
+      (click)="closeStaff()"
+      aria-label="Close"
+    >
+      ×
+    </button>
+
+
+    <!-- PHOTO -->
+
+    <div class="modal-photo">
+
+      <img
+        *ngIf="selectedStaff.photoUrl"
+        [src]="selectedStaff.photoUrl"
+        [alt]="selectedStaff.fullName"
+      />
+
+      <div
+        class="staff-initials"
+        *ngIf="!selectedStaff.photoUrl"
+      >
+        {{ getInitials(selectedStaff.fullName) }}
+      </div>
+
+    </div>
+
+
+    <span
+      class="staff-position"
+      *ngIf="selectedStaff.position"
+    >
+      {{ selectedStaff.position }}
+    </span>
+
+    <h2>
+      {{ selectedStaff.fullName }}
+    </h2>
+
+    <p
+      class="modal-role"
+      *ngIf="selectedStaff.role"
+    >
+      {{ selectedStaff.role }}
+    </p>
+
+
+    <!-- STAFF INFORMATION -->
+
+    <div class="staff-details">
+
+      <div
+        class="detail-item"
+        *ngIf="selectedStaff.department"
+      >
+
+        <span class="detail-icon">
+          🏫
+        </span>
+
+        <div>
+
+          <small>
+            Department
+          </small>
+
+          <strong>
+            {{ selectedStaff.department }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="detail-item"
+        *ngIf="selectedStaff.qualification"
+      >
+
+        <span class="detail-icon">
+          🎓
+        </span>
+
+        <div>
+
+          <small>
+            Qualification
+          </small>
+
+          <strong>
+            {{ selectedStaff.qualification }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="detail-item"
+        *ngIf="selectedStaff.email"
+      >
+
+        <span class="detail-icon">
+          ✉️
+        </span>
+
+        <div>
+
+          <small>
+            Email
+          </small>
+
+          <strong>
+            {{ selectedStaff.email }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="detail-item"
+        *ngIf="selectedStaff.phone"
+      >
+
+        <span class="detail-icon">
+          📞
+        </span>
+
+        <div>
+
+          <small>
+            Phone
+          </small>
+
+          <strong>
+            {{ selectedStaff.phone }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- BIO -->
+
+    <div
+      class="staff-bio"
+      *ngIf="selectedStaff.bio"
+    >
+
+      <h3>
+        About
+      </h3>
+
+      <p>
+        {{ selectedStaff.bio }}
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="modal-close-button"
+      (click)="closeStaff()"
+    >
+      Close
+    </button>
+
+  </div>
+
+</div>
+
+

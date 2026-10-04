@@ -1,1 +1,530 @@
-<p>gallery works!</p>
+<div class="gallery-page">
+
+  <!-- =====================================================
+       HERO
+  ====================================================== -->
+
+  <section class="gallery-hero">
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        D-LITTLES PRIVATE SCHOOL
+      </span>
+
+      <h1>Our Gallery</h1>
+
+      <p>
+        Explore memorable moments, school activities,
+        achievements and life at D-Littles.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+
+  <main class="gallery-container">
+
+    <!-- ===================================================
+         PAGE INTRO
+    ==================================================== -->
+
+    <section class="gallery-intro">
+
+      <div>
+
+        <span class="section-label">
+          SCHOOL MOMENTS
+        </span>
+
+        <h2>
+          Life at D-Littles
+        </h2>
+
+        <p>
+          Take a look at some of the special moments,
+          activities and experiences that make D-Littles
+          a vibrant learning community.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         SEARCH
+    ==================================================== -->
+
+    <section class="gallery-tools">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          🔍
+        </span>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Search gallery..."
+          aria-label="Search gallery"
+        />
+
+        <button
+          *ngIf="searchTerm"
+          type="button"
+          class="clear-search"
+          (click)="searchTerm = ''; onSearch()"
+          aria-label="Clear search"
+        >
+          ×
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CATEGORY FILTERS
+    ==================================================== -->
+
+    <section class="category-section">
+
+      <div class="category-scroll">
+
+        <button
+          *ngFor="let category of categories"
+          type="button"
+          class="category-button"
+          [class.active]="selectedCategory === category"
+          (click)="selectCategory(category)"
+        >
+          {{ category }}
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    <section
+      class="state-container"
+      *ngIf="loading"
+    >
+
+      <div class="spinner"></div>
+
+      <h3>
+        Loading Gallery...
+      </h3>
+
+      <p>
+        Please wait while we load our photos.
+      </p>
+
+    </section>
+
+
+    <!-- ===================================================
+         ERROR
+    ==================================================== -->
+
+    <section
+      class="state-container error-state"
+      *ngIf="!loading && errorMessage"
+    >
+
+      <div class="state-icon">
+        ⚠️
+      </div>
+
+      <h3>
+        Gallery Unavailable
+      </h3>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+      <button
+        type="button"
+        class="retry-button"
+        (click)="loadGallery()"
+      >
+        Try Again
+      </button>
+
+    </section>
+
+
+    <!-- ===================================================
+         EMPTY
+    ==================================================== -->
+
+    <section
+      class="state-container"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredGalleryItems.length === 0
+      "
+    >
+
+      <div class="state-icon">
+        🖼️
+      </div>
+
+      <h3>
+        No Photos Found
+      </h3>
+
+      <p
+        *ngIf="
+          searchTerm ||
+          selectedCategory !== 'All'
+        "
+      >
+        No gallery photos match your current
+        search or filter.
+      </p>
+
+      <p
+        *ngIf="
+          !searchTerm &&
+          selectedCategory === 'All'
+        "
+      >
+        There are no published gallery photos yet.
+      </p>
+
+      <button
+        *ngIf="
+          searchTerm ||
+          selectedCategory !== 'All'
+        "
+        type="button"
+        class="retry-button"
+        (click)="
+          searchTerm = '';
+          selectedCategory = 'All';
+          applyFilters()
+        "
+      >
+        Clear Filters
+      </button>
+
+    </section>
+
+
+    <!-- ===================================================
+         GALLERY GRID
+    ==================================================== -->
+
+    <section
+      class="gallery-grid"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredGalleryItems.length > 0
+      "
+    >
+
+      <article
+        class="gallery-card"
+        *ngFor="
+          let item of filteredGalleryItems;
+          trackBy: trackById
+        "
+      >
+
+        <!-- =================================================
+             IMAGE
+        ================================================== -->
+
+        <div
+          class="gallery-image"
+          (click)="openImage(item)"
+        >
+
+          <img
+            *ngIf="item.imageUrl"
+            [src]="item.imageUrl"
+            [alt]="item.title"
+            loading="lazy"
+            (error)="handleImageError($event)"
+          />
+
+          <div
+            class="image-placeholder"
+            *ngIf="!item.imageUrl"
+          >
+            🖼️
+          </div>
+
+
+          <!-- IMAGE OVERLAY -->
+
+          <div class="image-overlay">
+
+            <div class="view-icon">
+              🔍
+            </div>
+
+            <span>
+              View Photo
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CARD CONTENT
+        ================================================== -->
+
+        <div class="gallery-card-content">
+
+          <!-- TOP -->
+
+          <div class="card-top">
+
+            <span class="category-badge">
+              {{ item.category }}
+            </span>
+
+            <span
+              class="gallery-date"
+              *ngIf="
+                item.publishedAt ||
+                item.createdAt
+              "
+            >
+              {{
+                formatDate(
+                  item.publishedAt ||
+                  item.createdAt
+                )
+              }}
+            </span>
+
+          </div>
+
+
+          <!-- TITLE -->
+
+          <h3>
+            {{ item.title }}
+          </h3>
+
+
+          <!-- DESCRIPTION PREVIEW -->
+
+          <p
+            class="gallery-description"
+            *ngIf="item.description"
+          >
+            {{ item.description }}
+          </p>
+
+
+          <!-- READ MORE -->
+
+          <button
+            *ngIf="item.description"
+            type="button"
+            class="read-more-button"
+            (click)="openImage(item)"
+          >
+            Read More
+            <span>→</span>
+          </button>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- ===================================================
+         RESULT COUNT
+    ==================================================== -->
+
+    <div
+      class="result-count"
+      *ngIf="
+        !loading &&
+        !errorMessage &&
+        filteredGalleryItems.length > 0
+      "
+    >
+
+      Showing
+
+      <strong>
+        {{ filteredGalleryItems.length }}
+      </strong>
+
+      photo<span
+        *ngIf="
+          filteredGalleryItems.length !== 1
+        "
+      >
+        s
+      </span>
+
+    </div>
+
+  </main>
+
+
+  <!-- =====================================================
+       FULL GALLERY MODAL
+  ====================================================== -->
+
+  <div
+    class="gallery-modal"
+    *ngIf="
+      showModal &&
+      selectedItem
+    "
+    (click)="closeModal()"
+  >
+
+    <div
+      class="modal-content"
+      (click)="stopPropagation($event)"
+    >
+
+      <!-- =================================================
+           CLOSE
+      ================================================== -->
+
+      <button
+        type="button"
+        class="modal-close"
+        (click)="closeModal()"
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+
+      <!-- =================================================
+           IMAGE
+      ================================================== -->
+
+      <div class="modal-image-wrapper">
+
+        <img
+          *ngIf="selectedItem.imageUrl"
+          [src]="selectedItem.imageUrl"
+          [alt]="selectedItem.title"
+        />
+
+        <div
+          class="modal-placeholder"
+          *ngIf="!selectedItem.imageUrl"
+        >
+          🖼️
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           FULL DETAILS
+      ================================================== -->
+
+      <div class="modal-details">
+
+        <!-- META -->
+
+        <div class="modal-meta">
+
+          <span class="category-badge">
+            {{ selectedItem.category }}
+          </span>
+
+          <span
+            *ngIf="
+              selectedItem.publishedAt ||
+              selectedItem.createdAt
+            "
+          >
+            {{
+              formatDate(
+                selectedItem.publishedAt ||
+                selectedItem.createdAt
+              )
+            }}
+          </span>
+
+        </div>
+
+
+        <!-- TITLE -->
+
+        <h2>
+          {{ selectedItem.title }}
+        </h2>
+
+
+        <!-- FULL DESCRIPTION -->
+
+        <div
+          class="full-description"
+          *ngIf="selectedItem.description"
+        >
+          {{ selectedItem.description }}
+        </div>
+
+
+        <!-- NO DESCRIPTION -->
+
+        <p
+          class="no-description"
+          *ngIf="!selectedItem.description"
+        >
+          No additional information is available
+          for this gallery item.
+        </p>
+
+
+        <!-- CLOSE BUTTON -->
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            class="modal-close-button"
+            (click)="closeModal()"
+          >
+            Close
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+

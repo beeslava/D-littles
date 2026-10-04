@@ -1,0 +1,1282 @@
+<div class="parent-dashboard">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="dashboard-header">
+
+    <div class="header-content">
+
+      <div class="header-brand">
+
+        <span class="school-label">
+          D LITTLE PRIVATE SCHOOL
+        </span>
+
+        <h1>
+          Parent Dashboard
+        </h1>
+
+        <p>
+          Welcome back,
+          <strong>
+            {{ getParentName() }}
+          </strong>
+        </p>
+
+      </div>
+
+
+      <div class="header-actions">
+
+        <span class="current-date">
+          {{ currentDate | date:'EEEE, MMMM d, y' }}
+        </span>
+
+        <button
+          type="button"
+          class="logout-button"
+          (click)="logout()">
+
+          <i class="fas fa-sign-out-alt"></i>
+
+          <span>
+            Logout
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       ERROR MESSAGE
+  ====================================================== -->
+
+  <div
+    class="dashboard-container"
+    *ngIf="errorMessage && !loading">
+
+    <div class="alert-error">
+
+      <i class="fas fa-exclamation-circle"></i>
+
+      <div>
+
+        <strong>
+          Something went wrong
+        </strong>
+
+        <span>
+          {{ errorMessage }}
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-container"
+    *ngIf="loading">
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Loading your dashboard...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       MAIN DASHBOARD
+  ====================================================== -->
+
+  <main
+    class="dashboard-container"
+    *ngIf="!loading && currentUser">
+
+
+    <!-- ===================================================
+         WELCOME CARD
+    ==================================================== -->
+
+    <section class="welcome-card">
+
+      <div class="welcome-info">
+
+        <div class="parent-avatar">
+
+          <i class="fas fa-user-friends"></i>
+
+        </div>
+
+
+        <div class="welcome-text">
+
+          <span class="welcome-label">
+            Welcome back
+          </span>
+
+          <h2>
+            {{ getParentName() }}
+          </h2>
+
+          <p>
+            Stay connected with your children's academic progress,
+            school information, and account updates.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="parent-status">
+
+        <span class="status-dot"></span>
+
+        <span>
+          {{ currentUser.status || 'Active' }}
+        </span>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         SUMMARY CARDS
+    ==================================================== -->
+
+    <section class="info-grid">
+
+
+      <!-- CHILDREN -->
+
+      <div class="info-card">
+
+        <div class="info-icon blue">
+
+          <i class="fas fa-users"></i>
+
+        </div>
+
+        <div class="info-content">
+
+          <span>
+            My Children
+          </span>
+
+          <strong>
+            {{ children.length }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- SELECTED CHILD -->
+
+      <div class="info-card">
+
+        <div class="info-icon green">
+
+          <i class="fas fa-user-graduate"></i>
+
+        </div>
+
+        <div class="info-content">
+
+          <span>
+            Selected Child
+          </span>
+
+          <strong>
+            {{
+              selectedChild
+                ? getChildName(selectedChild)
+                : 'None'
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- PUBLISHED RESULTS -->
+
+      <div class="info-card">
+
+        <div class="info-icon purple">
+
+          <i class="fas fa-book-open"></i>
+
+        </div>
+
+        <div class="info-content">
+
+          <span>
+            Published Results
+          </span>
+
+          <strong>
+            {{ totalResults }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- AVERAGE -->
+
+      <div class="info-card">
+
+        <div class="info-icon orange">
+
+          <i class="fas fa-chart-line"></i>
+
+        </div>
+
+        <div class="info-content">
+
+          <span>
+            Average Score
+          </span>
+
+          <strong>
+            {{ averageScore | number:'1.1-1' }}%
+          </strong>
+
+        </div>
+
+      </div>
+
+
+    </section>
+
+
+    <!-- ===================================================
+         MY CHILDREN
+    ==================================================== -->
+
+    <section class="dashboard-card children-card">
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="card-label">
+            FAMILY
+          </span>
+
+          <h3>
+            My Children
+          </h3>
+
+          <p>
+            Select a child to view their academic information.
+          </p>
+
+        </div>
+
+        <div class="card-header-icon">
+
+          <i class="fas fa-users"></i>
+
+        </div>
+
+      </div>
+
+
+      <!-- CHILDREN LIST -->
+
+      <div
+        class="children-grid"
+        *ngIf="children.length > 0; else noChildren">
+
+
+        <button
+          type="button"
+          class="child-card"
+          *ngFor="let child of children"
+          [class.selected]="selectedChild?.id === child.id"
+          (click)="selectChild(child)">
+
+
+          <div class="child-avatar">
+
+            <i class="fas fa-user-graduate"></i>
+
+          </div>
+
+
+          <div class="child-info">
+
+            <strong>
+              {{ getChildName(child) }}
+            </strong>
+
+            <span>
+
+              <i class="fas fa-id-card"></i>
+
+              {{ child.studentId || 'No Student ID' }}
+
+            </span>
+
+            <span>
+
+              <i class="fas fa-school"></i>
+
+              {{ child.className || child.class || 'Class not assigned' }}
+
+            </span>
+
+          </div>
+
+
+          <div class="child-selection">
+
+            <span
+              class="selected-label"
+              *ngIf="selectedChild?.id === child.id">
+
+              Selected
+
+            </span>
+
+            <i
+              class="fas"
+              [class.fa-check-circle]="selectedChild?.id === child.id"
+              [class.fa-chevron-right]="selectedChild?.id !== child.id">
+            </i>
+
+          </div>
+
+
+        </button>
+
+
+      </div>
+
+
+      <!-- NO CHILDREN -->
+
+      <ng-template #noChildren>
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+
+            <i class="fas fa-users"></i>
+
+          </div>
+
+          <h4>
+            No Children Found
+          </h4>
+
+          <p>
+            No student records are currently linked to your parent account.
+            Please contact the school administration if you believe this is an error.
+          </p>
+
+        </div>
+
+      </ng-template>
+
+    </section>
+
+
+    <!-- ===================================================
+         SELECTED CHILD PROFILE
+    ==================================================== -->
+
+    <section
+      class="dashboard-card selected-child-card"
+      *ngIf="selectedChild">
+
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="card-label">
+            STUDENT PROFILE
+          </span>
+
+          <h3>
+            {{ getChildName(selectedChild) }}
+          </h3>
+
+          <p>
+            Student information and current enrollment status.
+          </p>
+
+        </div>
+
+        <div class="card-header-icon">
+
+          <i class="fas fa-user-graduate"></i>
+
+        </div>
+
+      </div>
+
+
+      <div class="student-profile-grid">
+
+
+        <!-- STUDENT ID -->
+
+        <div class="profile-row">
+
+          <span>
+
+            <i class="fas fa-id-card"></i>
+
+            Student ID
+
+          </span>
+
+          <strong>
+            {{ selectedChild.studentId || '-' }}
+          </strong>
+
+        </div>
+
+
+        <!-- FULL NAME -->
+
+        <div class="profile-row">
+
+          <span>
+
+            <i class="fas fa-user"></i>
+
+            Full Name
+
+          </span>
+
+          <strong>
+            {{ getChildName(selectedChild) }}
+          </strong>
+
+        </div>
+
+
+        <!-- GENDER -->
+
+        <div class="profile-row">
+
+          <span>
+
+            <i class="fas fa-venus-mars"></i>
+
+            Gender
+
+          </span>
+
+          <strong>
+            {{ selectedChild.gender || '-' }}
+          </strong>
+
+        </div>
+
+
+        <!-- DATE OF BIRTH -->
+
+        <div class="profile-row">
+
+          <span>
+
+            <i class="fas fa-calendar"></i>
+
+            Date of Birth
+
+          </span>
+
+          <strong>
+            {{ selectedChild.dateOfBirth || '-' }}
+          </strong>
+
+        </div>
+
+
+        <!-- CLASS -->
+
+        <div class="profile-row">
+
+          <span>
+
+            <i class="fas fa-chalkboard"></i>
+
+            Current Class
+
+          </span>
+
+          <strong>
+            {{ getSelectedClassName() }}
+          </strong>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="profile-row">
+
+          <span>
+
+            <i class="fas fa-circle"></i>
+
+            Status
+
+          </span>
+
+          <strong class="student-status">
+
+            <span class="status-dot"></span>
+
+            {{ selectedChild.status || 'Active' }}
+
+          </strong>
+
+        </div>
+
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CLASS INFORMATION
+    ==================================================== -->
+
+    <section
+      class="dashboard-card class-card"
+      *ngIf="selectedChild">
+
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="card-label">
+            ACADEMIC
+          </span>
+
+          <h3>
+            Class Information
+          </h3>
+
+          <p>
+            Current class and teacher information.
+          </p>
+
+        </div>
+
+        <div class="card-header-icon">
+
+          <i class="fas fa-chalkboard"></i>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="class-content"
+        *ngIf="selectedChildClass; else noClass">
+
+
+        <div class="class-title">
+
+          <span>
+            Current Class
+          </span>
+
+          <strong>
+            {{ getSelectedClassName() }}
+          </strong>
+
+        </div>
+
+
+        <div class="class-details">
+
+
+          <!-- CLASS CODE -->
+
+          <div>
+
+            <span>
+              Class Code
+            </span>
+
+            <strong>
+              {{ selectedChildClass.classCode || '-' }}
+            </strong>
+
+          </div>
+
+
+          <!-- SECTION -->
+
+          <div>
+
+            <span>
+              Section
+            </span>
+
+            <strong>
+              {{ selectedChildClass.section || '-' }}
+            </strong>
+
+          </div>
+
+
+          <!-- ACADEMIC YEAR -->
+
+          <div>
+
+            <span>
+              Academic Year
+            </span>
+
+            <strong>
+              {{ selectedChildClass.academicYear || '-' }}
+            </strong>
+
+          </div>
+
+
+          <!-- CLASS TEACHER -->
+
+          <div>
+
+            <span>
+              Class Teacher
+            </span>
+
+            <strong>
+              {{ selectedChildClass.classTeacherName || '-' }}
+            </strong>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <ng-template #noClass>
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+
+            <i class="fas fa-school"></i>
+
+          </div>
+
+          <h4>
+            No Class Assigned
+          </h4>
+
+          <p>
+            A class has not been assigned to this student yet.
+          </p>
+
+        </div>
+
+      </ng-template>
+
+
+    </section>
+
+
+    <!-- ===================================================
+         RESULTS
+    ==================================================== -->
+
+    <section
+      class="dashboard-card results-card"
+      *ngIf="selectedChild">
+
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="card-label">
+            ACADEMIC PERFORMANCE
+          </span>
+
+          <h3>
+            {{ getChildName(selectedChild) }}'s Results
+          </h3>
+
+          <p>
+            Only results published by the school are displayed here.
+          </p>
+
+        </div>
+
+        <div class="card-header-icon">
+
+          <i class="fas fa-graduation-cap"></i>
+
+        </div>
+
+      </div>
+
+
+      <!-- RESULTS TABLE -->
+
+      <div
+        class="results-table-wrapper"
+        *ngIf="selectedChildResults.length > 0; else noResults">
+
+
+        <table class="results-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Subject
+              </th>
+
+              <th>
+                Total
+              </th>
+
+              <th>
+                Grade
+              </th>
+
+              <th>
+                Remark
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let result of selectedChildResults;
+                let i = index
+              ">
+
+
+              <!-- NUMBER -->
+
+              <td>
+                {{ i + 1 }}
+              </td>
+
+
+              <!-- SUBJECT -->
+
+              <td>
+
+                <strong>
+                  {{ result.subjectName || 'Subject' }}
+                </strong>
+
+              </td>
+
+
+              <!-- TOTAL -->
+
+              <td>
+
+                <strong>
+                  {{ result.total || 0 }}
+                </strong>
+
+              </td>
+
+
+              <!-- GRADE -->
+
+              <td>
+
+                <span
+                  class="grade-badge"
+                  [class.grade-a]="result.grade === 'A'"
+                  [class.grade-b]="result.grade === 'B'"
+                  [class.grade-c]="result.grade === 'C'"
+                  [class.grade-d]="result.grade === 'D'"
+                  [class.grade-e]="result.grade === 'E'"
+                  [class.grade-f]="result.grade === 'F'">
+
+                  {{ result.grade || '-' }}
+
+                </span>
+
+              </td>
+
+
+              <!-- REMARK -->
+
+              <td>
+                {{ result.remark || '-' }}
+              </td>
+
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+      </div>
+
+
+      <!-- NO RESULTS -->
+
+      <ng-template #noResults>
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+
+            <i class="fas fa-chart-bar"></i>
+
+          </div>
+
+          <h4>
+            No Published Results Yet
+          </h4>
+
+          <p>
+            Published academic results for
+            {{ getChildName(selectedChild) }}
+            will appear here.
+          </p>
+
+        </div>
+
+      </ng-template>
+
+
+    </section>
+
+
+    <!-- ===================================================
+         QUICK ACCESS
+    ==================================================== -->
+
+    <section class="quick-section">
+
+      <div class="section-title">
+
+        <div>
+
+          <span class="card-label">
+            PARENT SERVICES
+          </span>
+
+          <h3>
+            Quick Access
+          </h3>
+
+          <p>
+            Access your child's academic information and account services.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="quick-grid">
+
+
+        <!-- =================================================
+             CHILD RESULTS
+        ================================================== -->
+
+        <a
+          routerLink="/parent/results"
+          class="quick-card">
+
+          <div class="quick-icon blue">
+
+            <i class="fas fa-chart-bar"></i>
+
+          </div>
+
+          <div class="quick-content">
+
+            <strong>
+              Child Results
+            </strong>
+
+            <span>
+              View your child's academic results
+            </span>
+
+          </div>
+
+          <i class="fas fa-chevron-right quick-arrow"></i>
+
+        </a>
+
+
+        <!-- =================================================
+             REPORT CARD
+        ================================================== -->
+
+        <a
+          routerLink="/parent/report-card"
+          class="quick-card">
+
+          <div class="quick-icon green">
+
+            <i class="fas fa-file-alt"></i>
+
+          </div>
+
+          <div class="quick-content">
+
+            <strong>
+              Report Card
+            </strong>
+
+            <span>
+              View your child's report card
+            </span>
+
+          </div>
+
+          <i class="fas fa-chevron-right quick-arrow"></i>
+
+        </a>
+
+
+        <!-- =================================================
+             SCHOOL FEES
+        ================================================== -->
+
+        <a
+          routerLink="/parent/fees"
+          class="quick-card">
+
+          <div class="quick-icon orange">
+
+            <i class="fas fa-money-bill-wave"></i>
+
+          </div>
+
+          <div class="quick-content">
+
+            <strong>
+              School Fees
+            </strong>
+
+            <span>
+              View school fees and payments
+            </span>
+
+          </div>
+
+          <i class="fas fa-chevron-right quick-arrow"></i>
+
+        </a>
+
+
+        <!-- =================================================
+             MESSAGES
+        ================================================== -->
+
+        <a
+          routerLink="/parent/messages"
+          class="quick-card">
+
+          <div class="quick-icon purple">
+
+            <i class="fas fa-envelope"></i>
+
+          </div>
+
+          <div class="quick-content">
+
+            <strong>
+              Messages
+            </strong>
+
+            <span>
+              View school messages
+            </span>
+
+          </div>
+
+          <i class="fas fa-chevron-right quick-arrow"></i>
+
+        </a>
+
+
+        <!-- =================================================
+             CHANGE PASSWORD
+        ================================================== -->
+
+        <button
+          type="button"
+          class="quick-card quick-card-button"
+          (click)="showChangePassword = !showChangePassword">
+
+
+          <div class="quick-icon red">
+
+            <i class="fas fa-lock"></i>
+
+          </div>
+
+
+          <div class="quick-content">
+
+            <strong>
+              Change Password
+            </strong>
+
+            <span>
+              Update your account password
+            </span>
+
+          </div>
+
+
+          <i
+            class="fas quick-arrow"
+            [class.fa-chevron-down]="!showChangePassword"
+            [class.fa-chevron-up]="showChangePassword">
+          </i>
+
+
+        </button>
+
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CHANGE PASSWORD
+    ====================================================== -->
+
+    <section
+      class="dashboard-card password-card"
+      *ngIf="showChangePassword">
+
+
+      <div class="card-header">
+
+        <div>
+
+          <span class="card-label">
+            ACCOUNT SECURITY
+          </span>
+
+          <h3>
+            Change Password
+          </h3>
+
+          <p>
+            Keep your parent account secure by using a strong password.
+          </p>
+
+        </div>
+
+        <div class="card-header-icon">
+
+          <i class="fas fa-shield-alt"></i>
+
+        </div>
+
+      </div>
+
+
+      <!-- SUCCESS MESSAGE -->
+
+      <div
+        class="password-success"
+        *ngIf="passwordSuccess">
+
+        <i class="fas fa-check-circle"></i>
+
+        <span>
+          {{ passwordSuccess }}
+        </span>
+
+      </div>
+
+
+      <!-- ERROR MESSAGE -->
+
+      <div
+        class="password-error"
+        *ngIf="passwordError">
+
+        <i class="fas fa-exclamation-circle"></i>
+
+        <span>
+          {{ passwordError }}
+        </span>
+
+      </div>
+
+
+      <!-- PASSWORD FORM -->
+
+      <form
+        class="password-form"
+        (ngSubmit)="changePassword()">
+
+
+        <!-- CURRENT PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="parentCurrentPassword">
+            Current Password
+          </label>
+
+          <input
+            id="parentCurrentPassword"
+            name="currentPassword"
+            type="password"
+            [(ngModel)]="currentPassword"
+            placeholder="Enter your current password"
+            autocomplete="current-password"
+            required>
+
+        </div>
+
+
+        <!-- NEW PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="parentNewPassword">
+            New Password
+          </label>
+
+          <input
+            id="parentNewPassword"
+            name="newPassword"
+            type="password"
+            [(ngModel)]="newPassword"
+            placeholder="Enter your new password"
+            autocomplete="new-password"
+            required>
+
+        </div>
+
+
+        <!-- CONFIRM PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="parentConfirmPassword">
+            Confirm New Password
+          </label>
+
+          <input
+            id="parentConfirmPassword"
+            name="confirmPassword"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            placeholder="Confirm your new password"
+            autocomplete="new-password"
+            required>
+
+        </div>
+
+
+        <!-- PASSWORD ACTIONS -->
+
+        <div class="password-actions">
+
+
+          <button
+            type="button"
+            class="password-cancel"
+            (click)="showChangePassword = false">
+
+            <i class="fas fa-times"></i>
+
+            Cancel
+
+          </button>
+
+
+          <button
+            type="submit"
+            class="password-submit"
+            [disabled]="changingPassword">
+
+
+            <i
+              *ngIf="changingPassword"
+              class="fas fa-spinner fa-spin">
+            </i>
+
+
+            <i
+              *ngIf="!changingPassword"
+              class="fas fa-key">
+            </i>
+
+
+            {{
+              changingPassword
+                ? 'Updating...'
+                : 'Change Password'
+            }}
+
+
+          </button>
+
+
+        </div>
+
+      </form>
+
+    </section>
+
+
+  </main>
+
+</div>

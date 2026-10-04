@@ -200,15 +200,17 @@
           </span>
 
           <span class="nav-text">
-            Academics 
+            Academics
           </span>
 
           <span class="dropdown-arrow">
+
             <i
               class="fas"
               [class.fa-chevron-down]="!academicsOpen"
               [class.fa-chevron-up]="academicsOpen">
             </i>
+
           </span>
 
         </button>
@@ -352,6 +354,24 @@
       </a>
 
 
+      <!-- PAYMENTS -->
+
+      <a
+        routerLink="/admin/payments"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-credit-card"></i>
+        </span>
+
+        <span class="nav-text">
+          Payments
+        </span>
+
+      </a>
+
+
       <!-- MESSAGES -->
 
       <a
@@ -365,6 +385,33 @@
 
         <span class="nav-text">
           Messages
+        </span>
+
+      </a>
+
+
+      <!-- =================================================
+           SUB ADMINS
+           =================================================
+           
+           ONLY THE MAIN ADMINISTRATOR CAN SEE THIS.
+           
+           Active sub-admins will NOT see this item.
+           
+           ================================================= -->
+
+      <a
+        *ngIf="isMainAdmin"
+        routerLink="/admin/sub-admins"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-user-shield"></i>
+        </span>
+
+        <span class="nav-text">
+          Sub Admins
         </span>
 
       </a>
@@ -589,3 +636,4 @@
   </main>
 
 </div>
+

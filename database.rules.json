@@ -1,0 +1,88 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "admissions": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+
+      "$applicationId": {
+        ".write": "!data.exists() || (auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".validate": "newData.exists()"
+      }
+    },
+
+    "students": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('users').child(auth.uid).child('role').val() === 'student' && query.orderByChild === 'uid' && query.equalTo === auth.uid))",
+
+      ".indexOn": [
+        "uid",
+        "studentId"
+      ],
+
+      "$studentId": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+        ".validate": "newData.exists()"
+      }
+    },
+
+    "parents": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('parents').val() === true))",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('parents').val() === true))"
+    },
+
+    "staff": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('staff').val() === true))",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('staff').val() === true))"
+    },
+
+    "classes": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('classes').val() === true) || root.child('users').child(auth.uid).child('role').val() === 'student')",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('classes').val() === true))"
+    },
+
+    "subjects": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('subjects').val() === true))",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('subjects').val() === true))"
+    },
+
+    "teachingAssignments": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('teachingAssignments').val() === true))",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('teachingAssignments').val() === true))"
+    },
+
+    "academicSessions": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('academics').val() === true))",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('academics').val() === true))"
+    },
+
+    "academicTerms": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('academics').val() === true))",
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('academics').val() === true))"
+    },
+
+    "results": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('results').val() === true) || (root.child('users').child(auth.uid).child('role').val() === 'student' && query.orderByChild === 'studentId' && query.equalTo === root.child('users').child(auth.uid).child('studentRecordId').val()))",
+
+      ".indexOn": [
+        "studentId"
+      ],
+
+      ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (root.child('subAdmins').child(auth.uid).child('status').val() === 'active' && root.child('subAdmins').child(auth.uid).child('permissions').child('results').val() === true))"
+    }
+  }
+}

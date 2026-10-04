@@ -72,9 +72,9 @@ try {
       ]);
       break;
 
-    case 'teacher':
+    case 'staff':
       await this.router.navigate([
-        '/teacher/dashboard'
+        '/staff/dashboard'
       ]);
       break;
 

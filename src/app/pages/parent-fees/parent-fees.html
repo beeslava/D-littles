@@ -1,0 +1,664 @@
+<div class="parent-fees-page">
+
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
+
+  <header class="fees-header">
+
+    <div class="header-left">
+
+      <button
+        type="button"
+        class="back-button"
+        (click)="goToDashboard()"
+      >
+        <i class="fas fa-arrow-left"></i>
+        Dashboard
+      </button>
+
+      <div>
+
+        <span class="eyebrow">
+          PARENT PORTAL
+        </span>
+
+        <h1>
+          School Fees
+        </h1>
+
+        <p>
+          View your child's school fees, payments and outstanding balance.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="refresh()"
+      [disabled]="refreshing"
+    >
+
+      <i
+        class="fas"
+        [class.fa-sync-alt]="!refreshing"
+        [class.fa-spinner]="refreshing"
+        [class.fa-spin]="refreshing"
+      ></i>
+
+      {{ refreshing ? 'Refreshing...' : 'Refresh' }}
+
+    </button>
+
+  </header>
+
+
+  <!-- =====================================================
+       ALERTS
+       ===================================================== -->
+
+  <div
+    class="alert success-alert"
+    *ngIf="successMessage"
+  >
+
+    <i class="fas fa-check-circle"></i>
+
+    <span>
+      {{ successMessage }}
+    </span>
+
+  </div>
+
+
+  <div
+    class="alert error-alert"
+    *ngIf="errorMessage"
+  >
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <section
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="spinner"></div>
+
+    <h3>
+      Loading school fees...
+    </h3>
+
+    <p>
+      Please wait while we load your children's fee information.
+    </p>
+
+  </section>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+       ===================================================== -->
+
+  <main
+    class="fees-content"
+    *ngIf="!loading"
+  >
+
+
+    <!-- =================================================
+         CHILD SELECTOR
+         ================================================= -->
+
+    <section
+      class="child-selector-card"
+      *ngIf="children.length"
+    >
+
+      <div class="selector-heading">
+
+        <div class="heading-icon">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+
+        <div>
+
+          <span>
+            SELECT CHILD
+          </span>
+
+          <h2>
+            View fees for a student
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div class="child-list">
+
+        <button
+          type="button"
+          class="child-card"
+          *ngFor="let child of children"
+          [class.selected]="selectedChild?.id === child.id"
+          (click)="selectChild(child)"
+        >
+
+          <div class="child-avatar">
+
+            {{
+              getChildName(child)
+                .charAt(0)
+                .toUpperCase()
+            }}
+
+          </div>
+
+          <div class="child-information">
+
+            <strong>
+              {{ getChildName(child) }}
+            </strong>
+
+            <span>
+              {{ child.studentId || 'No student ID' }}
+            </span>
+
+            <small>
+              {{ getChildClass(child) }}
+            </small>
+
+          </div>
+
+          <i
+            class="fas fa-check-circle selected-icon"
+            *ngIf="selectedChild?.id === child.id"
+          ></i>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         SELECTED CHILD
+         ================================================= -->
+
+    <section
+      class="selected-child-card"
+      *ngIf="selectedChild"
+    >
+
+      <div>
+
+        <span class="eyebrow">
+          SELECTED STUDENT
+        </span>
+
+        <h2>
+          {{ getChildName(selectedChild) }}
+        </h2>
+
+        <p>
+
+          <span>
+            Student ID:
+            <strong>
+              {{ selectedChild.studentId || 'N/A' }}
+            </strong>
+          </span>
+
+          <span>
+            Class:
+            <strong>
+              {{ getChildClass(selectedChild) }}
+            </strong>
+          </span>
+
+        </p>
+
+      </div>
+
+      <div class="student-icon">
+        <i class="fas fa-user-graduate"></i>
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         SUMMARY
+         ================================================= -->
+
+    <section
+      class="summary-grid"
+      *ngIf="selectedChild"
+    >
+
+      <!-- TOTAL FEES -->
+
+      <div class="summary-card">
+
+        <div class="summary-icon">
+          <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Total Fees
+          </span>
+
+          <strong>
+            ₦{{ totalFees | number:'1.2-2' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- TOTAL PAID -->
+
+      <div class="summary-card paid-summary">
+
+        <div class="summary-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Amount Paid
+          </span>
+
+          <strong>
+            ₦{{ totalPaid | number:'1.2-2' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- BALANCE -->
+
+      <div class="summary-card balance-summary">
+
+        <div class="summary-icon">
+          <i class="fas fa-wallet"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Outstanding Balance
+          </span>
+
+          <strong>
+            ₦{{ totalBalance | number:'1.2-2' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- FEE STATUS -->
+
+      <div class="summary-card status-summary">
+
+        <div class="summary-icon">
+          <i class="fas fa-chart-pie"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Fee Status
+          </span>
+
+          <strong>
+
+            {{
+              paidFeeCount
+            }}
+
+            Paid
+
+          </strong>
+
+          <small>
+
+            {{
+              partiallyPaidFeeCount
+            }}
+            Partial ·
+            {{
+              unpaidFeeCount
+            }}
+            Unpaid
+
+          </small>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         NO FEES
+         ================================================= -->
+
+    <section
+      class="empty-state"
+      *ngIf="
+        selectedChild &&
+        !childFees.length &&
+        !errorMessage
+      "
+    >
+
+      <div class="empty-icon">
+        <i class="fas fa-file-invoice"></i>
+      </div>
+
+      <h2>
+        No Fees Assigned Yet
+      </h2>
+
+      <p>
+        There is currently no active fee structure assigned
+        to {{ getChildName(selectedChild) }}'s class.
+      </p>
+
+    </section>
+
+
+    <!-- =================================================
+         FEE STRUCTURES
+         ================================================= -->
+
+    <section
+      class="fee-section"
+      *ngIf="childFees.length"
+    >
+
+      <div class="section-heading">
+
+        <div>
+
+          <span>
+            FEE STRUCTURES
+          </span>
+
+          <h2>
+            School Fees
+          </h2>
+
+        </div>
+
+        <span class="fee-count">
+          {{ childFees.length }}
+          {{ childFees.length === 1 ? 'Fee' : 'Fees' }}
+        </span>
+
+      </div>
+
+
+      <!-- FEE CARDS -->
+
+      <div class="fee-cards">
+
+        <article
+          class="fee-card"
+          *ngFor="let childFee of childFees"
+        >
+
+          <!-- FEE HEADER -->
+
+          <div class="fee-card-header">
+
+            <div>
+
+              <span class="fee-label">
+                FEE STRUCTURE
+              </span>
+
+              <h3>
+                {{ childFee.fee.title }}
+              </h3>
+
+              <p
+                *ngIf="childFee.fee.description"
+              >
+                {{ childFee.fee.description }}
+              </p>
+
+            </div>
+
+
+            <span
+              class="status-badge"
+              [class.status-paid]="childFee.status === 'paid'"
+              [class.status-partial]="childFee.status === 'partially_paid'"
+              [class.status-unpaid]="childFee.status === 'unpaid'"
+            >
+
+              {{
+                getStatusLabel(
+                  childFee.status
+                )
+              }}
+
+            </span>
+
+          </div>
+
+
+          <!-- FEE ITEMS -->
+
+          <div class="fee-items">
+
+            <div class="fee-items-heading">
+
+              <span>
+                Fee Item
+              </span>
+
+              <span>
+                Amount
+              </span>
+
+            </div>
+
+
+            <div
+              class="fee-item"
+              *ngFor="let item of childFee.fee.items"
+            >
+
+              <span>
+                {{ item.name }}
+              </span>
+
+              <strong>
+                ₦{{ item.amount | number:'1.2-2' }}
+              </strong>
+
+            </div>
+
+
+            <div
+              class="fee-item"
+              *ngIf="!childFee.fee.items.length"
+            >
+
+              <span>
+                School Fee
+              </span>
+
+              <strong>
+                ₦{{
+                  childFee.fee.totalAmount
+                    | number:'1.2-2'
+                }}
+              </strong>
+
+            </div>
+
+
+            <!-- TOTAL -->
+
+            <div class="fee-total">
+
+              <span>
+                Total Fee
+              </span>
+
+              <strong>
+                ₦{{
+                  childFee.fee.totalAmount
+                    | number:'1.2-2'
+                }}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <!-- PAYMENT SUMMARY -->
+
+          <div class="payment-summary">
+
+            <div>
+
+              <span>
+                Amount Paid
+              </span>
+
+              <strong class="paid-amount">
+                ₦{{
+                  childFee.amountPaid
+                    | number:'1.2-2'
+                }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Balance
+              </span>
+
+              <strong class="balance-amount">
+                ₦{{
+                  childFee.balance
+                    | number:'1.2-2'
+                }}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="fee-actions">
+
+            <button
+              type="button"
+              class="pay-button"
+              *ngIf="
+                childFee.balance > 0
+              "
+              (click)="payOnline(childFee)"
+            >
+
+              <i class="fas fa-credit-card"></i>
+
+              Pay Online
+
+            </button>
+
+            <span
+              class="fully-paid-message"
+              *ngIf="
+                childFee.status === 'paid'
+              "
+            >
+
+              <i class="fas fa-check-circle"></i>
+
+              Fully Paid
+
+            </span>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         PAYMENT NOTE
+         ================================================= -->
+
+    <section
+      class="payment-note"
+      *ngIf="childFees.length"
+    >
+
+      <div class="note-icon">
+        <i class="fas fa-info-circle"></i>
+      </div>
+
+      <div>
+
+        <strong>
+          Online payments
+        </strong>
+
+        <p>
+          Online payment will be available once the school's
+          secure payment gateway has been connected.
+        </p>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+</div>
+
+

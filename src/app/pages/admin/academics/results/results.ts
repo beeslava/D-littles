@@ -25,93 +25,192 @@ import {
 import { database } from '../../../../core/firebase.config';
 
 
+// =========================================================
+// STUDENT
+// =========================================================
+
 interface Student {
+
   id: string;
+
   studentId: string;
+
+  uid?: string;
+
+  studentRecordId?: string;
+
+  parentId?: string;
+
   fullName: string;
+
   firstName?: string;
+
   lastName?: string;
+
   classId?: string;
+
   className?: string;
+
   status: string;
+
 }
 
+
+// =========================================================
+// SCHOOL CLASS
+// =========================================================
 
 interface SchoolClass {
+
   id: string;
+
   classCode: string;
+
   className: string;
+
   section: string;
+
   classTeacherId: string;
+
   classTeacherName: string;
+
   room: string;
+
   capacity: number;
+
   academicYear: string;
+
   status: string;
+
   description: string;
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
+
+// =========================================================
+// SCHOOL SUBJECT
+// =========================================================
 
 interface SchoolSubject {
+
   id: string;
+
   subjectCode: string;
+
   subjectName: string;
+
   category: string;
+
   description: string;
+
   status: string;
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
+
+// =========================================================
+// STAFF
+// =========================================================
 
 interface StaffMember {
+
   id: string;
+
   staffId: string;
+
   fullName: string;
+
   email: string;
+
   phone: string;
+
   gender: string;
+
   position: string;
+
   department: string;
+
   qualification: string;
+
   employmentDate: string;
+
   address: string;
+
   emergencyContact: string;
+
   status: string;
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
+// =========================================================
+// TEACHING ASSIGNMENT
+// =========================================================
+
 interface TeachingAssignment {
+
   id: string;
+
   classId: string;
+
   subjectId: string;
+
   teacherId: string;
 
   className: string;
+
   subjectName: string;
+
   teacherName: string;
 
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
+
+// =========================================================
+// ACADEMIC SESSION
+// =========================================================
 
 interface AcademicSession {
+
   id: string;
+
   name: string;
+
   status: 'active' | 'inactive';
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
+// =========================================================
+// ACADEMIC TERM
+// =========================================================
+
 interface AcademicTerm {
+
   id: string;
+
   sessionId: string;
+
   sessionName: string;
 
   name:
@@ -122,47 +221,77 @@ interface AcademicTerm {
   status: 'active' | 'inactive';
 
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
+// =========================================================
+// ACADEMIC RESULT
+// =========================================================
+
 interface AcademicResult {
+
   id: string;
 
   studentId: string;
+
+  studentRecordId?: string;
+
+  studentUid?: string;
+
+  parentId?: string;
+
   studentName: string;
 
   classId: string;
+
   className: string;
 
   subjectId: string;
+
   subjectName: string;
 
   teacherId: string;
+
   teacherName: string;
 
   sessionId: string;
+
   sessionName: string;
 
   termId: string;
+
   termName: string;
 
   ca1: number;
+
   ca2: number;
+
   exam: number;
 
   total: number;
+
   grade: string;
+
   remark: string;
 
   status: 'draft' | 'published';
 
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
+// =========================================================
+// RESULTS COMPONENT
+// =========================================================
+
 @Component({
+
   selector: 'app-results',
 
   standalone: true,
@@ -176,8 +305,14 @@ interface AcademicResult {
   templateUrl: './results.html',
 
   styleUrl: './results.css'
+
 })
 export class Results implements OnInit {
+
+
+  // =========================================================
+  // DATA
+  // =========================================================
 
   students: Student[] = [];
 
@@ -196,6 +331,10 @@ export class Results implements OnInit {
   results: AcademicResult[] = [];
 
 
+  // =========================================================
+  // STATISTICS
+  // =========================================================
+
   totalResults = 0;
 
   publishedResults = 0;
@@ -206,6 +345,10 @@ export class Results implements OnInit {
 
   failedResults = 0;
 
+
+  // =========================================================
+  // FILTERS
+  // =========================================================
 
   searchTerm = '';
 
@@ -219,6 +362,10 @@ export class Results implements OnInit {
 
   statusFilter = '';
 
+
+  // =========================================================
+  // STATE
+  // =========================================================
 
   loading = false;
 
@@ -234,6 +381,10 @@ export class Results implements OnInit {
   errorMessage = '';
 
 
+  // =========================================================
+  // MODALS
+  // =========================================================
+
   showAddResult = false;
 
   showResultDetails = false;
@@ -247,6 +398,10 @@ export class Results implements OnInit {
 
   resultToDelete: AcademicResult | null = null;
 
+
+  // =========================================================
+  // NEW RESULT
+  // =========================================================
 
   newResult = {
 
@@ -272,6 +427,10 @@ export class Results implements OnInit {
 
   };
 
+
+  // =========================================================
+  // EDIT RESULT
+  // =========================================================
 
   editResultData = {
 
@@ -309,12 +468,20 @@ export class Results implements OnInit {
   ) {}
 
 
+  // =========================================================
+  // INIT
+  // =========================================================
+
   ngOnInit(): void {
 
     this.loadData();
 
   }
 
+
+  // =========================================================
+  // LOAD ALL DATA
+  // =========================================================
 
   async loadData(): Promise<void> {
 
@@ -386,10 +553,19 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // LOAD STUDENTS
+  // =========================================================
+
   async loadStudents(): Promise<void> {
 
     const snapshot =
-      await get(ref(database, 'students'));
+      await get(
+        ref(
+          database,
+          'students'
+        )
+      );
 
 
     if (!snapshot.exists()) {
@@ -401,50 +577,67 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
     this.students = Object.entries(data)
 
-      .map(([id, value]: [string, any]) => {
+      .map(
+        ([id, value]: [string, any]) => {
 
-        const fullName =
-          value.fullName ||
-          value.name ||
-          `${value.firstName || ''} ${value.lastName || ''}`.trim();
+          const fullName =
+            value.fullName ||
+            value.name ||
+            `${value.firstName || ''} ${value.lastName || ''}`
+              .trim();
 
 
-        return {
+          return {
 
-          id,
-
-          studentId:
-            value.studentId ||
             id,
 
-          fullName,
+            studentId:
+              value.studentId ||
+              id,
 
-          firstName:
-            value.firstName,
+            uid:
+              value.uid ||
+              '',
 
-          lastName:
-            value.lastName,
+            studentRecordId:
+              value.studentRecordId ||
+              id,
 
-          classId:
-            value.classId ||
-            '',
+            parentId:
+              value.parentId ||
+              '',
 
-          className:
-            value.className ||
-            '',
+            fullName,
 
-          status:
-            value.status ||
-            'active'
+            firstName:
+              value.firstName,
 
-        };
+            lastName:
+              value.lastName,
 
-      })
+            classId:
+              value.classId ||
+              '',
+
+            className:
+              value.className ||
+              value.class ||
+              '',
+
+            status:
+              value.status ||
+              'active'
+
+          };
+
+        }
+      )
 
       .filter(
         student =>
@@ -453,16 +646,27 @@ export class Results implements OnInit {
 
       .sort(
         (a, b) =>
-          a.fullName.localeCompare(b.fullName)
+          a.fullName.localeCompare(
+            b.fullName
+          )
       );
 
   }
 
 
+  // =========================================================
+  // LOAD CLASSES
+  // =========================================================
+
   async loadClasses(): Promise<void> {
 
     const snapshot =
-      await get(ref(database, 'classes'));
+      await get(
+        ref(
+          database,
+          'classes'
+        )
+      );
 
 
     if (!snapshot.exists()) {
@@ -474,63 +678,66 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
     this.classes = Object.entries(data)
 
-      .map(([id, value]: [string, any]) => ({
+      .map(
+        ([id, value]: [string, any]) => ({
 
-        id,
+          id,
 
-        classCode:
-          value.classCode ||
-          '',
+          classCode:
+            value.classCode ||
+            '',
 
-        className:
-          value.className ||
-          '',
+          className:
+            value.className ||
+            '',
 
-        section:
-          value.section ||
-          '',
+          section:
+            value.section ||
+            '',
 
-        classTeacherId:
-          value.classTeacherId ||
-          '',
+          classTeacherId:
+            value.classTeacherId ||
+            '',
 
-        classTeacherName:
-          value.classTeacherName ||
-          '',
+          classTeacherName:
+            value.classTeacherName ||
+            '',
 
-        room:
-          value.room ||
-          '',
+          room:
+            value.room ||
+            '',
 
-        capacity:
-          Number(value.capacity) ||
-          0,
+          capacity:
+            Number(value.capacity) ||
+            0,
 
-        academicYear:
-          value.academicYear ||
-          '',
+          academicYear:
+            value.academicYear ||
+            '',
 
-        status:
-          value.status ||
-          'inactive',
+          status:
+            value.status ||
+            'inactive',
 
-        description:
-          value.description ||
-          '',
+          description:
+            value.description ||
+            '',
 
-        createdAt:
-          value.createdAt ||
-          0,
+          createdAt:
+            value.createdAt ||
+            0,
 
-        updatedAt:
-          value.updatedAt
+          updatedAt:
+            value.updatedAt
 
-      }))
+        })
+      )
 
       .filter(
         schoolClass =>
@@ -539,16 +746,27 @@ export class Results implements OnInit {
 
       .sort(
         (a, b) =>
-          a.className.localeCompare(b.className)
+          a.className.localeCompare(
+            b.className
+          )
       );
 
   }
 
 
+  // =========================================================
+  // LOAD SUBJECTS
+  // =========================================================
+
   async loadSubjects(): Promise<void> {
 
     const snapshot =
-      await get(ref(database, 'subjects'));
+      await get(
+        ref(
+          database,
+          'subjects'
+        )
+      );
 
 
     if (!snapshot.exists()) {
@@ -560,43 +778,46 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
     this.subjects = Object.entries(data)
 
-      .map(([id, value]: [string, any]) => ({
+      .map(
+        ([id, value]: [string, any]) => ({
 
-        id,
+          id,
 
-        subjectCode:
-          value.subjectCode ||
-          '',
+          subjectCode:
+            value.subjectCode ||
+            '',
 
-        subjectName:
-          value.subjectName ||
-          '',
+          subjectName:
+            value.subjectName ||
+            '',
 
-        category:
-          value.category ||
-          '',
+          category:
+            value.category ||
+            '',
 
-        description:
-          value.description ||
-          '',
+          description:
+            value.description ||
+            '',
 
-        status:
-          value.status ||
-          'inactive',
+          status:
+            value.status ||
+            'inactive',
 
-        createdAt:
-          value.createdAt ||
-          0,
+          createdAt:
+            value.createdAt ||
+            0,
 
-        updatedAt:
-          value.updatedAt
+          updatedAt:
+            value.updatedAt
 
-      }))
+        })
+      )
 
       .filter(
         subject =>
@@ -613,10 +834,19 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // LOAD STAFF
+  // =========================================================
+
   async loadStaff(): Promise<void> {
 
     const snapshot =
-      await get(ref(database, 'staff'));
+      await get(
+        ref(
+          database,
+          'staff'
+        )
+      );
 
 
     if (!snapshot.exists()) {
@@ -628,71 +858,74 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
     this.staff = Object.entries(data)
 
-      .map(([id, value]: [string, any]) => ({
+      .map(
+        ([id, value]: [string, any]) => ({
 
-        id,
-
-        staffId:
-          value.staffId ||
           id,
 
-        fullName:
-          value.fullName ||
-          '',
+          staffId:
+            value.staffId ||
+            id,
 
-        email:
-          value.email ||
-          '',
+          fullName:
+            value.fullName ||
+            '',
 
-        phone:
-          value.phone ||
-          '',
+          email:
+            value.email ||
+            '',
 
-        gender:
-          value.gender ||
-          '',
+          phone:
+            value.phone ||
+            '',
 
-        position:
-          value.position ||
-          '',
+          gender:
+            value.gender ||
+            '',
 
-        department:
-          value.department ||
-          '',
+          position:
+            value.position ||
+            '',
 
-        qualification:
-          value.qualification ||
-          '',
+          department:
+            value.department ||
+            '',
 
-        employmentDate:
-          value.employmentDate ||
-          '',
+          qualification:
+            value.qualification ||
+            '',
 
-        address:
-          value.address ||
-          '',
+          employmentDate:
+            value.employmentDate ||
+            '',
 
-        emergencyContact:
-          value.emergencyContact ||
-          '',
+          address:
+            value.address ||
+            '',
 
-        status:
-          value.status ||
-          'inactive',
+          emergencyContact:
+            value.emergencyContact ||
+            '',
 
-        createdAt:
-          value.createdAt ||
-          0,
+          status:
+            value.status ||
+            'inactive',
 
-        updatedAt:
-          value.updatedAt
+          createdAt:
+            value.createdAt ||
+            0,
 
-      }))
+          updatedAt:
+            value.updatedAt
+
+        })
+      )
 
       .filter(
         teacher =>
@@ -708,6 +941,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // LOAD TEACHING ASSIGNMENTS
+  // =========================================================
 
   async loadTeachingAssignments(): Promise<void> {
 
@@ -729,82 +966,89 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
     this.teachingAssignments =
       Object.entries(data)
 
-        .map(([id, value]: [string, any]) => {
+        .map(
+          ([id, value]: [string, any]) => {
 
-          const schoolClass =
-            this.classes.find(
-              item =>
-                item.id ===
-                value.classId
-            );
-
-
-          const subject =
-            this.subjects.find(
-              item =>
-                item.id ===
-                value.subjectId
-            );
+            const schoolClass =
+              this.classes.find(
+                item =>
+                  item.id ===
+                  value.classId
+              );
 
 
-          const teacher =
-            this.staff.find(
-              item =>
-                item.id ===
-                value.teacherId
-            );
+            const subject =
+              this.subjects.find(
+                item =>
+                  item.id ===
+                  value.subjectId
+              );
 
 
-          return {
+            const teacher =
+              this.staff.find(
+                item =>
+                  item.id ===
+                  value.teacherId
+              );
 
-            id,
 
-            classId:
-              value.classId ||
-              '',
+            return {
 
-            subjectId:
-              value.subjectId ||
-              '',
+              id,
 
-            teacherId:
-              value.teacherId ||
-              '',
+              classId:
+                value.classId ||
+                '',
 
-            className:
-              schoolClass?.className ||
-              value.className ||
-              'Unknown Class',
+              subjectId:
+                value.subjectId ||
+                '',
 
-            subjectName:
-              subject?.subjectName ||
-              value.subjectName ||
-              'Unknown Subject',
+              teacherId:
+                value.teacherId ||
+                '',
 
-            teacherName:
-              teacher?.fullName ||
-              value.teacherName ||
-              'Unknown Teacher',
+              className:
+                schoolClass?.className ||
+                value.className ||
+                'Unknown Class',
 
-            createdAt:
-              value.createdAt ||
-              0,
+              subjectName:
+                subject?.subjectName ||
+                value.subjectName ||
+                'Unknown Subject',
 
-            updatedAt:
-              value.updatedAt
+              teacherName:
+                teacher?.fullName ||
+                value.teacherName ||
+                'Unknown Teacher',
 
-          };
+              createdAt:
+                value.createdAt ||
+                0,
 
-        });
+              updatedAt:
+                value.updatedAt
+
+            };
+
+          }
+        );
 
   }
 
+
+  // =========================================================
+  // LOAD SESSIONS
+  // =========================================================
 
   async loadSessions(): Promise<void> {
 
@@ -826,45 +1070,53 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
-    this.sessions = Object.entries(data)
+    this.sessions =
+      Object.entries(data)
 
-      .map(([id, value]: [string, any]) => ({
+        .map(
+          ([id, value]: [string, any]) => ({
 
-        id,
+            id,
 
-        name:
-          value.name ||
-          '',
+            name:
+              value.name ||
+              '',
 
-        status:
-          value.status ||
-          'inactive',
+            status:
+              value.status ||
+              'inactive',
 
-        createdAt:
-          value.createdAt ||
-          0,
+            createdAt:
+              value.createdAt ||
+              0,
 
-        updatedAt:
-          value.updatedAt
+            updatedAt:
+              value.updatedAt
 
-      }))
+          })
+        )
 
-      .filter(
-        session =>
-          session.status === 'active'
-      )
+        .filter(
+          session =>
+            session.status === 'active'
+        )
 
-      .sort(
-        (a, b) =>
-          b.createdAt -
-          a.createdAt
-      );
+        .sort(
+          (a, b) =>
+            b.createdAt -
+            a.createdAt
+        );
 
   }
 
+
+  // =========================================================
+  // LOAD TERMS
+  // =========================================================
 
   async loadTerms(): Promise<void> {
 
@@ -886,66 +1138,74 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
-    this.terms = Object.entries(data)
+    this.terms =
+      Object.entries(data)
 
-      .map(([id, value]: [string, any]) => {
+        .map(
+          ([id, value]: [string, any]) => {
 
-        const session =
-          this.sessions.find(
-            item =>
-              item.id ===
-              value.sessionId
-          );
+            const session =
+              this.sessions.find(
+                item =>
+                  item.id ===
+                  value.sessionId
+              );
 
 
-        return {
+            return {
 
-          id,
+              id,
 
-          sessionId:
-            value.sessionId ||
-            '',
+              sessionId:
+                value.sessionId ||
+                '',
 
-          sessionName:
-            session?.name ||
-            value.sessionName ||
-            'Unknown Session',
+              sessionName:
+                session?.name ||
+                value.sessionName ||
+                'Unknown Session',
 
-          name:
-            value.name ||
-            'First Term',
+              name:
+                value.name ||
+                'First Term',
 
-          status:
-            value.status ||
-            'inactive',
+              status:
+                value.status ||
+                'inactive',
 
-          createdAt:
-            value.createdAt ||
-            0,
+              createdAt:
+                value.createdAt ||
+                0,
 
-          updatedAt:
-            value.updatedAt
+              updatedAt:
+                value.updatedAt
 
-        };
+            };
 
-      })
+          }
+        )
 
-      .filter(
-        term =>
-          term.status === 'active'
-      )
+        .filter(
+          term =>
+            term.status === 'active'
+        )
 
-      .sort(
-        (a, b) =>
-          b.createdAt -
-          a.createdAt
-      );
+        .sort(
+          (a, b) =>
+            b.createdAt -
+            a.createdAt
+        );
 
   }
 
+
+  // =========================================================
+  // LOAD RESULTS
+  // =========================================================
 
   async loadResults(): Promise<void> {
 
@@ -967,103 +1227,130 @@ export class Results implements OnInit {
     }
 
 
-    const data = snapshot.val();
+    const data =
+      snapshot.val();
 
 
     this.results = Object.entries(data)
 
-      .map(([id, value]: [string, any]) => {
+      .map(
+        ([id, value]: [string, any]) => {
 
-        return {
+          const student =
+            this.students.find(
+              item =>
+                item.studentId ===
+                value.studentId
+            );
 
-          id,
 
-          studentId:
-            value.studentId ||
-            '',
+          return {
 
-          studentName:
-            value.studentName ||
-            'Unknown Student',
+            id,
 
-          classId:
-            value.classId ||
-            '',
+            studentId:
+              value.studentId ||
+              '',
 
-          className:
-            value.className ||
-            'Unknown Class',
+            studentRecordId:
+              value.studentRecordId ||
+              student?.id ||
+              '',
 
-          subjectId:
-            value.subjectId ||
-            '',
+            studentUid:
+              value.studentUid ||
+              student?.uid ||
+              '',
 
-          subjectName:
-            value.subjectName ||
-            'Unknown Subject',
+            parentId:
+              value.parentId ||
+              student?.parentId ||
+              '',
 
-          teacherId:
-            value.teacherId ||
-            '',
+            studentName:
+              student?.fullName ||
+              value.studentName ||
+              'Unknown Student',
 
-          teacherName:
-            value.teacherName ||
-            'Unknown Teacher',
+            classId:
+              value.classId ||
+              '',
 
-          sessionId:
-            value.sessionId ||
-            '',
+            className:
+              value.className ||
+              'Unknown Class',
 
-          sessionName:
-            value.sessionName ||
-            'Unknown Session',
+            subjectId:
+              value.subjectId ||
+              '',
 
-          termId:
-            value.termId ||
-            '',
+            subjectName:
+              value.subjectName ||
+              'Unknown Subject',
 
-          termName:
-            value.termName ||
-            'Unknown Term',
+            teacherId:
+              value.teacherId ||
+              '',
 
-          ca1:
-            Number(value.ca1) ||
-            0,
+            teacherName:
+              value.teacherName ||
+              'Unknown Teacher',
 
-          ca2:
-            Number(value.ca2) ||
-            0,
+            sessionId:
+              value.sessionId ||
+              '',
 
-          exam:
-            Number(value.exam) ||
-            0,
+            sessionName:
+              value.sessionName ||
+              'Unknown Session',
 
-          total:
-            Number(value.total) ||
-            0,
+            termId:
+              value.termId ||
+              '',
 
-          grade:
-            value.grade ||
-            '',
+            termName:
+              value.termName ||
+              'Unknown Term',
 
-          remark:
-            value.remark ||
-            '',
+            ca1:
+              Number(value.ca1) ||
+              0,
 
-          status:
-            value.status ||
-            'draft',
+            ca2:
+              Number(value.ca2) ||
+              0,
 
-          createdAt:
-            value.createdAt ||
-            0,
+            exam:
+              Number(value.exam) ||
+              0,
 
-          updatedAt:
-            value.updatedAt
+            total:
+              Number(value.total) ||
+              0,
 
-        };
+            grade:
+              value.grade ||
+              '',
 
-      })
+            remark:
+              value.remark ||
+              '',
+
+            status:
+              value.status ||
+              'draft',
+
+            createdAt:
+              value.createdAt ||
+              0,
+
+            updatedAt:
+              value.updatedAt
+
+          };
+
+        }
+      )
 
       .sort(
         (a, b) =>
@@ -1071,8 +1358,174 @@ export class Results implements OnInit {
           a.createdAt
       );
 
+
+    // =======================================================
+    // REPAIR OLD RESULTS
+    // =======================================================
+    //
+    // Existing results may have been created before parentId,
+    // studentRecordId and studentUid were added.
+    //
+    // We repair them automatically from the current student
+    // record.
+    //
+    // =======================================================
+
+    await this.repairExistingResults();
+
   }
 
+
+  // =========================================================
+  // REPAIR EXISTING RESULTS
+  // =========================================================
+
+  private async repairExistingResults(): Promise<void> {
+
+    const repairs: Promise<void>[] = [];
+
+
+    for (
+      const result of this.results
+    ) {
+
+      const student =
+        this.students.find(
+          item =>
+            item.studentId ===
+            result.studentId
+        );
+
+
+      if (!student) {
+        continue;
+      }
+
+
+      const missingParentId =
+        !result.parentId &&
+        !!student.parentId;
+
+
+      const missingRecordId =
+        !result.studentRecordId &&
+        !!student.id;
+
+
+      const missingStudentUid =
+        !result.studentUid &&
+        !!student.uid;
+
+
+      if (
+        !missingParentId &&
+        !missingRecordId &&
+        !missingStudentUid
+      ) {
+
+        continue;
+
+      }
+
+
+      const repairData: any = {};
+
+
+      if (
+        missingParentId &&
+        student.parentId
+      ) {
+
+        repairData.parentId =
+          student.parentId;
+
+      }
+
+
+      if (
+        missingRecordId &&
+        student.id
+      ) {
+
+        repairData.studentRecordId =
+          student.id;
+
+      }
+
+
+      if (
+        missingStudentUid &&
+        student.uid
+      ) {
+
+        repairData.studentUid =
+          student.uid;
+
+      }
+
+
+      if (
+        Object.keys(repairData).length
+      ) {
+
+        repairs.push(
+
+          update(
+
+            ref(
+              database,
+              `results/${result.id}`
+            ),
+
+            repairData
+
+          )
+
+        );
+
+
+        Object.assign(
+          result,
+          repairData
+        );
+
+      }
+
+    }
+
+
+    if (repairs.length) {
+
+      try {
+
+        await Promise.all(
+          repairs
+        );
+
+
+        console.log(
+          'Existing results repaired:',
+          repairs.length
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          'Error repairing existing results:',
+          error
+        );
+
+      }
+
+    }
+
+  }
+
+
+  // =========================================================
+  // FILTERED RESULTS
+  // =========================================================
 
   get filteredResults(): AcademicResult[] {
 
@@ -1090,6 +1543,10 @@ export class Results implements OnInit {
           !search ||
 
           result.studentName
+            .toLowerCase()
+            .includes(search) ||
+
+          result.studentId
             .toLowerCase()
             .includes(search) ||
 
@@ -1159,6 +1616,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // STATISTICS
+  // =========================================================
+
   calculateStatistics(): void {
 
     this.totalResults =
@@ -1197,6 +1658,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // AVAILABLE SUBJECTS
+  // =========================================================
+
   get availableSubjects(): SchoolSubject[] {
 
     if (!this.newResult.classId) {
@@ -1230,6 +1695,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // AVAILABLE TEACHERS
+  // =========================================================
 
   get availableTeachers(): StaffMember[] {
 
@@ -1273,6 +1742,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // AVAILABLE EDIT SUBJECTS
+  // =========================================================
+
   get availableEditSubjects(): SchoolSubject[] {
 
     if (!this.editResultData.classId) {
@@ -1306,6 +1779,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // AVAILABLE EDIT TEACHERS
+  // =========================================================
 
   get availableEditTeachers(): StaffMember[] {
 
@@ -1349,6 +1826,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // STUDENTS FOR SELECTED CLASS
+  // =========================================================
+
   get studentsForSelectedClass(): Student[] {
 
     if (!this.newResult.classId) {
@@ -1369,9 +1850,7 @@ export class Results implements OnInit {
     return this.students.filter(
       student => {
 
-        if (
-          student.classId
-        ) {
+        if (student.classId) {
 
           return (
             student.classId ===
@@ -1405,6 +1884,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // STUDENTS FOR EDIT CLASS
+  // =========================================================
+
   get studentsForEditClass(): Student[] {
 
     if (!this.editResultData.classId) {
@@ -1425,9 +1908,7 @@ export class Results implements OnInit {
     return this.students.filter(
       student => {
 
-        if (
-          student.classId
-        ) {
+        if (student.classId) {
 
           return (
             student.classId ===
@@ -1461,6 +1942,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // NEW CLASS CHANGE
+  // =========================================================
+
   onNewClassChange(): void {
 
     this.newResult.studentId = '';
@@ -1472,12 +1957,20 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // NEW SUBJECT CHANGE
+  // =========================================================
+
   onNewSubjectChange(): void {
 
     this.newResult.teacherId = '';
 
   }
 
+
+  // =========================================================
+  // EDIT CLASS CHANGE
+  // =========================================================
 
   onEditClassChange(): void {
 
@@ -1490,12 +1983,20 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // EDIT SUBJECT CHANGE
+  // =========================================================
+
   onEditSubjectChange(): void {
 
     this.editResultData.teacherId = '';
 
   }
 
+
+  // =========================================================
+  // CALCULATE TOTAL
+  // =========================================================
 
   calculateTotal(
     ca1: number,
@@ -1523,36 +2024,32 @@ export class Results implements OnInit {
   }
 
 
-  getGrade(total: number): string {
+  // =========================================================
+  // GRADE
+  // =========================================================
+
+  getGrade(
+    total: number
+  ): string {
 
     if (total >= 70) {
-
       return 'A';
-
     }
 
     if (total >= 60) {
-
       return 'B';
-
     }
 
     if (total >= 50) {
-
       return 'C';
-
     }
 
     if (total >= 45) {
-
       return 'D';
-
     }
 
     if (total >= 40) {
-
       return 'E';
-
     }
 
     return 'F';
@@ -1560,42 +2057,42 @@ export class Results implements OnInit {
   }
 
 
-  getRemark(total: number): string {
+  // =========================================================
+  // REMARK
+  // =========================================================
+
+  getRemark(
+    total: number
+  ): string {
 
     if (total >= 70) {
-
       return 'Excellent';
-
     }
 
     if (total >= 60) {
-
       return 'Very Good';
-
     }
 
     if (total >= 50) {
-
       return 'Good';
-
     }
 
     if (total >= 45) {
-
       return 'Fair';
-
     }
 
     if (total >= 40) {
-
       return 'Pass';
-
     }
 
     return 'Fail';
 
   }
 
+
+  // =========================================================
+  // NEW RESULT TOTAL
+  // =========================================================
 
   getNewResultTotal(): number {
 
@@ -1612,6 +2109,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // NEW RESULT GRADE
+  // =========================================================
+
   getNewResultGrade(): string {
 
     return this.getGrade(
@@ -1621,6 +2122,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // NEW RESULT REMARK
+  // =========================================================
+
   getNewResultRemark(): string {
 
     return this.getRemark(
@@ -1629,6 +2134,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // EDIT RESULT TOTAL
+  // =========================================================
 
   getEditResultTotal(): number {
 
@@ -1645,6 +2154,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // EDIT RESULT GRADE
+  // =========================================================
+
   getEditResultGrade(): string {
 
     return this.getGrade(
@@ -1654,6 +2167,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // EDIT RESULT REMARK
+  // =========================================================
+
   getEditResultRemark(): string {
 
     return this.getRemark(
@@ -1662,6 +2179,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // SAVE RESULT
+  // =========================================================
 
   async saveResult(): Promise<void> {
 
@@ -1831,9 +2352,41 @@ export class Results implements OnInit {
       const student =
         this.students.find(
           item =>
-            item.id ===
+            item.studentId ===
             this.newResult.studentId
         );
+
+
+      if (!student) {
+
+        this.errorMessage =
+          'Selected student record could not be found. Please refresh the page and try again.';
+
+        this.saving = false;
+
+        this.cdr.detectChanges();
+
+        return;
+
+      }
+
+
+      // =====================================================
+      // PARENT INFORMATION IS REQUIRED
+      // =====================================================
+
+      if (!student.parentId) {
+
+        this.errorMessage =
+          'This student is not linked to a parent account. Please update the student parent information before saving the result.';
+
+        this.saving = false;
+
+        this.cdr.detectChanges();
+
+        return;
+
+      }
 
 
       const schoolClass =
@@ -1899,11 +2452,20 @@ export class Results implements OnInit {
           resultRef.key!,
 
         studentId:
-          this.newResult.studentId,
+          student.studentId,
+
+        studentRecordId:
+          student.id,
+
+        studentUid:
+          student.uid ||
+          '',
+
+        parentId:
+          student.parentId,
 
         studentName:
-          student?.fullName ||
-          'Unknown Student',
+          student.fullName,
 
         classId:
           this.newResult.classId,
@@ -2027,6 +2589,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // VIEW RESULT
+  // =========================================================
+
   viewResult(
     result: AcademicResult
   ): void {
@@ -2042,6 +2608,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // CLOSE RESULT DETAILS
+  // =========================================================
+
   closeResultDetails(): void {
 
     this.showResultDetails =
@@ -2052,6 +2622,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // OPEN ADD
+  // =========================================================
 
   openAddResult(): void {
 
@@ -2065,6 +2639,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // CLOSE ADD
+  // =========================================================
+
   closeAddResult(): void {
 
     this.showAddResult =
@@ -2072,6 +2650,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // OPEN EDIT
+  // =========================================================
 
   openEditResult(
     result: AcademicResult
@@ -2124,6 +2706,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // CLOSE EDIT
+  // =========================================================
+
   closeEditResult(): void {
 
     this.showEditResult =
@@ -2131,6 +2717,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // UPDATE RESULT
+  // =========================================================
 
   async updateResult(): Promise<void> {
 
@@ -2293,8 +2883,7 @@ export class Results implements OnInit {
     }
 
 
-    this.updating =
-      true;
+    this.updating = true;
 
     this.clearMessages();
 
@@ -2304,9 +2893,37 @@ export class Results implements OnInit {
       const student =
         this.students.find(
           item =>
-            item.id ===
+            item.studentId ===
             this.editResultData.studentId
         );
+
+
+      if (!student) {
+
+        this.errorMessage =
+          'Selected student record could not be found. Please refresh the page and try again.';
+
+        this.updating = false;
+
+        this.cdr.detectChanges();
+
+        return;
+
+      }
+
+
+      if (!student.parentId) {
+
+        this.errorMessage =
+          'This student is not linked to a parent account. Please update the student parent information before updating the result.';
+
+        this.updating = false;
+
+        this.cdr.detectChanges();
+
+        return;
+
+      }
 
 
       const schoolClass =
@@ -2367,11 +2984,20 @@ export class Results implements OnInit {
         {
 
           studentId:
-            this.editResultData.studentId,
+            student.studentId,
+
+          studentRecordId:
+            student.id,
+
+          studentUid:
+            student.uid ||
+            '',
+
+          parentId:
+            student.parentId,
 
           studentName:
-            student?.fullName ||
-            'Unknown Student',
+            student.fullName,
 
           classId:
             this.editResultData.classId,
@@ -2459,11 +3085,20 @@ export class Results implements OnInit {
             ...this.results[index],
 
             studentId:
-              this.editResultData.studentId,
+              student.studentId,
+
+            studentRecordId:
+              student.id,
+
+            studentUid:
+              student.uid ||
+              '',
+
+            parentId:
+              student.parentId,
 
             studentName:
-              student?.fullName ||
-              'Unknown Student',
+              student.fullName,
 
             classId:
               this.editResultData.classId,
@@ -2575,6 +3210,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // OPEN DELETE
+  // =========================================================
+
   openDeleteResult(
     result: AcademicResult
   ): void {
@@ -2590,6 +3229,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // CLOSE DELETE
+  // =========================================================
+
   closeDeleteResult(): void {
 
     this.showDeleteResult =
@@ -2600,6 +3243,10 @@ export class Results implements OnInit {
 
   }
 
+
+  // =========================================================
+  // DELETE RESULT
+  // =========================================================
 
   async deleteResult(): Promise<void> {
 
@@ -2614,8 +3261,7 @@ export class Results implements OnInit {
       this.resultToDelete;
 
 
-    this.deleting =
-      true;
+    this.deleting = true;
 
     this.clearMessages();
 
@@ -2689,6 +3335,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // RESET NEW RESULT
+  // =========================================================
+
   resetNewResult(): void {
 
     this.newResult = {
@@ -2718,6 +3368,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // CLEAR FILTERS
+  // =========================================================
+
   clearFilters(): void {
 
     this.searchTerm = '';
@@ -2735,6 +3389,10 @@ export class Results implements OnInit {
   }
 
 
+  // =========================================================
+  // CLEAR MESSAGES
+  // =========================================================
+
   clearMessages(): void {
 
     this.successMessage = '';
@@ -2744,3 +3402,4 @@ export class Results implements OnInit {
   }
 
 }
+

@@ -1,0 +1,1173 @@
+<div class="staff-result-page">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+<div class="header-left">
+
+  <a
+    routerLink="/staff/dashboard"
+    class="back-button"
+  >
+    ← Dashboard
+  </a>
+
+  <div class="page-title">
+
+    <h1>
+      Student Results
+    </h1>
+
+    <p>
+      Enter and manage results for your assigned students
+    </p>
+
+  </div>
+
+</div>
+
+
+<div class="header-actions">
+
+  <button
+    type="button"
+    class="refresh-button"
+    (click)="refresh()"
+    [disabled]="loading"
+  >
+    ↻ Refresh
+  </button>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       STAFF INFORMATION
+  ====================================================== -->
+
+  <div
+    class="staff-info-card"
+    *ngIf="currentUser"
+  >
+
+
+<div class="staff-avatar">
+  {{ (staffName || currentUser.fullName || 'S').charAt(0).toUpperCase() }}
+</div>
+
+<div class="staff-info">
+
+  <span class="label">
+    Staff
+  </span>
+
+  <strong>
+    {{ staffName || currentUser.fullName || 'Staff' }}
+  </strong>
+
+  <span class="staff-id">
+    Staff ID: {{ staffId }}
+  </span>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+
+<div class="spinner"></div>
+
+<p>
+  Loading your result information...
+</p>
+
+
+  </div>
+
+  <!-- =====================================================
+       ERROR MESSAGE
+  ====================================================== -->
+
+  <div
+    class="message error-message"
+    *ngIf="errorMessage"
+  >
+
+
+<span class="message-icon">
+  ⚠
+</span>
+
+<span>
+  {{ errorMessage }}
+</span>
+
+<button
+  type="button"
+  class="message-close"
+  (click)="errorMessage = ''"
+>
+  ×
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+  ====================================================== -->
+
+  <div
+    class="message success-message"
+    *ngIf="successMessage"
+  >
+
+
+<span class="message-icon">
+  ✓
+</span>
+
+<span>
+  {{ successMessage }}
+</span>
+
+<button
+  type="button"
+  class="message-close"
+  (click)="successMessage = ''"
+>
+  ×
+</button>
+
+
+  </div>
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+
+  <div
+    class="content"
+    *ngIf="!loading"
+  >
+
+
+<!-- ===================================================
+     STEP 1 - ACADEMIC INFORMATION
+==================================================== -->
+
+<section class="selection-card">
+
+  <div class="section-header">
+
+    <div>
+
+      <h2>
+        Academic Information
+      </h2>
+
+      <p>
+        Select the academic session and term for these results.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="form-grid">
+
+
+    <!-- SESSION -->
+
+    <div class="form-group">
+
+      <label>
+        Academic Session
+        <span class="required">*</span>
+      </label>
+
+      <select
+        [(ngModel)]="selectedSessionId"
+        (change)="onSessionChange()"
+      >
+
+        <option value="">
+          Select session
+        </option>
+
+        <option
+          *ngFor="let session of sessions"
+          [value]="session.id"
+        >
+          {{
+            session.sessionName ||
+            session.name ||
+            session.academicYear ||
+            session.id
+          }}
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- TERM -->
+
+    <div class="form-group">
+
+      <label>
+        Academic Term
+        <span class="required">*</span>
+      </label>
+
+      <select
+        [(ngModel)]="selectedTermId"
+        (change)="onTermChange()"
+      >
+
+        <option value="">
+          Select term
+        </option>
+
+        <option
+          *ngFor="let term of terms"
+          [value]="term.id"
+        >
+          {{
+            term.termName ||
+            term.name ||
+            term.id
+          }}
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ===================================================
+     STEP 2 - CLASS AND SUBJECT
+==================================================== -->
+
+<section class="selection-card">
+
+  <div class="section-header">
+
+    <div>
+
+      <h2>
+        Teaching Assignment
+      </h2>
+
+      <p>
+        Select a class and subject assigned to you.
+      </p>
+
+    </div>
+
+    <span class="assignment-count">
+      {{ assignments.length }}
+      assignment{{ assignments.length === 1 ? '' : 's' }}
+    </span>
+
+  </div>
+
+
+  <div class="form-grid">
+
+
+    <!-- CLASS -->
+
+    <div class="form-group">
+
+      <label>
+        Class
+        <span class="required">*</span>
+      </label>
+
+      <select
+        [(ngModel)]="selectedClassId"
+        (change)="onClassChange()"
+      >
+
+        <option value="">
+          Select class
+        </option>
+
+        <option
+          *ngFor="let classroom of classes"
+          [value]="classroom.id"
+        >
+          {{
+            classroom.className
+          }}
+          {{
+            classroom.section
+              ? ' - ' + classroom.section
+              : ''
+          }}
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- SUBJECT -->
+
+    <div class="form-group">
+
+      <label>
+        Subject
+        <span class="required">*</span>
+      </label>
+
+      <select
+        [(ngModel)]="selectedSubjectId"
+        (change)="onSubjectChange()"
+        [disabled]="!selectedClassId"
+      >
+
+        <option value="">
+          {{
+            selectedClassId
+              ? 'Select subject'
+              : 'Select class first'
+          }}
+        </option>
+
+        <option
+          *ngFor="let subject of getSubjectsForClass()"
+          [value]="subject.id"
+        >
+          {{
+            subject.subjectName
+          }}
+          {{
+            subject.subjectCode
+              ? ' (' + subject.subjectCode + ')'
+              : ''
+          }}
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <!-- ASSIGNMENT CONFIRMATION -->
+
+  <div
+    class="assignment-confirmation"
+    *ngIf="
+      selectedClassId &&
+      selectedSubjectId &&
+      isAssignmentAllowed()
+    "
+  >
+
+    <span class="confirmation-icon">
+      ✓
+    </span>
+
+    <div>
+
+      <strong>
+        Teaching assignment confirmed
+      </strong>
+
+      <p>
+        You are assigned to teach
+        <strong>
+          {{ getSelectedSubjectName() }}
+        </strong>
+        in
+        <strong>
+          {{ getSelectedClassName() }}
+        </strong>.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- INVALID ASSIGNMENT -->
+
+  <div
+    class="assignment-warning"
+    *ngIf="
+      selectedClassId &&
+      selectedSubjectId &&
+      !isAssignmentAllowed()
+    "
+  >
+
+    ⚠ You are not assigned to teach this subject for this class.
+
+  </div>
+
+</section>
+
+
+<!-- ===================================================
+     NO SELECTION
+==================================================== -->
+
+<div
+  class="empty-selection"
+  *ngIf="
+    !selectedClassId ||
+    !selectedSubjectId ||
+    !selectedSessionId ||
+    !selectedTermId
+  "
+>
+
+  <div class="empty-icon">
+    📝
+  </div>
+
+  <h2>
+    Select Result Information
+  </h2>
+
+  <p>
+    Select the academic session, term, class and subject
+    above to view the students and enter their results.
+  </p>
+
+</div>
+
+
+<!-- ===================================================
+     STUDENT RESULTS
+==================================================== -->
+
+<section
+  class="results-card"
+  *ngIf="
+    selectedClassId &&
+    selectedSubjectId &&
+    selectedSessionId &&
+    selectedTermId &&
+    isAssignmentAllowed()
+  "
+>
+
+  <!-- RESULTS HEADER -->
+
+  <div class="results-header">
+
+    <div>
+
+      <h2>
+        {{ getSelectedClassName() }}
+      </h2>
+
+      <p>
+        {{ getSelectedSubjectName() }}
+      </p>
+
+    </div>
+
+
+    <div class="results-summary">
+
+      <span>
+        {{ classStudents.length }}
+        student{{ classStudents.length === 1 ? '' : 's' }}
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- NO STUDENTS -->
+
+  <div
+    class="empty-students"
+    *ngIf="classStudents.length === 0"
+  >
+
+    <div class="empty-icon">
+      👨‍🎓
+    </div>
+
+    <h3>
+      No students found
+    </h3>
+
+    <p>
+      There are currently no active students in this class.
+    </p>
+
+  </div>
+
+
+  <!-- =================================================
+       RESULTS TABLE
+  ================================================== -->
+
+  <div
+    class="table-wrapper"
+    *ngIf="classStudents.length > 0"
+  >
+
+    <table class="results-table">
+
+      <thead>
+
+        <tr>
+
+          <th class="student-column">
+            Student
+          </th>
+
+          <th>
+            CA1
+            <small>/ 20</small>
+          </th>
+
+          <th>
+            CA2
+            <small>/ 20</small>
+          </th>
+
+          <th>
+            Exam
+            <small>/ 60</small>
+          </th>
+
+          <th>
+            Total
+            <small>/ 100</small>
+          </th>
+
+          <th>
+            Grade
+          </th>
+
+          <th class="remark-column">
+            Remark
+          </th>
+
+          <th>
+            Status
+          </th>
+
+          <th>
+            Action
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <tr
+          *ngFor="
+            let student of classStudents;
+            let i = index
+          "
+        >
+
+          <!-- STUDENT -->
+
+          <td class="student-cell">
+
+            <div class="student-number">
+              {{ i + 1 }}
+            </div>
+
+            <div class="student-details">
+
+              <strong>
+                {{ student.fullName }}
+              </strong>
+
+              <span>
+                {{ student.studentId }}
+              </span>
+
+            </div>
+
+          </td>
+
+
+          <!-- CA1 -->
+
+          <td>
+
+            <input
+              type="number"
+              min="0"
+              max="20"
+              step="1"
+              [(ngModel)]="
+                resultForms[student.studentId].ca1
+              "
+              [disabled]="
+                isPublished(student.studentId) ||
+                saving
+              "
+              placeholder="0"
+            />
+
+          </td>
+
+
+          <!-- CA2 -->
+
+          <td>
+
+            <input
+              type="number"
+              min="0"
+              max="20"
+              step="1"
+              [(ngModel)]="
+                resultForms[student.studentId].ca2
+              "
+              [disabled]="
+                isPublished(student.studentId) ||
+                saving
+              "
+              placeholder="0"
+            />
+
+          </td>
+
+
+          <!-- EXAM -->
+
+          <td>
+
+            <input
+              type="number"
+              min="0"
+              max="60"
+              step="1"
+              [(ngModel)]="
+                resultForms[student.studentId].exam
+              "
+              [disabled]="
+                isPublished(student.studentId) ||
+                saving
+              "
+              placeholder="0"
+            />
+
+          </td>
+
+
+          <!-- TOTAL -->
+
+          <td class="total-cell">
+
+            <strong>
+              {{
+                getTotal(
+                  student.studentId
+                )
+              }}
+            </strong>
+
+          </td>
+
+
+          <!-- GRADE -->
+
+          <td>
+
+            <span
+              class="grade-badge"
+              [class.grade-a]="getGrade(student.studentId) === 'A'"
+              [class.grade-b]="getGrade(student.studentId) === 'B'"
+              [class.grade-c]="getGrade(student.studentId) === 'C'"
+              [class.grade-d]="getGrade(student.studentId) === 'D'"
+              [class.grade-e]="getGrade(student.studentId) === 'E'"
+              [class.grade-f]="getGrade(student.studentId) === 'F'"
+            >
+              {{ getGrade(student.studentId) }}
+            </span>
+
+          </td>
+
+
+          <!-- REMARK -->
+
+          <td class="remark-cell">
+
+            <input
+              type="text"
+              [(ngModel)]="
+                resultForms[student.studentId].remark
+              "
+              [disabled]="
+                isPublished(student.studentId) ||
+                saving
+              "
+              placeholder="Remark"
+            />
+
+          </td>
+
+
+          <!-- STATUS -->
+
+          <td>
+
+            <span
+              class="status-badge"
+              [class.status-published]="
+                isPublished(student.studentId)
+              "
+              [class.status-draft]="
+                hasResult(student.studentId) &&
+                !isPublished(student.studentId)
+              "
+            >
+
+              {{
+                isPublished(student.studentId)
+                  ? 'Published'
+                  : hasResult(student.studentId)
+                    ? 'Draft'
+                    : 'New'
+              }}
+
+            </span>
+
+          </td>
+
+
+          <!-- ACTION -->
+
+          <td class="action-cell">
+
+            <!-- NEW / SAVE -->
+
+            <button
+              *ngIf="!hasResult(student.studentId)"
+              type="button"
+              class="save-button"
+              (click)="saveResult(student)"
+              [disabled]="
+                saving ||
+                isPublished(student.studentId)
+              "
+            >
+              Save
+            </button>
+
+
+            <!-- UPDATE DRAFT -->
+
+            <button
+              *ngIf="
+                hasResult(student.studentId) &&
+                !isPublished(student.studentId)
+              "
+              type="button"
+              class="update-button"
+              (click)="saveResult(student)"
+              [disabled]="saving"
+            >
+              Update
+            </button>
+
+
+            <!-- DELETE DRAFT -->
+
+            <button
+              *ngIf="
+                hasResult(student.studentId) &&
+                !isPublished(student.studentId)
+              "
+              type="button"
+              class="delete-button"
+              (click)="deleteResult(student)"
+              [disabled]="deleting || saving"
+            >
+              Delete
+            </button>
+
+
+            <!-- PUBLISHED -->
+
+            <span
+              *ngIf="isPublished(student.studentId)"
+              class="published-lock"
+            >
+              🔒 Published
+            </span>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+
+<!-- =====================================================
+     MY SAVED RESULTS
+====================================================== -->
+
+<section class="saved-results-card">
+
+  <!-- SAVED RESULTS HEADER -->
+
+  <div class="saved-results-header">
+
+    <div>
+
+      <h2>
+        My Saved Results
+      </h2>
+
+      <p>
+        Results you have entered for your assigned students.
+      </p>
+
+    </div>
+
+    <div class="saved-results-count">
+
+      <strong>
+        {{ results.length }}
+      </strong>
+
+      <span>
+        Result{{ results.length === 1 ? '' : 's' }}
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- NO SAVED RESULTS -->
+
+  <div
+    class="empty-saved-results"
+    *ngIf="results.length === 0"
+  >
+
+    <div class="empty-icon">
+      📊
+    </div>
+
+    <h3>
+      No Results Saved Yet
+    </h3>
+
+    <p>
+      Results you save will appear here.
+    </p>
+
+  </div>
+
+
+  <!-- SAVED RESULTS TABLE -->
+
+  <div
+    class="table-wrapper saved-results-wrapper"
+    *ngIf="results.length > 0"
+  >
+
+    <table class="saved-results-table">
+
+      <thead>
+
+        <tr>
+
+          <th>
+            #
+          </th>
+
+          <th class="saved-student-column">
+            Student
+          </th>
+
+          <th>
+            Class
+          </th>
+
+          <th>
+            Subject
+          </th>
+
+          <th>
+            Session
+          </th>
+
+          <th>
+            Term
+          </th>
+
+          <th>
+            CA1
+          </th>
+
+          <th>
+            CA2
+          </th>
+
+          <th>
+            Exam
+          </th>
+
+          <th>
+            Total
+          </th>
+
+          <th>
+            Grade
+          </th>
+
+          <th>
+            Remark
+          </th>
+
+          <th>
+            Status
+          </th>
+
+          <th>
+            Action
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <tr
+          *ngFor="
+            let result of results;
+            let i = index
+          "
+        >
+
+          <!-- NUMBER -->
+
+          <td>
+            {{ i + 1 }}
+          </td>
+
+
+          <!-- STUDENT -->
+
+          <td class="saved-student-cell">
+
+            <strong>
+              {{ result.studentName }}
+            </strong>
+
+            <span>
+              {{ result.studentId }}
+            </span>
+
+          </td>
+
+
+          <!-- CLASS -->
+
+          <td>
+            {{ result.className }}
+          </td>
+
+
+          <!-- SUBJECT -->
+
+          <td>
+            {{ result.subjectName }}
+          </td>
+
+
+          <!-- SESSION -->
+
+          <td>
+            {{ result.sessionName }}
+          </td>
+
+
+          <!-- TERM -->
+
+          <td>
+            {{ result.termName }}
+          </td>
+
+
+          <!-- CA1 -->
+
+          <td>
+            {{ result.ca1 }}
+          </td>
+
+
+          <!-- CA2 -->
+
+          <td>
+            {{ result.ca2 }}
+          </td>
+
+
+          <!-- EXAM -->
+
+          <td>
+            {{ result.exam }}
+          </td>
+
+
+          <!-- TOTAL -->
+
+          <td class="saved-total-cell">
+
+            <strong>
+              {{ result.total }}
+            </strong>
+
+            <small>
+              / 100
+            </small>
+
+          </td>
+
+
+          <!-- GRADE -->
+
+          <td>
+
+            <span
+              class="grade-badge"
+              [class.grade-a]="result.grade === 'A'"
+              [class.grade-b]="result.grade === 'B'"
+              [class.grade-c]="result.grade === 'C'"
+              [class.grade-d]="result.grade === 'D'"
+              [class.grade-e]="result.grade === 'E'"
+              [class.grade-f]="result.grade === 'F'"
+            >
+              {{ result.grade }}
+            </span>
+
+          </td>
+
+
+          <!-- REMARK -->
+
+          <td class="saved-remark-cell">
+            {{ result.remark }}
+          </td>
+
+
+          <!-- STATUS -->
+
+          <td>
+
+            <span
+              class="status-badge"
+              [class.status-published]="result.status === 'published'"
+              [class.status-draft]="result.status === 'draft'"
+            >
+
+              {{
+                result.status === 'published'
+                  ? 'Published'
+                  : 'Draft'
+              }}
+
+            </span>
+
+          </td>
+
+
+          <!-- ACTION -->
+
+          <td class="saved-action-cell">
+
+            <!-- DRAFT ACTIONS -->
+
+            <ng-container
+              *ngIf="result.status === 'draft'"
+            >
+
+              <button
+                type="button"
+                class="saved-edit-button"
+                (click)="editSavedResult(result)"
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                class="saved-delete-button"
+                (click)="deleteSavedResult(result)"
+                [disabled]="deleting"
+              >
+                Delete
+              </button>
+
+            </ng-container>
+
+
+            <!-- PUBLISHED -->
+
+            <span
+              *ngIf="result.status === 'published'"
+              class="published-lock"
+            >
+              🔒 Locked
+            </span>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+
+
+  </div>
+
+</div>

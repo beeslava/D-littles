@@ -1,0 +1,1017 @@
+<div class="fees-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="header-label">
+        SCHOOL FINANCE
+      </span>
+
+      <h1>
+        School Fees
+      </h1>
+
+      <p>
+        Create and manage school fee structures for each class.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="openCreateModal()"
+    >
+      <span>+</span>
+      New Fee Structure
+    </button>
+
+  </header>
+
+
+  <!-- =====================================================
+       MESSAGES
+       ===================================================== -->
+
+  <div
+    class="alert success-alert"
+    *ngIf="successMessage"
+  >
+    <span>✓</span>
+    <span>{{ successMessage }}</span>
+
+    <button
+      type="button"
+      (click)="successMessage = ''"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <div
+    class="alert error-alert"
+    *ngIf="errorMessage"
+  >
+    <span>!</span>
+    <span>{{ errorMessage }}</span>
+
+    <button
+      type="button"
+      (click)="errorMessage = ''"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+       ===================================================== -->
+
+  <section class="stats-grid">
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        ₦
+      </div>
+
+      <div>
+        <span>
+          Fee Structures
+        </span>
+
+        <strong>
+          {{ totalFeeStructures }}
+        </strong>
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon active-icon">
+        ✓
+      </div>
+
+      <div>
+        <span>
+          Active
+        </span>
+
+        <strong>
+          {{ activeFeeStructures }}
+        </strong>
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon inactive-icon">
+        ○
+      </div>
+
+      <div>
+        <span>
+          Inactive
+        </span>
+
+        <strong>
+          {{ inactiveFeeStructures }}
+        </strong>
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon amount-icon">
+        ₦
+      </div>
+
+      <div>
+        <span>
+          Configured Amount
+        </span>
+
+        <strong>
+          {{ formatCurrency(totalConfiguredAmount) }}
+        </strong>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       FILTER BAR
+       ===================================================== -->
+
+  <section class="filter-card">
+
+    <div class="search-box">
+
+      <span>⌕</span>
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+        placeholder="Search fee structures..."
+      />
+
+    </div>
+
+
+    <select
+      [(ngModel)]="classFilter"
+      (ngModelChange)="applyFilters()"
+    >
+
+      <option value="all">
+        All Classes
+      </option>
+
+      <option
+        *ngFor="let classItem of classes"
+        [value]="classItem.id"
+      >
+        {{ classItem.name }}
+      </option>
+
+    </select>
+
+
+    <select
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="applyFilters()"
+    >
+
+      <option value="all">
+        All Status
+      </option>
+
+      <option value="active">
+        Active
+      </option>
+
+      <option value="inactive">
+        Inactive
+      </option>
+
+    </select>
+
+
+    <button
+      type="button"
+      class="clear-filter-button"
+      *ngIf="
+        searchTerm ||
+        classFilter !== 'all' ||
+        statusFilter !== 'all'
+      "
+      (click)="
+        searchTerm = '';
+        classFilter = 'all';
+        statusFilter = 'all';
+        applyFilters()
+      "
+    >
+      Clear
+    </button>
+
+  </section>
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading school fees...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       EMPTY
+       ===================================================== -->
+
+  <div
+    class="empty-state"
+    *ngIf="
+      !loading &&
+      filteredFees.length === 0
+    "
+  >
+
+    <div class="empty-icon">
+      ₦
+    </div>
+
+    <h3>
+      No fee structures found
+    </h3>
+
+    <p>
+      Create a fee structure to start managing school fees.
+    </p>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="openCreateModal()"
+    >
+      Create Fee Structure
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       TABLE
+       ===================================================== -->
+
+  <section
+    class="table-card"
+    *ngIf="
+      !loading &&
+      filteredFees.length > 0
+    "
+  >
+
+    <div class="table-header">
+
+      <div>
+
+        <span>
+          FEE MANAGEMENT
+        </span>
+
+        <h2>
+          Fee Structures
+        </h2>
+
+      </div>
+
+      <span class="record-count">
+        {{ filteredFees.length }}
+        {{ filteredFees.length === 1 ? 'record' : 'records' }}
+      </span>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Fee Structure
+            </th>
+
+            <th>
+              Class
+            </th>
+
+            <th>
+              Fee Items
+            </th>
+
+            <th>
+              Total
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Updated
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let fee of filteredFees;
+              trackBy: trackByFeeId
+            "
+          >
+
+            <td>
+
+              <div class="fee-title">
+
+                <strong>
+                  {{ fee.title }}
+                </strong>
+
+                <small
+                  *ngIf="fee.description"
+                >
+                  {{ fee.description }}
+                </small>
+
+              </div>
+
+            </td>
+
+
+            <td>
+
+              <span class="class-badge">
+                {{ fee.className || '—' }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="item-count">
+                {{ fee.items.length }}
+                {{ fee.items.length === 1 ? 'item' : 'items' }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <strong class="amount">
+                {{ formatCurrency(fee.totalAmount) }}
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.active]="fee.status === 'active'"
+                [class.inactive]="fee.status === 'inactive'"
+              >
+                {{
+                  fee.status === 'active'
+                    ? 'Active'
+                    : 'Inactive'
+                }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <span class="date">
+                {{ formatDate(fee.updatedAt) }}
+              </span>
+
+            </td>
+
+
+            <td>
+
+              <div class="action-buttons">
+
+                <button
+                  type="button"
+                  class="action-button view"
+                  title="View"
+                  (click)="viewFee(fee)"
+                >
+                  View
+                </button>
+
+                <button
+                  type="button"
+                  class="action-button edit"
+                  title="Edit"
+                  (click)="openEditModal(fee)"
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  class="action-button toggle"
+                  title="Change status"
+                  (click)="toggleStatus(fee)"
+                >
+                  {{
+                    fee.status === 'active'
+                      ? 'Disable'
+                      : 'Activate'
+                  }}
+                </button>
+
+                <button
+                  type="button"
+                  class="action-button delete"
+                  title="Delete"
+                  (click)="deleteFee(fee)"
+                >
+                  Delete
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       CREATE / EDIT MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="showModal"
+    (click)="closeModal()"
+  >
+
+    <div
+      class="modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            SCHOOL FINANCE
+          </span>
+
+          <h2>
+            {{
+              editingFee
+                ? 'Edit Fee Structure'
+                : 'New Fee Structure'
+            }}
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeModal()"
+          [disabled]="saving"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <!-- Basic Information -->
+
+        <div class="form-section">
+
+          <h3>
+            Fee Information
+          </h3>
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+
+              <label>
+                Fee Title
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                [(ngModel)]="form.title"
+                placeholder="e.g. 2026/2027 First Term Fees"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Class
+                <span>*</span>
+              </label>
+
+              <select
+                [(ngModel)]="form.classId"
+              >
+
+                <option value="">
+                  Select Class
+                </option>
+
+                <option
+                  *ngFor="let classItem of classes"
+                  [value]="classItem.id"
+                >
+                  {{ classItem.name }}
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Status
+              </label>
+
+              <select
+                [(ngModel)]="form.status"
+              >
+
+                <option value="active">
+                  Active
+                </option>
+
+                <option value="inactive">
+                  Inactive
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="form-group full-width">
+
+              <label>
+                Description
+              </label>
+
+              <textarea
+                [(ngModel)]="form.description"
+                rows="3"
+                placeholder="Optional description for this fee structure..."
+              ></textarea>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- Fee Items -->
+
+        <div class="form-section">
+
+          <div class="section-title-row">
+
+            <div>
+
+              <h3>
+                Fee Items
+              </h3>
+
+              <p>
+                Add each fee that makes up the total amount.
+              </p>
+
+            </div>
+
+            <button
+              type="button"
+              class="add-item-button"
+              (click)="addFeeItem()"
+            >
+              + Add Item
+            </button>
+
+          </div>
+
+
+          <div
+            class="fee-items"
+            *ngIf="feeItems.length > 0"
+          >
+
+            <div
+              class="fee-item"
+              *ngFor="
+                let item of feeItems;
+                let i = index;
+                trackBy: trackByItem
+              "
+            >
+
+              <div class="item-number">
+                {{ i + 1 }}
+              </div>
+
+
+              <div class="item-name">
+
+                <label>
+                  Fee Name
+                </label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="item.name"
+                  placeholder="e.g. Tuition Fee"
+                />
+
+              </div>
+
+
+              <div class="item-amount">
+
+                <label>
+                  Amount
+                </label>
+
+                <div class="amount-input">
+
+                  <span>
+                    ₦
+                  </span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    [(ngModel)]="item.amount"
+                    placeholder="0"
+                  />
+
+                </div>
+
+              </div>
+
+
+              <button
+                type="button"
+                class="remove-item-button"
+                (click)="removeFeeItem(i)"
+                title="Remove item"
+              >
+                ×
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="no-items"
+            *ngIf="feeItems.length === 0"
+          >
+
+            No fee items added yet.
+
+          </div>
+
+
+          <div class="total-row">
+
+            <span>
+              Total Fee
+            </span>
+
+            <strong>
+              {{ formatCurrency(totalAmount) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeModal()"
+          [disabled]="saving"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="saveFee()"
+          [disabled]="saving"
+        >
+
+          <span
+            *ngIf="saving"
+            class="button-spinner"
+          ></span>
+
+          {{
+            saving
+              ? 'Saving...'
+              : editingFee
+                ? 'Update Fee Structure'
+                : 'Create Fee Structure'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       VIEW MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="showViewModal && selectedFee"
+    (click)="closeViewModal()"
+  >
+
+    <div
+      class="modal view-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            FEE STRUCTURE
+          </span>
+
+          <h2>
+            {{ selectedFee.title }}
+          </h2>
+
+        </div>
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeViewModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="view-summary">
+
+          <div>
+
+            <span>
+              Class
+            </span>
+
+            <strong>
+              {{ selectedFee.className || '—' }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Status
+            </span>
+
+            <strong
+              [class.text-active]="
+                selectedFee.status === 'active'
+              "
+              [class.text-inactive]="
+                selectedFee.status === 'inactive'
+              "
+            >
+              {{
+                selectedFee.status === 'active'
+                  ? 'Active'
+                  : 'Inactive'
+              }}
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Total
+            </span>
+
+            <strong>
+              {{ formatCurrency(selectedFee.totalAmount) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="view-description"
+          *ngIf="selectedFee.description"
+        >
+
+          <span>
+            Description
+          </span>
+
+          <p>
+            {{ selectedFee.description }}
+          </p>
+
+        </div>
+
+
+        <div class="view-items">
+
+          <h3>
+            Fee Breakdown
+          </h3>
+
+
+          <div
+            class="view-item"
+            *ngFor="
+              let item of selectedFee.items;
+              let i = index
+            "
+          >
+
+            <span>
+
+              <b>
+                {{ i + 1 }}.
+              </b>
+
+              {{ item.name }}
+
+            </span>
+
+            <strong>
+              {{ formatCurrency(item.amount) }}
+            </strong>
+
+          </div>
+
+
+          <div class="view-total">
+
+            <span>
+              Total
+            </span>
+
+            <strong>
+              {{ formatCurrency(selectedFee.totalAmount) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="view-meta">
+
+          <span>
+            Last updated:
+            {{ formatDate(selectedFee.updatedAt) }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeViewModal()"
+        >
+          Close
+        </button>
+
+        <button
+          type="button"
+          class="edit-view-button"
+          (click)="
+            closeViewModal();
+            openEditModal(selectedFee!)
+          "
+        >
+          Edit Fee
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+

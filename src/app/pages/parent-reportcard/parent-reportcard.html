@@ -1,0 +1,658 @@
+<div class="report-card-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header no-print">
+
+<div>
+  <h1>Parent Report Card</h1>
+
+  <p>
+    View your child's academic performance and
+    print or export the report card.
+  </p>
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       ERROR MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert alert-error no-print"
+    *ngIf="errorMessage"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert alert-success no-print"
+    *ngIf="successMessage"
+  >
+    {{ successMessage }}
+  </div>
+
+  <!-- =====================================================
+       CHILD SELECTION
+       ===================================================== -->
+
+  <section class="selection-card no-print">
+
+
+<div class="selection-header">
+
+  <div>
+    <h2>Select Child</h2>
+
+    <p>
+      Select the child whose report card you want to view.
+    </p>
+  </div>
+
+</div>
+
+
+<div
+  class="selection-body"
+  *ngIf="!loadingChildren"
+>
+
+  <div
+    class="empty-state"
+    *ngIf="children.length === 0"
+  >
+
+    <div class="empty-icon">
+      👨‍👩‍👧
+    </div>
+
+    <h3>No Children Found</h3>
+
+    <p>
+      No student account is currently linked
+      to this parent account.
+    </p>
+
+  </div>
+
+
+  <div
+    class="child-selector"
+    *ngIf="children.length > 0"
+  >
+
+    <label for="childSelect">
+      Child
+    </label>
+
+    <select
+      id="childSelect"
+      [(ngModel)]="selectedChildId"
+      (change)="selectChild()"
+    >
+
+      <option value="">
+        Select a child
+      </option>
+
+      <option
+        *ngFor="let child of children; trackBy: trackByChildId"
+        [value]="child.studentId"
+      >
+        {{ child.fullName }}
+        — {{ child.studentId }}
+      </option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+<div
+  class="loading-state"
+  *ngIf="loadingChildren"
+>
+
+  <div class="spinner"></div>
+
+  <span>
+    Loading children...
+  </span>
+
+</div>
+
+
+  </section>
+
+  <!-- =====================================================
+       REPORT CARD
+       ===================================================== -->
+
+  <section
+    class="report-card"
+    *ngIf="selectedChild"
+    id="printable-report-card"
+  >
+
+<!-- ===================================================
+     SCHOOL HEADER
+     =================================================== -->
+
+<div class="school-header">
+
+  <div class="school-logo">
+    DL
+  </div>
+
+  <div class="school-information">
+
+    <h1>
+      D LITTLE PRIVATE SCHOOL
+    </h1>
+
+    <p class="school-subtitle">
+      STUDENT ACADEMIC REPORT CARD
+    </p>
+
+    <p class="school-note">
+      Academic Performance Report
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================
+     STUDENT INFORMATION
+     =================================================== -->
+
+<div class="student-information">
+
+  <div class="information-item">
+
+    <span class="label">
+      Student Name
+    </span>
+
+    <strong>
+      {{ selectedChild.fullName }}
+    </strong>
+
+  </div>
+
+
+  <div class="information-item">
+
+    <span class="label">
+      Student ID
+    </span>
+
+    <strong>
+      {{ selectedChild.studentId }}
+    </strong>
+
+  </div>
+
+
+  <div class="information-item">
+
+    <span class="label">
+      Class
+    </span>
+
+    <strong>
+      {{ className || selectedChild.className || '—' }}
+    </strong>
+
+  </div>
+
+
+  <div class="information-item">
+
+    <span class="label">
+      Session
+    </span>
+
+    <strong>
+      {{ sessionName || '—' }}
+    </strong>
+
+  </div>
+
+
+  <div class="information-item">
+
+    <span class="label">
+      Term
+    </span>
+
+    <strong>
+      {{ termName || '—' }}
+    </strong>
+
+  </div>
+
+
+  <div class="information-item">
+
+    <span class="label">
+      Parent / Guardian
+    </span>
+
+    <strong>
+      {{ parentName || '—' }}
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================
+     LOADING REPORT
+     =================================================== -->
+
+<div
+  class="report-loading no-print"
+  *ngIf="loadingReport"
+>
+
+  <div class="spinner"></div>
+
+  <p>
+    Loading report card...
+  </p>
+
+</div>
+
+
+<!-- ===================================================
+     NO RESULTS
+     =================================================== -->
+
+<div
+  class="empty-report no-print"
+  *ngIf="
+    !loadingReport &&
+    filteredResults.length === 0
+  "
+>
+
+  <div class="empty-report-icon">
+    📋
+  </div>
+
+  <h3>
+    No Published Results
+  </h3>
+
+  <p>
+    There are currently no published results
+    available for this child.
+  </p>
+
+</div>
+
+
+<!-- ===================================================
+     RESULTS SECTION
+     =================================================== -->
+
+<div
+  class="results-section"
+  *ngIf="
+    !loadingReport &&
+    filteredResults.length > 0
+  "
+>
+
+  <div class="results-title no-print">
+
+    <div>
+      <h2>
+        Academic Performance
+      </h2>
+
+      <p>
+        Published subject results
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- =================================================
+       RESULT TABLE
+       ================================================= -->
+
+  <div class="table-container">
+
+    <table class="results-table">
+
+      <thead>
+
+        <tr>
+
+          <th>
+            S/N
+          </th>
+
+          <th class="subject-column">
+            SUBJECT
+          </th>
+
+          <th>
+            CA1
+          </th>
+
+          <th>
+            CA2
+          </th>
+
+          <th>
+            EXAM
+          </th>
+
+          <th>
+            TOTAL
+          </th>
+
+          <th>
+            GRADE
+          </th>
+
+          <th>
+            REMARK
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        <tr
+          *ngFor="
+            let result of filteredResults;
+            let i = index;
+            trackBy: trackByResultId
+          "
+        >
+
+          <td class="serial-number">
+            {{ i + 1 }}
+          </td>
+
+          <td class="subject-name">
+            {{ result.subjectName }}
+          </td>
+
+          <td>
+            {{ formatNumber(result.ca1, 0) }}
+          </td>
+
+          <td>
+            {{ formatNumber(result.ca2, 0) }}
+          </td>
+
+          <td>
+            {{ formatNumber(result.exam, 0) }}
+          </td>
+
+          <td class="total-score">
+            {{ formatNumber(result.total, 0) }}
+          </td>
+
+          <td>
+
+            <span
+              class="grade-badge"
+              [ngClass]="getGradeClass(result.grade)"
+            >
+              {{ result.grade || '—' }}
+            </span>
+
+          </td>
+
+          <td class="remark">
+            {{ result.remark || '—' }}
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+
+  <!-- =================================================
+       SUMMARY
+       ================================================= -->
+
+  <div class="summary-section">
+
+    <div class="summary-card">
+
+      <span class="summary-label">
+        Total Subjects
+      </span>
+
+      <strong>
+        {{ totalSubjects }}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <span class="summary-label">
+        Total Score
+      </span>
+
+      <strong>
+        {{ formatNumber(totalScore, 0) }}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <span class="summary-label">
+        Average Score
+      </span>
+
+      <strong>
+        {{ formatNumber(averageScore, 2) }}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <span class="summary-label">
+        Highest Score
+      </span>
+
+      <strong>
+        {{ formatNumber(highestScore, 0) }}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-card">
+
+      <span class="summary-label">
+        Lowest Score
+      </span>
+
+      <strong>
+        {{ formatNumber(lowestScore, 0) }}
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <!-- =================================================
+       OVERALL PERFORMANCE
+       ================================================= -->
+
+  <div class="performance-section">
+
+    <div>
+
+      <span class="performance-label">
+        Overall Performance
+      </span>
+
+      <strong>
+        {{ getPerformanceRemark() }}
+      </strong>
+
+    </div>
+
+    <div class="average-display">
+
+      <span>
+        Average
+      </span>
+
+      <strong>
+        {{ formatNumber(averageScore, 2) }}%
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <!-- =================================================
+       REPORT FOOTER
+       ================================================= -->
+
+  <div class="report-footer">
+
+    <div>
+
+      <span>
+        Report Date
+      </span>
+
+      <strong>
+        {{ formatDate(reportDate) }}
+      </strong>
+
+    </div>
+
+
+    <div>
+
+      <span>
+        Result Status
+      </span>
+
+      <strong class="published-status">
+        Published
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <!-- =================================================
+       PRINT + EXCEL BUTTONS
+       ================================================= -->
+
+  <div class="action-section no-print">
+
+    <div class="print-section">
+
+      <button
+        type="button"
+        class="print-button"
+        (click)="printReportCard()"
+      >
+
+        <span>
+          🖨️
+        </span>
+
+        <span>
+          Print Result
+        </span>
+
+      </button>
+
+      <p>
+        Print only the student result in a clean
+        table format.
+      </p>
+
+    </div>
+
+
+    <div class="export-section">
+
+      <button
+        type="button"
+        class="export-button"
+        (click)="exportToExcel()"
+        [disabled]="exporting"
+      >
+
+        <span
+          *ngIf="!exporting"
+        >
+          📊
+        </span>
+
+        <span
+          class="button-spinner"
+          *ngIf="exporting"
+        ></span>
+
+        <span>
+          {{
+            exporting
+              ? 'Preparing Excel...'
+              : 'Export Report Card to Excel'
+          }}
+        </span>
+
+      </button>
+
+      <p>
+        Download this report card as an Excel
+        <strong>.xlsx</strong> file.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+  </section>
+
+</div>

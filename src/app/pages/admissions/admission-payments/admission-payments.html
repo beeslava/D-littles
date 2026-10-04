@@ -1,0 +1,528 @@
+<div class="payment-page">
+
+  <!-- HERO -->
+  <section class="payment-hero">
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        D LITTLE PRIVATE SCHOOL
+      </span>
+
+      <h1>
+        Application Fee
+      </h1>
+
+      <p>
+        Complete your admission application by paying
+        the required application fee.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- CONTENT -->
+  <main class="payment-container">
+
+    <!-- LOADING -->
+    @if (loading) {
+
+      <section class="state-card">
+
+        <div class="loading-spinner"></div>
+
+        <h2>
+          Loading Application
+        </h2>
+
+        <p>
+          Please wait while we retrieve your application details.
+        </p>
+
+      </section>
+
+    }
+
+
+    <!-- ERROR -->
+    @if (!loading && errorMessage) {
+
+      <section class="state-card error-card">
+
+        <div class="state-icon">
+          <i class="fas fa-circle-exclamation"></i>
+        </div>
+
+        <h2>
+          Unable to Load Application
+        </h2>
+
+        <p>
+          {{ errorMessage }}
+        </p>
+
+        <div class="state-actions">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="goBackToAdmissions()"
+          >
+            <i class="fas fa-arrow-left"></i>
+            Back to Admissions
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="loadApplication()"
+          >
+            <i class="fas fa-rotate-right"></i>
+            Try Again
+          </button>
+
+        </div>
+
+      </section>
+
+    }
+
+
+    <!-- APPLICATION -->
+    @if (!loading && application) {
+
+      <section class="application-layout">
+
+        <!-- LEFT -->
+        <div class="application-details">
+
+          <div class="card">
+
+            <div class="card-heading">
+
+              <div>
+
+                <span class="section-label">
+                  APPLICATION
+                </span>
+
+                <h2>
+                  Application Details
+                </h2>
+
+              </div>
+
+              <span
+                class="payment-status"
+                [ngClass]="paymentStatusClass"
+              >
+                {{ paymentStatusLabel }}
+              </span>
+
+            </div>
+
+
+            <div class="application-number">
+
+              <span>
+                Application Number
+              </span>
+
+              <strong>
+                {{ application.applicationNumber }}
+              </strong>
+
+            </div>
+
+
+            <div class="details-grid">
+
+              <div class="detail-item">
+
+                <span class="detail-label">
+                  Applicant Name
+                </span>
+
+                <strong>
+                  {{ applicantName }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span class="detail-label">
+                  Class Applied
+                </span>
+
+                <strong>
+                  {{ classAppliedLabel }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span class="detail-label">
+                  Parent / Guardian
+                </span>
+
+                <strong>
+                  {{ application.parentGuardian.name }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span class="detail-label">
+                  Parent Phone
+                </span>
+
+                <strong>
+                  {{ application.parentGuardian.phone }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span class="detail-label">
+                  Parent Email
+                </span>
+
+                <strong>
+                  {{ application.parentGuardian.email || 'Not provided' }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <span class="detail-label">
+                  Relationship
+                </span>
+
+                <strong>
+                  {{ application.parentGuardian.relationship }}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- PAYMENT INFORMATION -->
+          <div class="card">
+
+            <div class="card-heading">
+
+              <div>
+
+                <span class="section-label">
+                  PAYMENT
+                </span>
+
+                <h2>
+                  Application Fee
+                </h2>
+
+              </div>
+
+            </div>
+
+
+            <div class="fee-summary">
+
+              <div class="fee-summary-row">
+
+                <span>
+                  Application Fee
+                </span>
+
+                <strong>
+                  ₦{{ applicationFee | number }}
+                </strong>
+
+              </div>
+
+
+              <div class="fee-summary-row total-row">
+
+                <span>
+                  Amount to Pay
+                </span>
+
+                <strong>
+                  ₦{{ applicationFee | number }}
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            @if (application.paymentStatus === 'paid') {
+
+              <div class="paid-message">
+
+                <div class="paid-icon">
+                  <i class="fas fa-check"></i>
+                </div>
+
+                <div>
+
+                  <h3>
+                    Payment Successful
+                  </h3>
+
+                  <p>
+                    Your application fee has been received
+                    and your application is ready for review.
+                  </p>
+
+                  @if (application.paymentReference) {
+
+                    <div class="reference">
+
+                      <span>
+                        Payment Reference
+                      </span>
+
+                      <strong>
+                        {{ application.paymentReference }}
+                      </strong>
+
+                    </div>
+
+                  }
+
+                </div>
+
+              </div>
+
+            }
+
+
+            @if (application.paymentStatus !== 'paid') {
+
+              <div class="payment-notice">
+
+                <i class="fas fa-shield-halved"></i>
+
+                <div>
+
+                  <strong>
+                    Secure Payment
+                  </strong>
+
+                  <p>
+                    Your payment will be processed securely.
+                    Do not refresh or close the payment window
+                    while your transaction is being processed.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              @if (successMessage) {
+
+                <div class="success-message">
+
+                  <i class="fas fa-circle-check"></i>
+
+                  <span>
+                    {{ successMessage }}
+                  </span>
+
+                </div>
+
+              }
+
+
+              <button
+                type="button"
+                class="pay-button"
+                [disabled]="paying"
+                (click)="payApplicationFee()"
+              >
+
+                @if (paying) {
+
+                  <span class="button-spinner"></span>
+
+                  <span>
+                    Preparing Payment...
+                  </span>
+
+                } @else {
+
+                  <i class="fas fa-credit-card"></i>
+
+                  <span>
+                    Pay ₦{{ applicationFee | number }}
+                  </span>
+
+                }
+
+              </button>
+
+
+              <p class="payment-note">
+                The application fee is non-refundable.
+              </p>
+
+            }
+
+          </div>
+
+        </div>
+
+
+        <!-- RIGHT -->
+        <aside class="payment-sidebar">
+
+          <div class="summary-card">
+
+            <div class="summary-icon">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+
+            <h2>
+              Application Fee
+            </h2>
+
+            <div class="summary-amount">
+              ₦{{ applicationFee | number }}
+            </div>
+
+            <p>
+              This fee is required to complete your
+              admission application.
+            </p>
+
+
+            <div class="summary-divider"></div>
+
+
+            <div class="summary-item">
+
+              <span>
+                Application
+              </span>
+
+              <strong>
+                {{ application.applicationNumber }}
+              </strong>
+
+            </div>
+
+
+            <div class="summary-item">
+
+              <span>
+                Status
+              </span>
+
+              <strong
+                [ngClass]="paymentStatusClass"
+              >
+                {{ paymentStatusLabel }}
+              </strong>
+
+            </div>
+
+
+            @if (application.paymentReference) {
+
+              <div class="summary-item">
+
+                <span>
+                  Reference
+                </span>
+
+                <strong class="reference-text">
+                  {{ application.paymentReference }}
+                </strong>
+
+              </div>
+
+            }
+
+          </div>
+
+
+          <div class="help-card">
+
+            <div class="help-icon">
+              <i class="fas fa-circle-info"></i>
+            </div>
+
+            <h3>
+              Need Help?
+            </h3>
+
+            <p>
+              If you experience any problem while making
+              your payment, please contact the school
+              administration.
+            </p>
+
+            <a
+              routerLink="/contact"
+              class="help-link"
+            >
+              Contact School
+              <i class="fas fa-arrow-right"></i>
+            </a>
+
+          </div>
+
+        </aside>
+
+      </section>
+
+    }
+
+
+    <!-- BOTTOM ACTIONS -->
+    @if (!loading && application) {
+
+      <div class="bottom-actions">
+
+        <button
+          type="button"
+          class="back-link"
+          (click)="goBackToAdmissions()"
+        >
+          <i class="fas fa-arrow-left"></i>
+          Back to Admissions
+        </button>
+
+        <button
+          type="button"
+          class="home-link"
+          (click)="goToHome()"
+        >
+          <i class="fas fa-house"></i>
+          Home
+        </button>
+
+      </div>
+
+    }
+
+  </main>
+
+</div>

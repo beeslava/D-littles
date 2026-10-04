@@ -1,0 +1,1593 @@
+<div class="admin-message-page">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+    <div class="header-left">
+
+      <a
+        routerLink="/admin/dashboard"
+        class="back-button"
+      >
+        ← Dashboard
+      </a>
+
+      <div class="page-title">
+
+        <h1>
+          Messages
+        </h1>
+
+        <p>
+          Send and manage messages
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      class="compose-button"
+      type="button"
+      (click)="openCompose()"
+    >
+      + New Message
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+  ====================================================== -->
+
+  <div class="stats-grid">
+
+    <!-- TOTAL -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        💬
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Total Messages
+        </span>
+
+        <strong>
+          {{ messages.length }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- UNREAD -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        📩
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Unread
+        </span>
+
+        <strong>
+          {{
+            messages.filter(
+              m => m.status === 'unread'
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- RECEIVED -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        📥
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Received
+        </span>
+
+        <strong>
+          {{
+            messages.filter(
+              m =>
+                m.recipientRole === 'admin' ||
+                (
+                  currentUser &&
+                  m.recipientId === currentUser.uid
+                )
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- SENT -->
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        📤
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Sent
+        </span>
+
+        <strong>
+          {{
+            messages.filter(
+              m => m.senderRole === 'admin'
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       FILTER BAR
+  ====================================================== -->
+
+  <div class="filter-card">
+
+    <!-- SEARCH -->
+
+    <div class="search-box">
+
+      <span class="search-icon">
+        🔍
+      </span>
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search messages..."
+      />
+
+    </div>
+
+
+    <!-- MESSAGE DIRECTION -->
+
+    <select
+      [(ngModel)]="recipientFilter"
+      class="filter-select"
+    >
+
+      <option value="all">
+        All Messages
+      </option>
+
+      <option value="incoming">
+        Received
+      </option>
+
+      <option value="student">
+        Students
+      </option>
+
+      <option value="staff">
+        Staff
+      </option>
+
+      <option value="parent">
+        Parents
+      </option>
+
+    </select>
+
+
+    <!-- STATUS -->
+
+    <select
+      [(ngModel)]="statusFilter"
+      class="filter-select"
+    >
+
+      <option value="all">
+        All Status
+      </option>
+
+      <option value="unread">
+        Unread
+      </option>
+
+      <option value="read">
+        Read
+      </option>
+
+      <option value="sent">
+        Sent
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading messages...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       EMPTY STATE
+  ====================================================== -->
+
+  <div
+    class="empty-state"
+    *ngIf="
+      !loading &&
+      filteredMessages.length === 0
+    "
+  >
+
+    <div class="empty-icon">
+      💬
+    </div>
+
+    <h2>
+      No Messages Found
+    </h2>
+
+    <p>
+      There are no messages matching your current filters.
+    </p>
+
+    <button
+      class="compose-button"
+      type="button"
+      (click)="openCompose()"
+    >
+      + Send a Message
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       MESSAGE TABLE
+  ====================================================== -->
+
+  <div
+    class="table-card"
+    *ngIf="
+      !loading &&
+      filteredMessages.length > 0
+    "
+  >
+
+    <div class="table-header">
+
+      <div>
+
+        <h2>
+          Messages
+        </h2>
+
+        <p>
+          {{ filteredMessages.length }}
+          message(s)
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Direction
+            </th>
+
+            <th>
+              Person
+            </th>
+
+            <th>
+              Subject
+            </th>
+
+            <th>
+              Type
+            </th>
+
+            <th>
+              Priority
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Date
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let message of filteredMessages
+            "
+            [ngClass]="{
+              'incoming-message':
+                message.senderRole !== 'admin',
+
+              'outgoing-message':
+                message.senderRole === 'admin'
+            }"
+          >
+
+            <!-- =================================================
+                 DIRECTION
+            ================================================== -->
+
+            <td>
+
+              <span
+                class="type-badge"
+                [ngClass]="{
+
+                  'incoming-badge':
+                    message.senderRole !== 'admin',
+
+                  'outgoing-badge':
+                    message.senderRole === 'admin'
+
+                }"
+              >
+
+                {{
+                  message.senderRole === 'admin'
+                    ? '📤 Sent'
+                    : '📥 Received'
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- =================================================
+                 PERSON
+            ================================================== -->
+
+            <td>
+
+              <div class="recipient-cell">
+
+                <!-- SAFE AVATAR -->
+
+                <div class="recipient-avatar">
+
+                  {{
+                    (
+                      message.senderRole === 'admin'
+                        ? (message.recipientName || '?')
+                        : (message.senderName || '?')
+                    )
+                      .charAt(0)
+                      .toUpperCase()
+                  }}
+
+                </div>
+
+
+                <div>
+
+                  <strong>
+
+                    {{
+                      message.senderRole === 'admin'
+                        ? (
+                            message.type === 'group'
+                              ? (
+                                  message.groupName ||
+                                  message.recipientName ||
+                                  'Group'
+                                )
+                              : (
+                                  message.recipientName ||
+                                  'Unknown'
+                                )
+                          )
+                        : (
+                            message.senderName ||
+                            'Unknown Sender'
+                          )
+                    }}
+
+                  </strong>
+
+
+                  <span>
+
+                    {{
+                      message.senderRole === 'admin'
+                        ? (
+                            message.type === 'group'
+                              ? 'Group • ' +
+                                (
+                                  message.recipientRole ||
+                                  'All'
+                                | titlecase
+                                )
+                              : (
+                                  message.recipientRole ||
+                                  'Unknown'
+                                | titlecase
+                                )
+                          )
+                        : (
+                            'From • ' +
+                            (
+                              message.senderRole ||
+                              'Unknown'
+                              | titlecase
+                            )
+                          )
+                    }}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- =================================================
+                 SUBJECT
+            ================================================== -->
+
+            <td>
+
+              <div class="subject-cell">
+
+                <strong>
+                  {{ message.subject || 'No Subject' }}
+                </strong>
+
+                <span>
+
+                  {{
+                    (message.body || '').length > 60
+                      ? (
+                          (message.body || '')
+                            | slice:0:60
+                        ) + '...'
+                      : (message.body || '')
+                  }}
+
+                </span>
+
+
+                <!-- REPLY INDICATOR -->
+
+                <small
+                  *ngIf="message.replyToId"
+                >
+
+                  ↩ Reply to:
+
+                  {{
+                    message.replyToSubject ||
+                    'Previous message'
+                  }}
+
+                </small>
+
+              </div>
+
+            </td>
+
+
+            <!-- =================================================
+                 TYPE
+            ================================================== -->
+
+            <td>
+
+              <span class="type-badge">
+
+                {{
+                  message.type
+                    | titlecase
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- =================================================
+                 PRIORITY
+            ================================================== -->
+
+            <td>
+
+              <span
+                class="priority-badge"
+                [ngClass]="{
+
+                  'priority-normal':
+                    message.priority === 'normal',
+
+                  'priority-important':
+                    message.priority === 'important',
+
+                  'priority-urgent':
+                    message.priority === 'urgent'
+
+                }"
+              >
+
+                {{
+                  message.priority
+                    | titlecase
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- =================================================
+                 STATUS
+            ================================================== -->
+
+            <td>
+
+              <span
+                class="status-badge"
+                [ngClass]="{
+
+                  'status-unread':
+                    message.status === 'unread',
+
+                  'status-read':
+                    message.status === 'read',
+
+                  'status-sent':
+                    message.status === 'sent'
+
+                }"
+              >
+
+                {{
+                  message.status
+                    | titlecase
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- =================================================
+                 DATE
+            ================================================== -->
+
+            <td>
+
+              <span class="date-text">
+
+                {{
+                  formatDate(
+                    message.createdAt
+                  )
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
+
+            <td>
+
+              <div class="action-buttons">
+
+                <!-- VIEW -->
+
+                <button
+                  class="view-button"
+                  type="button"
+                  (click)="viewMessage(message)"
+                  title="View message"
+                >
+                  👁
+                </button>
+
+
+                <!-- REPLY -->
+
+                <button
+                  *ngIf="canReply(message)"
+                  class="reply-button"
+                  type="button"
+                  (click)="replyToMessage(message)"
+                  title="Reply to message"
+                >
+                  ↩
+                </button>
+
+
+                <!-- DELETE -->
+
+                <button
+                  class="delete-button"
+                  type="button"
+                  (click)="deleteMessage(message)"
+                  title="Delete message"
+                >
+                  🗑
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       COMPOSE MESSAGE MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showCompose"
+    (click)="closeCompose()"
+  >
+
+    <div
+      class="message-modal compose-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- =================================================
+           MODAL HEADER
+      ================================================== -->
+
+      <div class="modal-header">
+
+        <div>
+
+          <h2>
+
+            {{
+              replyingToMessage
+                ? 'Reply to Message'
+                : 'New Message'
+            }}
+
+          </h2>
+
+
+          <p
+            *ngIf="!replyingToMessage"
+          >
+            Send a message to a member or a group
+          </p>
+
+
+          <p
+            *ngIf="replyingToMessage"
+          >
+
+            Replying to
+
+            <strong>
+              {{ replyingToMessage.senderName || 'Unknown Sender' }}
+            </strong>
+
+          </p>
+
+        </div>
+
+
+        <button
+          class="close-button"
+          type="button"
+          (click)="closeCompose()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           REPLY INFORMATION
+      ================================================== -->
+
+      <div
+        class="reply-info"
+        *ngIf="replyingToMessage"
+      >
+
+        <div class="reply-info-icon">
+          ↩
+        </div>
+
+        <div>
+
+          <strong>
+            Replying to:
+          </strong>
+
+          <span>
+
+            {{ replyingToMessage.senderName || 'Unknown Sender' }}
+
+            —
+
+            {{ replyingToMessage.subject || 'Previous message' }}
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           MODAL BODY
+      ================================================== -->
+
+      <div class="modal-body">
+
+
+        <!-- =================================================
+             MESSAGE TYPE + PRIORITY
+        ================================================== -->
+
+        <div
+          class="form-row"
+          *ngIf="!replyingToMessage"
+        >
+
+          <div class="form-group">
+
+            <label>
+              Message Type
+            </label>
+
+            <select
+              [(ngModel)]="newMessage.type"
+              (ngModelChange)="selectMessageType()"
+            >
+
+              <option value="individual">
+                Individual
+              </option>
+
+              <option value="group">
+                General / Group
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Priority
+            </label>
+
+            <select
+              [(ngModel)]="newMessage.priority"
+            >
+
+              <option value="normal">
+                Normal
+              </option>
+
+              <option value="important">
+                Important
+              </option>
+
+              <option value="urgent">
+                Urgent
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             REPLY PRIORITY
+        ================================================== -->
+
+        <div
+          class="form-group"
+          *ngIf="replyingToMessage"
+        >
+
+          <label>
+            Priority
+          </label>
+
+          <select
+            [(ngModel)]="newMessage.priority"
+          >
+
+            <option value="normal">
+              Normal
+            </option>
+
+            <option value="important">
+              Important
+            </option>
+
+            <option value="urgent">
+              Urgent
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- =================================================
+             INDIVIDUAL RECIPIENT
+        ================================================== -->
+
+        <div
+          class="form-group"
+          *ngIf="
+            newMessage.type === 'individual'
+          "
+        >
+
+          <label>
+            Recipient
+            <span>*</span>
+          </label>
+
+
+          <!-- NORMAL MESSAGE -->
+
+          <select
+            *ngIf="!replyingToMessage"
+            [(ngModel)]="newMessage.recipientId"
+            (ngModelChange)="selectRecipient($event)"
+          >
+
+            <option value="">
+              Select recipient
+            </option>
+
+            <option
+              *ngFor="
+                let recipient of recipients
+              "
+              [value]="recipient.id"
+            >
+
+              {{ recipient.name }}
+
+              —
+
+              {{
+                recipient.role
+                  | titlecase
+              }}
+
+            </option>
+
+          </select>
+
+
+          <!-- REPLY RECIPIENT -->
+
+          <div
+            class="reply-recipient"
+            *ngIf="replyingToMessage"
+          >
+
+            <div class="recipient-avatar">
+
+              {{
+                (replyingToMessage.senderName || '?')
+                  .charAt(0)
+                  .toUpperCase()
+              }}
+
+            </div>
+
+            <div>
+
+              <strong>
+                {{
+                  replyingToMessage.senderName ||
+                  'Unknown Sender'
+                }}
+              </strong>
+
+              <span>
+                {{
+                  replyingToMessage.senderRole ||
+                  'Unknown'
+                  | titlecase
+                }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             GROUP AUDIENCE
+        ================================================== -->
+
+        <div
+          class="form-group"
+          *ngIf="
+            newMessage.type === 'group' &&
+            !replyingToMessage
+          "
+        >
+
+          <label>
+            Send To
+            <span>*</span>
+          </label>
+
+          <select
+            [(ngModel)]="
+              newMessage.groupAudience
+            "
+          >
+
+            <option value="all">
+              Everyone
+            </option>
+
+            <option value="student">
+              All Students
+            </option>
+
+            <option value="parent">
+              All Parents
+            </option>
+
+            <option value="staff">
+              All Staff
+            </option>
+
+          </select>
+
+
+          <small
+            *ngIf="
+              newMessage.groupAudience === 'all'
+            "
+          >
+            This message will be sent to
+            all active students, parents and
+            staff.
+          </small>
+
+
+          <small
+            *ngIf="
+              newMessage.groupAudience === 'student'
+            "
+          >
+            This message will be sent to
+            all active students.
+          </small>
+
+
+          <small
+            *ngIf="
+              newMessage.groupAudience === 'parent'
+            "
+          >
+            This message will be sent to
+            all active parents.
+          </small>
+
+
+          <small
+            *ngIf="
+              newMessage.groupAudience === 'staff'
+            "
+          >
+            This message will be sent to
+            all active staff.
+          </small>
+
+        </div>
+
+
+        <!-- =================================================
+             SUBJECT
+        ================================================== -->
+
+        <div class="form-group">
+
+          <label>
+            Subject
+            <span>*</span>
+          </label>
+
+          <input
+            type="text"
+            [(ngModel)]="newMessage.subject"
+            placeholder="Enter message subject"
+            maxlength="150"
+          />
+
+        </div>
+
+
+        <!-- =================================================
+             MESSAGE
+        ================================================== -->
+
+        <div class="form-group">
+
+          <label>
+            Message
+            <span>*</span>
+          </label>
+
+          <textarea
+            [(ngModel)]="newMessage.body"
+            placeholder="Write your message here..."
+            rows="8"
+            maxlength="5000"
+          ></textarea>
+
+
+          <small>
+
+            {{ newMessage.body.length }}/5000 characters
+
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           MODAL FOOTER
+      ================================================== -->
+
+      <div class="modal-footer">
+
+        <button
+          class="cancel-button"
+          type="button"
+          (click)="closeCompose()"
+          [disabled]="sending"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          class="send-button"
+          type="button"
+          (click)="sendMessage()"
+          [disabled]="sending"
+        >
+
+          <span *ngIf="!sending">
+
+            ✈
+
+            {{
+              replyingToMessage
+                ? ' Send Reply'
+                : (
+                    newMessage.type === 'group'
+                      ? ' Send to Group'
+                      : ' Send Message'
+                  )
+            }}
+
+          </span>
+
+
+          <span *ngIf="sending">
+            Sending...
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       VIEW MESSAGE MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="
+      showViewModal &&
+      selectedMessage
+    "
+    (click)="closeView()"
+  >
+
+    <div
+      class="message-modal view-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- =================================================
+           HEADER
+      ================================================== -->
+
+      <div class="modal-header">
+
+        <div>
+
+          <h2>
+            Message Details
+          </h2>
+
+          <p>
+            {{
+              formatDate(
+                selectedMessage.createdAt
+              )
+            }}
+          </p>
+
+        </div>
+
+
+        <button
+          class="close-button"
+          type="button"
+          (click)="closeView()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           MESSAGE DIRECTION
+      ================================================== -->
+
+      <div class="message-direction">
+
+        <span
+          class="type-badge"
+          [ngClass]="{
+
+            'incoming-badge':
+              selectedMessage.senderRole !== 'admin',
+
+            'outgoing-badge':
+              selectedMessage.senderRole === 'admin'
+
+          }"
+        >
+
+          {{
+            selectedMessage.senderRole === 'admin'
+              ? '📤 Sent Message'
+              : '📥 Received Message'
+          }}
+
+        </span>
+
+      </div>
+
+
+      <!-- =================================================
+           MESSAGE DETAILS
+      ================================================== -->
+
+      <div class="message-details">
+
+
+        <!-- FROM -->
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            From
+          </span>
+
+          <div
+            class="detail-value recipient-detail"
+          >
+
+            <div class="recipient-avatar">
+
+              {{
+                (selectedMessage.senderName || '?')
+                  .charAt(0)
+                  .toUpperCase()
+              }}
+
+            </div>
+
+
+            <div>
+
+              <strong>
+
+                {{
+                  selectedMessage.senderName ||
+                  'Unknown Sender'
+                }}
+
+              </strong>
+
+              <span>
+
+                {{
+                  selectedMessage.senderRole ||
+                  'Unknown'
+                  | titlecase
+                }}
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- TO -->
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            To
+          </span>
+
+          <div
+            class="detail-value recipient-detail"
+          >
+
+            <div class="recipient-avatar">
+
+              {{
+                (selectedMessage.recipientName || '?')
+                  .charAt(0)
+                  .toUpperCase()
+              }}
+
+            </div>
+
+
+            <div>
+
+              <strong>
+
+                {{
+                  selectedMessage.type === 'group'
+                    ? (
+                        selectedMessage.groupName ||
+                        selectedMessage.recipientName ||
+                        'Group'
+                      )
+                    : (
+                        selectedMessage.recipientName ||
+                        'Administrator'
+                      )
+                }}
+
+              </strong>
+
+              <span>
+
+                {{
+                  selectedMessage.recipientRole ||
+                  'Unknown'
+                  | titlecase
+                }}
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- REPLY REFERENCE -->
+
+        <div
+          class="detail-row"
+          *ngIf="selectedMessage.replyToId"
+        >
+
+          <span class="detail-label">
+            Replying To
+          </span>
+
+          <span class="detail-value">
+
+            ↩
+
+            {{
+              selectedMessage.replyToSubject ||
+              'Previous message'
+            }}
+
+          </span>
+
+        </div>
+
+
+        <!-- TYPE -->
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Type
+          </span>
+
+          <span class="detail-value">
+
+            {{
+              selectedMessage.type
+                | titlecase
+            }}
+
+          </span>
+
+        </div>
+
+
+        <!-- SUBJECT -->
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Subject
+          </span>
+
+          <strong class="detail-value">
+
+            {{
+              selectedMessage.subject ||
+              'No Subject'
+            }}
+
+          </strong>
+
+        </div>
+
+
+        <!-- PRIORITY -->
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Priority
+          </span>
+
+          <span
+            class="priority-badge"
+            [ngClass]="{
+
+              'priority-normal':
+                selectedMessage.priority === 'normal',
+
+              'priority-important':
+                selectedMessage.priority === 'important',
+
+              'priority-urgent':
+                selectedMessage.priority === 'urgent'
+
+            }"
+          >
+
+            {{
+              selectedMessage.priority
+                | titlecase
+            }}
+
+          </span>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="detail-row">
+
+          <span class="detail-label">
+            Status
+          </span>
+
+          <span
+            class="status-badge"
+            [ngClass]="{
+
+              'status-unread':
+                selectedMessage.status === 'unread',
+
+              'status-read':
+                selectedMessage.status === 'read',
+
+              'status-sent':
+                selectedMessage.status === 'sent'
+
+            }"
+          >
+
+            {{
+              selectedMessage.status
+                | titlecase
+            }}
+
+          </span>
+
+        </div>
+
+
+        <!-- MESSAGE BODY -->
+
+        <div class="message-body">
+
+          <h3>
+            Message
+          </h3>
+
+          <p>
+            {{ selectedMessage.body || '' }}
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           FOOTER
+      ================================================== -->
+
+      <div class="modal-footer">
+
+        <!-- REPLY -->
+
+        <button
+          *ngIf="canReply(selectedMessage)"
+          class="reply-full-button"
+          type="button"
+          (click)="replyToMessage(selectedMessage)"
+        >
+
+          ↩ Reply
+
+        </button>
+
+
+        <!-- DELETE -->
+
+        <button
+          class="delete-full-button"
+          type="button"
+          (click)="deleteMessage(selectedMessage)"
+        >
+
+          🗑 Delete Message
+
+        </button>
+
+
+        <!-- CLOSE -->
+
+        <button
+          class="cancel-button"
+          type="button"
+          (click)="closeView()"
+        >
+
+          Close
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

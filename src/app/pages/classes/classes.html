@@ -1,1 +1,162 @@
-<p>classes works!</p>
+<div class="classes-page">
+
+  <!-- =====================================================
+       HERO
+  ====================================================== -->
+
+  <section class="classes-hero">
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        D-LITTLES SCHOOL
+      </span>
+
+      <h1>
+        Our Classes
+      </h1>
+
+      <p>
+        Explore the classes and learning levels available
+        at D-Littles Private School.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       CONTENT
+  ====================================================== -->
+
+  <main class="classes-container">
+
+    <div class="section-heading">
+
+      <span>
+        ACADEMIC LEVELS
+      </span>
+
+      <h2>
+        Our Classes
+      </h2>
+
+      <p>
+        We provide a supportive learning environment designed
+        to help every child learn, grow and succeed.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         ERROR
+    ==================================================== -->
+
+    <div
+      class="alert error-alert"
+      *ngIf="errorMessage"
+    >
+      {{ errorMessage }}
+    </div>
+
+
+    <!-- ===================================================
+         LOADING
+    ==================================================== -->
+
+    <div
+      class="loading-state"
+      *ngIf="loading"
+    >
+
+      <div class="loading-spinner"></div>
+
+      <p>
+        Loading classes...
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         EMPTY
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="!loading && classes.length === 0"
+    >
+
+      <div class="empty-icon">
+        🎓
+      </div>
+
+      <h2>
+        No Classes Available
+      </h2>
+
+      <p>
+        Class information will be available soon.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         CLASSES
+    ==================================================== -->
+
+    <section
+      class="classes-grid"
+      *ngIf="!loading && classes.length > 0"
+    >
+
+      <article
+        class="class-card"
+        *ngFor="let schoolClass of classes"
+      >
+
+        <div class="class-icon">
+          🎓
+        </div>
+
+        <div class="class-content">
+
+          <span
+            class="class-code"
+            *ngIf="schoolClass.code"
+          >
+            {{ schoolClass.code }}
+          </span>
+
+          <h3>
+            {{ schoolClass.name }}
+          </h3>
+
+          <p
+            *ngIf="schoolClass.description"
+          >
+            {{ schoolClass.description }}
+          </p>
+
+          <p
+            class="default-description"
+            *ngIf="!schoolClass.description"
+          >
+            A learning environment designed to support
+            students' academic growth and development.
+          </p>
+
+        </div>
+
+      </article>
+
+    </section>
+
+  </main>
+
+</div>
+
+

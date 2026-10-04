@@ -1,0 +1,842 @@
+<div class="messages-page">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header class="messages-header">
+
+    <div class="header-left">
+
+      <a
+        routerLink="/parent/dashboard"
+        class="back-button">
+
+        ← Dashboard
+
+      </a>
+
+      <div>
+
+        <span class="school-label">
+          D LITTLE PRIVATE SCHOOL
+        </span>
+
+        <h1>
+          Messages
+        </h1>
+
+        <p>
+          Communicate with the school administration and staff.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="refresh-button"
+        (click)="refreshMessages()"
+        [disabled]="loading">
+
+        <i
+          class="fas"
+          [class.fa-sync-alt]="!loading"
+          [class.fa-spinner]="loading"
+          [class.fa-spin]="loading">
+        </i>
+
+        Refresh
+
+      </button>
+
+
+      <button
+        type="button"
+        class="compose-button"
+        (click)="openCompose()">
+
+        <i class="fas fa-plus"></i>
+
+        Compose
+
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       ALERTS
+  ====================================================== -->
+
+  <div
+    class="alert success"
+    *ngIf="successMessage">
+
+    <i class="fas fa-check-circle"></i>
+
+    {{ successMessage }}
+
+  </div>
+
+
+  <div
+    class="alert error"
+    *ngIf="errorMessage">
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-container"
+    *ngIf="loading">
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Loading your messages...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
+  <main
+    class="messages-container"
+    *ngIf="!loading">
+
+
+    <!-- ===================================================
+         TOP SUMMARY
+    ==================================================== -->
+
+    <section class="summary-grid">
+
+      <div class="summary-card">
+
+        <div class="summary-icon blue">
+          <i class="fas fa-inbox"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Inbox
+          </span>
+
+          <strong>
+            {{ inboxCount }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <div class="summary-icon red">
+          <i class="fas fa-envelope"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Unread
+          </span>
+
+          <strong>
+            {{ unreadCount }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <div class="summary-icon green">
+          <i class="fas fa-paper-plane"></i>
+        </div>
+
+        <div>
+
+          <span>
+            Sent
+          </span>
+
+          <strong>
+            {{ sentCount }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         MESSAGE LAYOUT
+    ==================================================== -->
+
+    <section class="messages-layout">
+
+
+      <!-- =================================================
+           SIDEBAR
+      ================================================== -->
+
+      <aside class="messages-sidebar">
+
+
+        <button
+          type="button"
+          class="folder-button"
+          [class.active]="activeFolder === 'inbox'"
+          (click)="setFolder('inbox')">
+
+          <span>
+
+            <i class="fas fa-inbox"></i>
+
+            Inbox
+
+          </span>
+
+          <span
+            class="folder-count"
+            *ngIf="unreadCount > 0">
+
+            {{ unreadCount }}
+
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="folder-button"
+          [class.active]="activeFolder === 'sent'"
+          (click)="setFolder('sent')">
+
+          <span>
+
+            <i class="fas fa-paper-plane"></i>
+
+            Sent
+
+          </span>
+
+          <span>
+            {{ sentCount }}
+          </span>
+
+        </button>
+
+
+        <button
+          type="button"
+          class="mark-read-button"
+          *ngIf="unreadCount > 0"
+          (click)="markAllAsRead()">
+
+          <i class="fas fa-check-double"></i>
+
+          Mark All Read
+
+        </button>
+
+
+        <div class="sidebar-info">
+
+          <i class="fas fa-info-circle"></i>
+
+          <p>
+            You can communicate directly with school administration
+            and your child's teachers.
+          </p>
+
+        </div>
+
+      </aside>
+
+
+      <!-- =================================================
+           MESSAGE LIST
+      ================================================== -->
+
+      <div class="message-list-panel">
+
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+          <i class="fas fa-search"></i>
+
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search messages...">
+
+        </div>
+
+
+        <!-- LIST -->
+
+        <div
+          class="message-list"
+          *ngIf="filteredMessages.length > 0; else noMessages">
+
+
+          <button
+            type="button"
+            class="message-item"
+            *ngFor="let message of filteredMessages"
+            [class.unread]="
+              message.status === 'unread'
+            "
+            [class.selected]="
+              selectedMessage?.id === message.id
+            "
+            (click)="openMessage(message)">
+
+
+            <div class="message-avatar">
+
+              <i
+                class="fas"
+                [class.fa-user-tie]="
+                  message.senderRole === 'admin' ||
+                  message.recipientRole === 'admin'
+                "
+                [class.fa-chalkboard-teacher]="
+                  message.senderRole === 'staff' ||
+                  message.recipientRole === 'staff'
+                "
+                [class.fa-user]="
+                  message.senderRole !== 'admin' &&
+                  message.senderRole !== 'staff' &&
+                  message.recipientRole !== 'admin' &&
+                  message.recipientRole !== 'staff'
+                ">
+              </i>
+
+            </div>
+
+
+            <div class="message-preview">
+
+              <div class="message-top">
+
+                <strong>
+                  {{ getDisplayPerson(message) }}
+                </strong>
+
+                <span>
+                  {{ message.createdAt | date:'MMM d, h:mm a' }}
+                </span>
+
+              </div>
+
+
+              <div class="message-subject">
+
+                <span
+                  *ngIf="message.status === 'unread'"
+                  class="unread-dot">
+                </span>
+
+                {{ message.subject }}
+
+              </div>
+
+
+              <p>
+                {{ message.body }}
+              </p>
+
+
+              <div class="message-meta">
+
+                <span class="role-badge">
+                  {{ getDisplayRole(message) }}
+                </span>
+
+
+                <span
+                  class="priority-badge"
+                  [class.priority-important]="
+                    message.priority === 'important'
+                  "
+                  [class.priority-urgent]="
+                    message.priority === 'urgent'
+                  ">
+
+                  {{ message.priority }}
+
+                </span>
+
+              </div>
+
+            </div>
+
+          </button>
+
+        </div>
+
+
+        <!-- EMPTY -->
+
+        <ng-template #noMessages>
+
+          <div class="empty-state">
+
+            <div class="empty-icon">
+
+              <i class="fas fa-envelope-open"></i>
+
+            </div>
+
+            <h3>
+              No Messages
+            </h3>
+
+            <p
+              *ngIf="activeFolder === 'inbox'">
+
+              You don't have any messages in your inbox yet.
+
+            </p>
+
+            <p
+              *ngIf="activeFolder === 'sent'">
+
+              You haven't sent any messages yet.
+
+            </p>
+
+
+            <button
+              type="button"
+              class="empty-compose-button"
+              (click)="openCompose()">
+
+              <i class="fas fa-pen"></i>
+
+              Compose Message
+
+            </button>
+
+          </div>
+
+        </ng-template>
+
+
+      </div>
+
+
+      <!-- =================================================
+           MESSAGE VIEW
+      ================================================== -->
+
+      <div class="message-view-panel">
+
+
+        <div
+          class="message-view"
+          *ngIf="selectedMessage; else selectMessage">
+
+
+          <!-- VIEW HEADER -->
+
+          <div class="view-header">
+
+            <div>
+
+              <span class="view-label">
+                {{ isIncoming(selectedMessage) ? 'RECEIVED' : 'SENT' }}
+              </span>
+
+              <h2>
+                {{ selectedMessage.subject }}
+              </h2>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="delete-button"
+              (click)="deleteMessage(selectedMessage)">
+
+              <i class="fas fa-trash"></i>
+
+            </button>
+
+          </div>
+
+
+          <!-- PERSON -->
+
+          <div class="message-person">
+
+            <div class="person-avatar">
+
+              <i class="fas fa-user"></i>
+
+            </div>
+
+
+            <div>
+
+              <strong>
+                {{ isIncoming(selectedMessage)
+                  ? selectedMessage.senderName
+                  : selectedMessage.recipientName }}
+              </strong>
+
+              <span>
+
+                {{ isIncoming(selectedMessage)
+                  ? selectedMessage.senderRole
+                  : selectedMessage.recipientRole }}
+
+              </span>
+
+            </div>
+
+
+            <time>
+              {{ selectedMessage.createdAt | date:'EEEE, MMMM d, y, h:mm a' }}
+            </time>
+
+          </div>
+
+
+          <!-- BODY -->
+
+          <div class="message-body">
+
+            {{ selectedMessage.body }}
+
+          </div>
+
+
+          <!-- META -->
+
+          <div class="message-details">
+
+            <div>
+
+              <span>
+                From
+              </span>
+
+              <strong>
+                {{ selectedMessage.senderName }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                To
+              </span>
+
+              <strong>
+                {{ selectedMessage.recipientName }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Priority
+              </span>
+
+              <strong
+                [class.urgent-text]="
+                  selectedMessage.priority === 'urgent'
+                ">
+
+                {{ selectedMessage.priority }}
+
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="message-actions">
+
+            <button
+              type="button"
+              class="reply-button"
+              *ngIf="isIncoming(selectedMessage)"
+              (click)="replyToMessage(selectedMessage)">
+
+              <i class="fas fa-reply"></i>
+
+              Reply
+
+            </button>
+
+
+            <button
+              type="button"
+              class="delete-outline-button"
+              (click)="deleteMessage(selectedMessage)">
+
+              <i class="fas fa-trash"></i>
+
+              Delete
+
+            </button>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- SELECT MESSAGE -->
+
+        <ng-template #selectMessage>
+
+          <div class="select-message">
+
+            <div class="select-icon">
+
+              <i class="fas fa-envelope-open-text"></i>
+
+            </div>
+
+            <h3>
+              Select a message
+            </h3>
+
+            <p>
+              Choose a message from the list to read it.
+            </p>
+
+          </div>
+
+        </ng-template>
+
+
+      </div>
+
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       COMPOSE MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="showCompose"
+    (click)="closeCompose()">
+
+
+    <div
+      class="compose-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <div class="modal-header">
+
+        <div>
+
+          <span>
+            NEW MESSAGE
+          </span>
+
+          <h2>
+            Compose Message
+          </h2>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="close-button"
+          (click)="closeCompose()">
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <form
+        class="compose-form"
+        (ngSubmit)="sendMessage()">
+
+
+        <!-- RECIPIENT -->
+
+        <div class="form-group">
+
+          <label>
+            Recipient
+          </label>
+
+          <select
+            name="recipient"
+            [(ngModel)]="messageForm.recipientId"
+            (ngModelChange)="
+              messageForm.recipientName =
+                (
+                  recipients.find(
+                    r => r.id === $event
+                  )?.name || ''
+                );
+
+              messageForm.recipientRole =
+                (
+                  recipients.find(
+                    r => r.id === $event
+                  )?.role || ''
+                );
+            "
+            required>
+
+            <option
+              value=""
+              disabled>
+
+              Select recipient
+
+            </option>
+
+
+            <option
+              *ngFor="let recipient of recipients"
+              [value]="recipient.id">
+
+              {{ recipient.name }}
+              —
+              {{ recipient.role }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- SUBJECT -->
+
+        <div class="form-group">
+
+          <label>
+            Subject
+          </label>
+
+          <input
+            type="text"
+            name="subject"
+            [(ngModel)]="messageForm.subject"
+            placeholder="Enter message subject"
+            maxlength="150"
+            required>
+
+        </div>
+
+
+        <!-- BODY -->
+
+        <div class="form-group">
+
+          <label>
+            Message
+          </label>
+
+          <textarea
+            name="body"
+            [(ngModel)]="messageForm.body"
+            placeholder="Write your message..."
+            rows="8"
+            required>
+          </textarea>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="compose-actions">
+
+          <button
+            type="button"
+            class="cancel-button"
+            (click)="closeCompose()">
+
+            Cancel
+
+          </button>
+
+
+          <button
+            type="submit"
+            class="send-button"
+            [disabled]="sending">
+
+            <i
+              class="fas"
+              [class.fa-paper-plane]="!sending"
+              [class.fa-spinner]="sending"
+              [class.fa-spin]="sending">
+            </i>
+
+            {{
+              sending
+                ? 'Sending...'
+                : 'Send Message'
+            }}
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>

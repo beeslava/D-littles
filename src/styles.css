@@ -222,3 +222,493 @@ h6 {
   }
 
 }
+
+/* =========================================================
+   EXCEL-STYLE REPORT CARD PRINT
+   ========================================================= */
+
+@media print {
+
+  /* -------------------------------------------------------
+     PAGE
+  ------------------------------------------------------- */
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    background: #ffffff !important;
+  }
+
+  body.printing-report {
+    overflow: visible !important;
+  }
+
+
+  /* -------------------------------------------------------
+     HIDE EVERYTHING EXCEPT PRINT RECORD
+  ------------------------------------------------------- */
+
+  body.printing-report * {
+    visibility: hidden !important;
+  }
+
+  body.printing-report
+  app-report-cards {
+
+    visibility: visible !important;
+
+    display: block !important;
+
+    width: 100% !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+  }
+
+  body.printing-report
+  app-report-cards
+  .report-cards-page {
+
+    visibility: visible !important;
+
+    display: block !important;
+
+    width: 100% !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     PRINT RECORD
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .excel-print-record {
+
+    display: block !important;
+
+    visibility: visible !important;
+
+    position: static !important;
+
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+    background: #ffffff !important;
+
+    color: #000000 !important;
+
+    border: none !important;
+
+    box-shadow: none !important;
+
+    font-family: Arial, Helvetica, sans-serif !important;
+
+    font-size: 10px !important;
+
+    line-height: 1.2 !important;
+  }
+
+
+  body.printing-report
+  .excel-print-record * {
+
+    visibility: visible !important;
+  }
+
+
+  /* -------------------------------------------------------
+     SCHOOL HEADER
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .print-school-header {
+
+    display: block !important;
+
+    width: 100% !important;
+
+    text-align: center !important;
+
+    margin: 0 0 8px 0 !important;
+
+    padding: 0 !important;
+  }
+
+  body.printing-report
+  .print-school-header h1 {
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+    font-size: 18px !important;
+
+    font-weight: 700 !important;
+
+    letter-spacing: 1px !important;
+  }
+
+  body.printing-report
+  .print-school-header h2 {
+
+    margin: 3px 0 0 0 !important;
+
+    padding: 0 !important;
+
+    font-size: 12px !important;
+
+    font-weight: 600 !important;
+
+    letter-spacing: 0.5px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     ALL PRINT TABLES
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .excel-print-record table {
+
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    border-collapse: collapse !important;
+
+    border-spacing: 0 !important;
+
+    table-layout: fixed !important;
+
+    margin: 0 0 8px 0 !important;
+
+    padding: 0 !important;
+
+    background: #ffffff !important;
+
+    color: #000000 !important;
+  }
+
+
+  body.printing-report
+  .excel-print-record th,
+  body.printing-report
+  .excel-print-record td {
+
+    border: 1px solid #000000 !important;
+
+    padding: 5px 6px !important;
+
+    margin: 0 !important;
+
+    font-size: 9px !important;
+
+    line-height: 1.2 !important;
+
+    vertical-align: middle !important;
+
+    text-align: center !important;
+
+    white-space: normal !important;
+
+    overflow: visible !important;
+
+    word-break: normal !important;
+
+    color: #000000 !important;
+
+    background: #ffffff !important;
+  }
+
+
+  /* -------------------------------------------------------
+     STUDENT INFORMATION TABLE
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .print-student-info {
+
+    table-layout: fixed !important;
+  }
+
+  body.printing-report
+  .print-student-info td:nth-child(1),
+  body.printing-report
+  .print-student-info td:nth-child(3) {
+
+    width: 15% !important;
+
+    font-weight: 700 !important;
+
+    text-align: left !important;
+
+    background: #eeeeee !important;
+  }
+
+  body.printing-report
+  .print-student-info td:nth-child(2),
+  body.printing-report
+  .print-student-info td:nth-child(4) {
+
+    width: 35% !important;
+
+    text-align: left !important;
+  }
+
+
+  /* -------------------------------------------------------
+     RESULT TABLE
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .excel-results-table {
+
+    table-layout: fixed !important;
+  }
+
+
+  /* Column widths */
+
+  body.printing-report
+  .excel-results-table th:nth-child(1),
+  body.printing-report
+  .excel-results-table td:nth-child(1) {
+
+    width: 5% !important;
+  }
+
+
+  body.printing-report
+  .excel-results-table th:nth-child(2),
+  body.printing-report
+  .excel-results-table td:nth-child(2) {
+
+    width: 18% !important;
+
+    text-align: left !important;
+  }
+
+
+  body.printing-report
+  .excel-results-table th:nth-child(3),
+  body.printing-report
+  .excel-results-table td:nth-child(3) {
+
+    width: 18% !important;
+
+    text-align: left !important;
+  }
+
+
+  body.printing-report
+  .excel-results-table th:nth-child(4),
+  body.printing-report
+  .excel-results-table td:nth-child(4),
+
+  body.printing-report
+  .excel-results-table th:nth-child(5),
+  body.printing-report
+  .excel-results-table td:nth-child(5),
+
+  body.printing-report
+  .excel-results-table th:nth-child(6),
+  body.printing-report
+  .excel-results-table td:nth-child(6),
+
+  body.printing-report
+  .excel-results-table th:nth-child(7),
+  body.printing-report
+  .excel-results-table td:nth-child(7) {
+
+    width: 8% !important;
+  }
+
+
+  body.printing-report
+  .excel-results-table th:nth-child(8),
+  body.printing-report
+  .excel-results-table td:nth-child(8) {
+
+    width: 7% !important;
+  }
+
+
+  body.printing-report
+  .excel-results-table th:nth-child(9),
+  body.printing-report
+  .excel-results-table td:nth-child(9) {
+
+    width: 12% !important;
+
+    text-align: left !important;
+  }
+
+
+  /* Header row */
+
+  body.printing-report
+  .excel-results-table thead th {
+
+    font-weight: 700 !important;
+
+    background: #d9e2f3 !important;
+
+    text-align: center !important;
+
+    border: 1px solid #000000 !important;
+  }
+
+
+  /* Total row */
+
+  body.printing-report
+  .excel-results-table .results-total-row td {
+
+    font-weight: 700 !important;
+
+    background: #eeeeee !important;
+
+    border: 1px solid #000000 !important;
+  }
+
+  body.printing-report
+  .excel-results-table .results-total-row
+  .total-label {
+
+    text-align: right !important;
+  }
+
+
+  /* -------------------------------------------------------
+     SUMMARY TABLE
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .print-summary-table {
+
+    width: 60% !important;
+
+    margin-left: auto !important;
+
+    margin-right: auto !important;
+
+    table-layout: fixed !important;
+  }
+
+  body.printing-report
+  .print-summary-table td {
+
+    font-weight: 600 !important;
+
+    text-align: center !important;
+  }
+
+  body.printing-report
+  .print-summary-table td:nth-child(1),
+  body.printing-report
+  .print-summary-table td:nth-child(3) {
+
+    background: #eeeeee !important;
+
+    font-weight: 700 !important;
+  }
+
+
+  /* -------------------------------------------------------
+     SIGNATURES
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .print-signatures {
+
+    margin-top: 18px !important;
+
+    border: none !important;
+
+    table-layout: fixed !important;
+  }
+
+  body.printing-report
+  .print-signatures td {
+
+    border: none !important;
+
+    width: 50% !important;
+
+    text-align: center !important;
+
+    padding: 8px !important;
+
+    font-size: 10px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     PAGE BREAK PROTECTION
+  ------------------------------------------------------- */
+
+  body.printing-report
+  .excel-print-record table {
+
+    page-break-inside: avoid !important;
+  }
+
+  body.printing-report
+  .excel-print-record tr {
+
+    page-break-inside: avoid !important;
+  }
+
+
+  /* -------------------------------------------------------
+     HIDE BROWSER / APP UI
+  ------------------------------------------------------- */
+
+  body.printing-report
+  nav,
+
+  body.printing-report
+  footer,
+
+  body.printing-report
+  header,
+
+  body.printing-report
+  button,
+
+  body.printing-report
+  .no-print,
+
+  body.printing-report
+  .admin-sidebar,
+
+  body.printing-report
+  .admin-header,
+
+  body.printing-report
+  .admin-nav {
+
+    display: none !important;
+
+    visibility: hidden !important;
+  }
+
+}

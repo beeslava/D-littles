@@ -5,20 +5,20 @@ import "./firebase-admin.js";
 import express, {
   Request,
   Response,
-  NextFunction
+  NextFunction,
 } from "express";
 
 import cors from "cors";
 
 import {
   requireAuth,
-  AuthenticatedRequest
+  AuthenticatedRequest,
 } from "./auth-middleware.js";
 
 import admissionRoutes from "./admission-routes.js";
 import staffRoutes from "./staff-routes.js";
 import feesPaymentRoutes from "./fees-payment.routes.js";
-
+import subAdminRoutes from "./subadmin-routes.js";
 
 // =========================================================
 // TYPES
@@ -28,13 +28,11 @@ interface RequestWithRawBody extends Request {
   rawBody?: Buffer;
 }
 
-
 // =========================================================
 // APP
 // =========================================================
 
 const app = express();
-
 
 // =========================================================
 // PORT
@@ -42,7 +40,6 @@ const app = express();
 
 const PORT =
   Number(process.env.PORT) || 10000;
-
 
 // =========================================================
 // MIDDLEWARE
@@ -58,7 +55,6 @@ app.use(
     credentials: true,
   })
 );
-
 
 // ---------------------------------------------------------
 // JSON BODY PARSER
@@ -94,17 +90,14 @@ app.use(
       _res: Response,
       buf: Buffer
     ) => {
-
       const request =
         req as RequestWithRawBody;
 
       request.rawBody =
         Buffer.from(buf);
-
     },
   })
 );
-
 
 // =========================================================
 // ADMISSION ROUTES
@@ -136,7 +129,6 @@ app.use(
   "/api/admissions",
   admissionRoutes
 );
-
 
 // =========================================================
 // SCHOOL FEES PAYMENT ROUTES
@@ -172,7 +164,6 @@ app.use(
   feesPaymentRoutes
 );
 
-
 // =========================================================
 // STAFF ROUTES
 // =========================================================
@@ -189,8 +180,8 @@ app.use(
 //
 // Authorization: Bearer <firebase-id-token>
 //
-// Only authenticated administrators can create staff
-// accounts.
+// Staff permissions will be handled by the staff route
+// itself.
 //
 // =========================================================
 
@@ -199,6 +190,39 @@ app.use(
   staffRoutes
 );
 
+// =========================================================
+// SUB-ADMIN ROUTES
+// =========================================================
+//
+// Base URL:
+//
+// /api/subadmins
+//
+// Examples:
+//
+// POST   /api/subadmins/create
+// GET    /api/subadmins
+// GET    /api/subadmins/me/permission/:permission
+// GET    /api/subadmins/:uid
+// PUT    /api/subadmins/:uid
+// DELETE /api/subadmins/:uid
+//
+// Main administrators can:
+//
+// - Create sub-admin accounts
+// - View sub-admins
+// - Update sub-admin permissions
+// - Activate/deactivate sub-admins
+//
+// Sub-admin permission checks are handled inside
+// subadmin-routes.ts.
+//
+// =========================================================
+
+app.use(
+  "/api/subadmins",
+  subAdminRoutes
+);
 
 // =========================================================
 // PUBLIC ROUTES
@@ -211,19 +235,13 @@ app.use(
 app.get(
   "/",
   (_req: Request, res: Response) => {
-
     res.json({
-
       success: true,
-
       message:
         "D-Littles backend is running.",
-
     });
-
   }
 );
-
 
 // ---------------------------------------------------------
 // HEALTH CHECK
@@ -232,18 +250,12 @@ app.get(
 app.get(
   "/health",
   (_req: Request, res: Response) => {
-
     res.json({
-
       success: true,
-
       status: "healthy",
-
     });
-
   }
 );
-
 
 // =========================================================
 // PROTECTED TEST ROUTE
@@ -264,26 +276,18 @@ app.get(
     req: AuthenticatedRequest,
     res: Response
   ) => {
-
     res.json({
-
       success: true,
-
       user: {
-
         uid:
           req.user?.uid,
 
         email:
           req.user?.email ?? null,
-
       },
-
     });
-
   }
 );
-
 
 // =========================================================
 // 404 HANDLER
@@ -298,19 +302,13 @@ app.use(
     _req: Request,
     res: Response
   ) => {
-
     res.status(404).json({
-
       success: false,
-
       message:
         "API route not found.",
-
     });
-
   }
 );
-
 
 // =========================================================
 // ERROR HANDLER
@@ -328,7 +326,6 @@ app.use(
     res: Response,
     _next: NextFunction
   ) => {
-
     console.error(
       "Unhandled backend error:",
       err
@@ -339,17 +336,12 @@ app.use(
     }
 
     res.status(500).json({
-
       success: false,
-
       message:
         "Internal server error.",
-
     });
-
   }
 );
-
 
 // =========================================================
 // START SERVER
@@ -359,7 +351,6 @@ app.listen(
   PORT,
   "0.0.0.0",
   () => {
-
     console.log(
       `D-Littles backend running on port ${PORT}`
     );
@@ -383,5 +374,9 @@ app.listen(
       "Paystack webhook support: enabled"
     );
 
+    console.log(
+      "Sub-admin API: enabled"
+    );
   }
 );
+

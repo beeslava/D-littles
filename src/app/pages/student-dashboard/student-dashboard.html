@@ -396,7 +396,8 @@
         </div>
 
 
-        <div class="class-content"
+        <div
+          class="class-content"
           *ngIf="studentClass; else noClass">
 
           <div class="class-title">
@@ -525,9 +526,7 @@
 
             <tr>
 
-              <th>
-                #
-              </th>
+              <th>#</th>
 
               <th>
                 Subject
@@ -629,7 +628,7 @@
         </h3>
 
         <p>
-          Access your school information
+          Access your school information and account settings
         </p>
 
       </div>
@@ -637,6 +636,8 @@
 
       <div class="quick-grid">
 
+
+        <!-- MY RESULTS -->
 
         <a
           routerLink="/student/results"
@@ -663,6 +664,8 @@
         </a>
 
 
+        <!-- REPORT CARD -->
+
         <a
           routerLink="/student/report-card"
           class="quick-card">
@@ -687,6 +690,8 @@
 
         </a>
 
+
+        <!-- SCHOOL FEES -->
 
         <a
           routerLink="/student/fees"
@@ -713,8 +718,10 @@
         </a>
 
 
+        <!-- MESSAGES -->
+
         <a
-          routerLink="/student/messages"
+          routerLink="/student/messeges"
           class="quick-card">
 
           <div class="quick-icon purple">
@@ -738,7 +745,202 @@
         </a>
 
 
+        <!-- ===================================
+             CHANGE PASSWORD
+        ==================================== -->
+
+        <button
+          type="button"
+          class="quick-card quick-card-button"
+          (click)="showChangePassword = !showChangePassword">
+
+          <div class="quick-icon red">
+
+            <i class="fas fa-lock"></i>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Change Password
+            </strong>
+
+            <span>
+              Update your account password
+            </span>
+
+          </div>
+
+        </button>
+
+
       </div>
+
+    </section>
+
+
+    <!-- =======================================
+         CHANGE PASSWORD
+    ======================================== -->
+
+    <section
+      class="dashboard-card password-card"
+      *ngIf="showChangePassword">
+
+      <div class="card-header">
+
+        <div>
+
+          <h3>
+            Change Password
+          </h3>
+
+          <p>
+            Keep your student account secure
+          </p>
+
+        </div>
+
+        <i class="fas fa-shield-alt"></i>
+
+      </div>
+
+
+      <!-- SUCCESS MESSAGE -->
+
+      <div
+        class="password-success"
+        *ngIf="passwordSuccess">
+
+        <i class="fas fa-check-circle"></i>
+
+        <span>
+          {{ passwordSuccess }}
+        </span>
+
+      </div>
+
+
+      <!-- ERROR MESSAGE -->
+
+      <div
+        class="password-error"
+        *ngIf="passwordError">
+
+        <i class="fas fa-exclamation-circle"></i>
+
+        <span>
+          {{ passwordError }}
+        </span>
+
+      </div>
+
+
+      <form
+        class="password-form"
+        (ngSubmit)="changePassword()">
+
+
+        <!-- CURRENT PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="currentPassword">
+            Current Password
+          </label>
+
+          <input
+            id="currentPassword"
+            name="currentPassword"
+            type="password"
+            [(ngModel)]="currentPassword"
+            placeholder="Enter your current password"
+            autocomplete="current-password"
+            required>
+
+        </div>
+
+
+        <!-- NEW PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="newPassword">
+            New Password
+          </label>
+
+          <input
+            id="newPassword"
+            name="newPassword"
+            type="password"
+            [(ngModel)]="newPassword"
+            placeholder="Enter your new password"
+            autocomplete="new-password"
+            required>
+
+        </div>
+
+
+        <!-- CONFIRM PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="confirmPassword">
+            Confirm New Password
+          </label>
+
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            placeholder="Confirm your new password"
+            autocomplete="new-password"
+            required>
+
+        </div>
+
+
+        <!-- PASSWORD ACTIONS -->
+
+        <div class="password-actions">
+
+          <button
+            type="button"
+            class="password-cancel"
+            (click)="showChangePassword = false">
+
+            Cancel
+
+          </button>
+
+
+          <button
+            type="submit"
+            class="password-submit"
+            [disabled]="changingPassword">
+
+            <i
+              *ngIf="changingPassword"
+              class="fas fa-spinner fa-spin">
+            </i>
+
+            <i
+              *ngIf="!changingPassword"
+              class="fas fa-key">
+            </i>
+
+            {{ changingPassword
+              ? 'Updating...'
+              : 'Change Password'
+            }}
+
+          </button>
+
+        </div>
+
+      </form>
 
     </section>
 
@@ -746,3 +948,4 @@
   </main>
 
 </div>
+

@@ -1,1 +1,427 @@
-<p>contact works!</p>
+<div class="contact-page">
+
+  <!-- HERO -->
+  <section class="contact-hero">
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+
+      <span class="hero-label">
+        D-LITTLES PRIVATE SCHOOL
+      </span>
+
+      <h1>Contact Us</h1>
+
+      <p>
+        We would love to hear from you.
+        Get in touch with D Little Private School
+        for enquiries, admissions and general information.
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <!-- CONTACT INTRO -->
+  <main class="contact-container">
+
+    <section class="contact-intro">
+
+      <span class="section-label">
+        GET IN TOUCH
+      </span>
+
+      <h2>
+        We Are Here To Help
+      </h2>
+
+      <p>
+        Whether you have a question about admissions,
+        academics, school activities or any other
+        matter, our team is ready to assist you.
+      </p>
+
+    </section>
+
+
+    <!-- CONTACT INFORMATION -->
+    <section class="contact-info-grid">
+
+      <!-- ADDRESS -->
+      <div class="contact-info-card">
+
+        <div class="info-icon">
+          📍
+        </div>
+
+        <div class="info-content">
+
+          <h3>Our Location</h3>
+
+          <p>
+            D Little Private School
+          </p>
+
+          <span>
+            School Address
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- PHONE -->
+      <div class="contact-info-card">
+
+        <div class="info-icon">
+          📞
+        </div>
+
+        <div class="info-content">
+
+          <h3>Phone</h3>
+
+          <a href="tel:+2340000000000">
+            +234 000 000 0000
+          </a>
+
+          <span>
+            Monday – Friday
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- EMAIL -->
+      <div class="contact-info-card">
+
+        <div class="info-icon">
+          ✉️
+        </div>
+
+        <div class="info-content">
+
+          <h3>Email</h3>
+
+          <a href="mailto:info@dlittles.com">
+            info@dlittles.com
+          </a>
+
+          <span>
+            We normally respond within one business day.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- OFFICE HOURS -->
+      <div class="contact-info-card">
+
+        <div class="info-icon">
+          🕐
+        </div>
+
+        <div class="info-content">
+
+          <h3>Office Hours</h3>
+
+          <p>
+            Monday – Friday
+          </p>
+
+          <span>
+            8:00 AM – 4:00 PM
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- MAIN CONTACT SECTION -->
+    <section class="contact-main">
+
+      <!-- FORM -->
+      <div class="contact-form-section">
+
+        <div class="form-header">
+
+          <span class="section-label">
+            SEND US A MESSAGE
+          </span>
+
+          <h2>
+            How Can We Help?
+          </h2>
+
+          <p>
+            Fill out the form below and a member
+            of our team will get back to you.
+          </p>
+
+        </div>
+
+
+        <!-- SUCCESS -->
+        <div
+          class="alert success-alert"
+          *ngIf="successMessage"
+        >
+
+          <span>✓</span>
+
+          <p>
+            {{ successMessage }}
+          </p>
+
+        </div>
+
+
+        <!-- ERROR -->
+        <div
+          class="alert error-alert"
+          *ngIf="errorMessage"
+        >
+
+          <span>!</span>
+
+          <p>
+            {{ errorMessage }}
+          </p>
+
+        </div>
+
+
+        <form
+          class="contact-form"
+          (ngSubmit)="submitForm()"
+          #contactForm="ngForm"
+        >
+
+          <div class="form-row">
+
+            <!-- NAME -->
+            <div class="form-group">
+
+              <label for="name">
+                Full Name
+                <span>*</span>
+              </label>
+
+              <input
+                id="name"
+                name="name"
+                type="text"
+                [(ngModel)]="form.name"
+                placeholder="Enter your full name"
+                autocomplete="name"
+                required
+              />
+
+            </div>
+
+
+            <!-- EMAIL -->
+            <div class="form-group">
+
+              <label for="email">
+                Email Address
+                <span>*</span>
+              </label>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                [(ngModel)]="form.email"
+                placeholder="Enter your email address"
+                autocomplete="email"
+                required
+              />
+
+            </div>
+
+          </div>
+
+
+          <div class="form-row">
+
+            <!-- PHONE -->
+            <div class="form-group">
+
+              <label for="phone">
+                Phone Number
+              </label>
+
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                [(ngModel)]="form.phone"
+                placeholder="Enter your phone number"
+                autocomplete="tel"
+              />
+
+            </div>
+
+
+            <!-- SUBJECT -->
+            <div class="form-group">
+
+              <label for="subject">
+                Subject
+                <span>*</span>
+              </label>
+
+              <input
+                id="subject"
+                name="subject"
+                type="text"
+                [(ngModel)]="form.subject"
+                placeholder="What is your message about?"
+                required
+              />
+
+            </div>
+
+          </div>
+
+
+          <!-- MESSAGE -->
+          <div class="form-group">
+
+            <label for="message">
+              Message
+              <span>*</span>
+            </label>
+
+            <textarea
+              id="message"
+              name="message"
+              [(ngModel)]="form.message"
+              placeholder="Write your message here..."
+              rows="7"
+              required
+            ></textarea>
+
+            <small>
+              Please provide as much information as possible.
+            </small>
+
+          </div>
+
+
+          <!-- BUTTONS -->
+          <div class="form-actions">
+
+            <button
+              type="button"
+              class="clear-button"
+              (click)="clearForm()"
+              [disabled]="submitting"
+            >
+              Clear
+            </button>
+
+            <button
+              type="submit"
+              class="submit-button"
+              [disabled]="submitting"
+            >
+
+              <span *ngIf="!submitting">
+                Send Message
+              </span>
+
+              <span
+                class="button-loading"
+                *ngIf="submitting"
+              >
+                <span class="button-spinner"></span>
+                Sending...
+              </span>
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+
+      <!-- MAP / LOCATION -->
+      <aside class="contact-side">
+
+        <div class="map-card">
+
+          <div class="map-placeholder">
+
+            <div class="map-icon">
+              📍
+            </div>
+
+            <h3>
+              Visit D Little Private School
+            </h3>
+
+            <p>
+              We look forward to welcoming you
+              to our school.
+            </p>
+
+            <div class="map-address">
+              D Little Private School
+              <br />
+              School Address
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- QUICK INFORMATION -->
+        <div class="quick-contact-card">
+
+          <h3>
+            Quick Contact
+          </h3>
+
+          <p>
+            For urgent enquiries, please contact
+            the school office directly.
+          </p>
+
+          <a
+            href="tel:+2340000000000"
+            class="quick-phone"
+          >
+            📞 +234 000 000 0000
+          </a>
+
+          <a
+            href="mailto:info@dlittles.com"
+            class="quick-email"
+          >
+            ✉️ info@dlittles.com
+          </a>
+
+        </div>
+
+      </aside>
+
+    </section>
+
+  </main>
+
+</div>

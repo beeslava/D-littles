@@ -1,0 +1,732 @@
+<div class="parent-result-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+    <div class="header-left">
+
+      <a
+        routerLink="/parent/dashboard"
+        class="back-button"
+      >
+        ← Dashboard
+      </a>
+
+      <div class="page-title">
+
+        <h1>
+          Academic Results
+        </h1>
+
+        <p>
+          View your child's published academic results
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- REFRESH -->
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="refreshResults()"
+      [disabled]="loadingResults"
+    >
+
+      <span
+        *ngIf="!loadingResults"
+      >
+        ↻
+      </span>
+
+      <span
+        *ngIf="loadingResults"
+        class="loading-spinner"
+      >
+        ⟳
+      </span>
+
+      {{ loadingResults ? 'Refreshing...' : 'Refresh' }}
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       INITIAL LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading your children's results...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       ERROR MESSAGE
+  ====================================================== -->
+
+  <div
+    class="message error-message"
+    *ngIf="!loading && errorMessage"
+  >
+
+    <div class="message-icon">
+      !
+    </div>
+
+    <div class="message-content">
+
+      <strong>
+        Unable to load results
+      </strong>
+
+      <p>
+        {{ errorMessage }}
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+
+  <div
+    class="page-content"
+    *ngIf="!loading && !errorMessage"
+  >
+
+
+    <!-- ===================================================
+         CHILD SELECTOR
+    ==================================================== -->
+
+    <section
+      class="children-section"
+      *ngIf="children.length > 0"
+    >
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2>
+            Select Child
+          </h2>
+
+          <p>
+            Choose a child to view their academic results.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="children-list">
+
+        <button
+          type="button"
+          class="child-card"
+          *ngFor="let child of children"
+          [class.selected]="selectedChild?.id === child.id"
+          (click)="selectChild(child)"
+        >
+
+          <div class="child-avatar">
+
+            {{
+              getChildName(child)
+                .charAt(0)
+                .toUpperCase()
+            }}
+
+          </div>
+
+
+          <div class="child-details">
+
+            <h3>
+              {{ getChildName(child) }}
+            </h3>
+
+            <p>
+              {{ getClassName(child) }}
+            </p>
+
+            <span
+              *ngIf="child.studentId"
+              class="student-id"
+            >
+              {{ child.studentId }}
+            </span>
+
+          </div>
+
+
+          <div
+            class="selected-indicator"
+            *ngIf="selectedChild?.id === child.id"
+          >
+            ✓
+          </div>
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         SELECTED CHILD HEADER
+    ==================================================== -->
+
+    <section
+      class="student-summary"
+      *ngIf="selectedChild"
+    >
+
+      <div class="student-summary-left">
+
+        <div class="large-avatar">
+
+          {{
+            getSelectedChildName()
+              .charAt(0)
+              .toUpperCase()
+          }}
+
+        </div>
+
+
+        <div class="student-summary-info">
+
+          <span class="summary-label">
+            Academic Results For
+          </span>
+
+          <h2>
+            {{ getSelectedChildName() }}
+          </h2>
+
+          <div class="student-meta">
+
+            <span>
+              Class:
+              <strong>
+                {{ getClassName(selectedChild) }}
+              </strong>
+            </span>
+
+            <span
+              *ngIf="selectedChild.studentId"
+            >
+              Student ID:
+              <strong>
+                {{ selectedChild.studentId }}
+              </strong>
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="student-status">
+
+        <span class="status-dot"></span>
+
+        Published Results
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         RESULTS LOADING
+    ==================================================== -->
+
+    <div
+      class="results-loading"
+      *ngIf="loadingResults"
+    >
+
+      <div class="spinner small"></div>
+
+      <span>
+        Loading published results...
+      </span>
+
+    </div>
+
+
+    <!-- ===================================================
+         RESULT SUMMARY
+    ==================================================== -->
+
+    <div
+      class="result-summary-grid"
+      *ngIf="
+        !loadingResults &&
+        selectedChild &&
+        selectedChildResults.length > 0
+      "
+    >
+
+      <!-- TOTAL SUBJECTS -->
+
+      <div class="summary-card">
+
+        <div class="summary-card-icon">
+          #
+        </div>
+
+        <div class="summary-card-content">
+
+          <span>
+            Subjects
+          </span>
+
+          <strong>
+            {{ totalResults }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- AVERAGE -->
+
+      <div class="summary-card">
+
+        <div class="summary-card-icon">
+          %
+        </div>
+
+        <div class="summary-card-content">
+
+          <span>
+            Average Score
+          </span>
+
+          <strong>
+            {{ averageScore | number:'1.1-1' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- HIGHEST -->
+
+      <div class="summary-card">
+
+        <div class="summary-card-icon">
+          ↑
+        </div>
+
+        <div class="summary-card-content">
+
+          <span>
+            Highest Score
+          </span>
+
+          <strong>
+            {{ highestScore | number:'1.0-0' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- LOWEST -->
+
+      <div class="summary-card">
+
+        <div class="summary-card-icon">
+          ↓
+        </div>
+
+        <div class="summary-card-content">
+
+          <span>
+            Lowest Score
+          </span>
+
+          <strong>
+            {{ lowestScore | number:'1.0-0' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         RESULTS TABLE
+    ==================================================== -->
+
+    <section
+      class="results-section"
+      *ngIf="
+        !loadingResults &&
+        selectedChild &&
+        selectedChildResults.length > 0
+      "
+    >
+
+      <div class="section-heading results-heading">
+
+        <div>
+
+          <h2>
+            Published Results
+          </h2>
+
+          <p>
+            Academic performance by subject
+          </p>
+
+        </div>
+
+        <div class="result-count">
+
+          {{ totalResults }}
+
+          {{ totalResults === 1 ? 'Subject' : 'Subjects' }}
+
+        </div>
+
+      </div>
+
+
+      <!-- DESKTOP TABLE -->
+
+      <div class="results-table-wrapper">
+
+        <table class="results-table">
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Subject
+              </th>
+
+              <th>
+                CA 1
+              </th>
+
+              <th>
+                CA 2
+              </th>
+
+              <th>
+                Exam
+              </th>
+
+              <th>
+                Total
+              </th>
+
+              <th>
+                Grade
+              </th>
+
+              <th>
+                Remark
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let result of selectedChildResults;
+                let i = index;
+                trackBy: trackResult
+              "
+            >
+
+              <td class="number-cell">
+                {{ i + 1 }}
+              </td>
+
+
+              <td class="subject-cell">
+
+                <strong>
+                  {{ result.subjectName || 'Subject' }}
+                </strong>
+
+              </td>
+
+
+              <td>
+                {{ result.ca1 ?? 0 }}
+              </td>
+
+
+              <td>
+                {{ result.ca2 ?? 0 }}
+              </td>
+
+
+              <td>
+                {{ result.exam ?? 0 }}
+              </td>
+
+
+              <td class="total-cell">
+
+                <strong>
+                  {{ result.total ?? 0 }}
+                </strong>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="grade-badge"
+                  [class.grade-a]="result.grade === 'A'"
+                  [class.grade-b]="result.grade === 'B'"
+                  [class.grade-c]="result.grade === 'C'"
+                  [class.grade-d]="result.grade === 'D'"
+                  [class.grade-e]="result.grade === 'E'"
+                  [class.grade-f]="result.grade === 'F'"
+                >
+
+                  {{ result.grade || '-' }}
+
+                </span>
+
+              </td>
+
+
+              <td class="remark-cell">
+
+                {{ result.remark || '—' }}
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- MOBILE RESULT CARDS -->
+
+      <div class="mobile-results">
+
+        <div
+          class="mobile-result-card"
+          *ngFor="
+            let result of selectedChildResults;
+            let i = index;
+            trackBy: trackResult
+          "
+        >
+
+          <div class="mobile-result-header">
+
+            <div>
+
+              <span class="mobile-result-number">
+                {{ i + 1 }}
+              </span>
+
+              <strong>
+                {{ result.subjectName || 'Subject' }}
+              </strong>
+
+            </div>
+
+
+            <span
+              class="grade-badge"
+              [class.grade-a]="result.grade === 'A'"
+              [class.grade-b]="result.grade === 'B'"
+              [class.grade-c]="result.grade === 'C'"
+              [class.grade-d]="result.grade === 'D'"
+              [class.grade-e]="result.grade === 'E'"
+              [class.grade-f]="result.grade === 'F'"
+            >
+
+              {{ result.grade || '-' }}
+
+            </span>
+
+          </div>
+
+
+          <div class="mobile-score-grid">
+
+            <div>
+
+              <span>
+                CA 1
+              </span>
+
+              <strong>
+                {{ result.ca1 ?? 0 }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                CA 2
+              </span>
+
+              <strong>
+                {{ result.ca2 ?? 0 }}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                Exam
+              </span>
+
+              <strong>
+                {{ result.exam ?? 0 }}
+              </strong>
+
+            </div>
+
+
+            <div class="mobile-total">
+
+              <span>
+                Total
+              </span>
+
+              <strong>
+                {{ result.total ?? 0 }}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="mobile-remark">
+
+            <span>
+              Remark
+            </span>
+
+            <strong>
+              {{ result.remark || '—' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         NO RESULTS
+    ==================================================== -->
+
+    <section
+      class="empty-state"
+      *ngIf="
+        !loadingResults &&
+        selectedChild &&
+        selectedChildResults.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        📊
+      </div>
+
+      <h2>
+        No Published Results Yet
+      </h2>
+
+      <p>
+        There are currently no published academic results
+        available for
+        <strong>
+          {{ getSelectedChildName() }}
+        </strong>.
+      </p>
+
+      <p class="empty-help">
+        Results will appear here once the school publishes them.
+      </p>
+
+
+      <button
+        type="button"
+        class="empty-refresh-button"
+        (click)="refreshResults()"
+        [disabled]="loadingResults"
+      >
+
+        ↻
+        Check Again
+
+      </button>
+
+    </section>
+
+
+  </div>
+
+</div>
+
+

@@ -45,6 +45,13 @@ export class AdminDashboard {
 
   adminName = 'Administrator';
 
+  /**
+   * Main administrator only.
+   *
+   * Sub-admins will not see the Sub Admins navigation item.
+   */
+  isMainAdmin = false;
+
 
   // =========================================================
   // ACADEMICS DROPDOWN
@@ -102,6 +109,18 @@ export class AdminDashboard {
   // =========================================================
 
   async ngOnInit(): Promise<void> {
+
+    // -------------------------------------------------------
+    // DETERMINE WHETHER CURRENT USER IS MAIN ADMIN
+    // -------------------------------------------------------
+
+    this.isMainAdmin =
+      await this.adminAuthService.isAdmin();
+
+
+    // -------------------------------------------------------
+    // LOAD DASHBOARD STATISTICS
+    // -------------------------------------------------------
 
     await this.loadDashboardStatistics();
 
@@ -243,3 +262,4 @@ export class AdminDashboard {
   }
 
 }
+

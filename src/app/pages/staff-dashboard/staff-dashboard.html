@@ -1,0 +1,1007 @@
+<div class="staff-dashboard">
+
+  <!-- ================================================= -->
+  <!-- HEADER -->
+  <!-- ================================================= -->
+
+  <header class="dashboard-header">
+
+    <div class="brand">
+
+      <div class="brand-logo">
+        DL
+      </div>
+
+      <div class="brand-text">
+
+        <strong>
+          D Little
+        </strong>
+
+        <span>
+          Staff Portal
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="header-actions">
+
+      <button
+        type="button"
+        class="refresh-btn"
+        (click)="refreshDashboard()"
+        [disabled]="loading"
+      >
+        ↻ Refresh
+      </button>
+
+
+      <!-- CHANGE PASSWORD -->
+
+      <button
+        type="button"
+        class="password-btn"
+        (click)="openChangePassword()"
+      >
+        🔒 Change Password
+      </button>
+
+
+      <button
+        type="button"
+        class="logout-btn"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- ================================================= -->
+  <!-- LOADING -->
+  <!-- ================================================= -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Loading your dashboard...
+    </p>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- ERROR -->
+  <!-- ================================================= -->
+
+  <div
+    class="error-state"
+    *ngIf="!loading && errorMessage"
+  >
+
+    <div class="error-icon">
+      !
+    </div>
+
+    <h2>
+      Something went wrong
+    </h2>
+
+    <p>
+      {{ errorMessage }}
+    </p>
+
+    <button
+      type="button"
+      (click)="refreshDashboard()"
+    >
+      Try Again
+    </button>
+
+  </div>
+
+
+  <!-- ================================================= -->
+  <!-- DASHBOARD -->
+  <!-- ================================================= -->
+
+  <main
+    class="dashboard-content"
+    *ngIf="!loading && !errorMessage"
+  >
+
+
+    <!-- ================================================= -->
+    <!-- WELCOME -->
+    <!-- ================================================= -->
+
+    <section class="welcome-section">
+
+      <div>
+
+        <p class="welcome-label">
+          Welcome back
+        </p>
+
+        <h1>
+          {{ staffMember?.fullName }}
+        </h1>
+
+        <p class="welcome-subtitle">
+
+          {{ staffMember?.position | titlecase }}
+
+          <span
+            *ngIf="staffMember?.department"
+          >
+            · {{ staffMember?.department | titlecase }}
+          </span>
+
+        </p>
+
+      </div>
+
+
+      <div class="staff-id-card">
+
+        <span>
+          Staff ID
+        </span>
+
+        <strong>
+          {{ staffMember?.staffId }}
+        </strong>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- STATISTICS -->
+    <!-- ================================================= -->
+
+    <section class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          🏫
+        </div>
+
+        <div>
+
+          <span>
+            My Classes
+          </span>
+
+          <strong>
+            {{ totalClasses }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          📚
+        </div>
+
+        <div>
+
+          <span>
+            My Subjects
+          </span>
+
+          <strong>
+            {{ totalSubjects }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          👨‍🎓
+        </div>
+
+        <div>
+
+          <span>
+            My Students
+          </span>
+
+          <strong>
+            {{ totalStudents }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          👤
+        </div>
+
+        <div>
+
+          <span>
+            Status
+          </span>
+
+          <strong>
+            {{ staffMember?.status | titlecase }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- QUICK ACTIONS -->
+    <!-- ================================================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <p class="section-label">
+            Staff Portal
+          </p>
+
+          <h2>
+            Quick Access
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div class="quick-actions">
+
+        <a
+          class="quick-card"
+          routerLink="/staff/dashboard"
+        >
+
+          <span class="quick-icon">
+            🏠
+          </span>
+
+          <span class="quick-title">
+            Dashboard
+          </span>
+
+          <span class="quick-description">
+            View your staff overview
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/classes"
+        >
+
+          <span class="quick-icon">
+            🏫
+          </span>
+
+          <span class="quick-title">
+            My Classes
+          </span>
+
+          <span class="quick-description">
+            View assigned classes
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/subjects"
+        >
+
+          <span class="quick-icon">
+            📚
+          </span>
+
+          <span class="quick-title">
+            My Subjects
+          </span>
+
+          <span class="quick-description">
+            View assigned subjects
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/students"
+        >
+
+          <span class="quick-icon">
+            👨‍🎓
+          </span>
+
+          <span class="quick-title">
+            My Students
+          </span>
+
+          <span class="quick-description">
+            View your students
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/results"
+        >
+
+          <span class="quick-icon">
+            📝
+          </span>
+
+          <span class="quick-title">
+            Results
+          </span>
+
+          <span class="quick-description">
+            Manage academic results
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/attendance"
+        >
+
+          <span class="quick-icon">
+            📅
+          </span>
+
+          <span class="quick-title">
+            Attendance
+          </span>
+
+          <span class="quick-description">
+            Manage student attendance
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/messages"
+        >
+
+          <span class="quick-icon">
+            💬
+          </span>
+
+          <span class="quick-title">
+            Messages
+          </span>
+
+          <span class="quick-description">
+            View school messages
+          </span>
+
+        </a>
+
+
+        <a
+          class="quick-card"
+          routerLink="/staff/profile"
+        >
+
+          <span class="quick-icon">
+            👤
+          </span>
+
+          <span class="quick-title">
+            My Profile
+          </span>
+
+          <span class="quick-description">
+            View your staff profile
+          </span>
+
+        </a>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- MY CLASSES -->
+    <!-- ================================================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <p class="section-label">
+            Teaching
+          </p>
+
+          <h2>
+            My Classes
+          </h2>
+
+        </div>
+
+        <span class="count-badge">
+          {{ myClasses.length }}
+        </span>
+
+      </div>
+
+
+      <div
+        class="empty-state"
+        *ngIf="myClasses.length === 0"
+      >
+
+        <div>
+          🏫
+        </div>
+
+        <p>
+          No classes have been assigned to you yet.
+        </p>
+
+      </div>
+
+
+      <div
+        class="class-grid"
+        *ngIf="myClasses.length > 0"
+      >
+
+        <div
+          class="class-card"
+          *ngFor="let schoolClass of myClasses"
+        >
+
+          <div class="class-card-top">
+
+            <div class="class-icon">
+              🏫
+            </div>
+
+            <span class="class-code">
+              {{ schoolClass.classCode }}
+            </span>
+
+          </div>
+
+          <h3>
+            {{ schoolClass.className }}
+          </h3>
+
+          <p
+            *ngIf="schoolClass.section"
+          >
+            Section: {{ schoolClass.section }}
+          </p>
+
+          <p
+            *ngIf="schoolClass.room"
+          >
+            Room: {{ schoolClass.room }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- MY SUBJECTS -->
+    <!-- ================================================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <p class="section-label">
+            Teaching
+          </p>
+
+          <h2>
+            My Subjects
+          </h2>
+
+        </div>
+
+        <span class="count-badge">
+          {{ mySubjects.length }}
+        </span>
+
+      </div>
+
+
+      <div
+        class="empty-state"
+        *ngIf="mySubjects.length === 0"
+      >
+
+        <div>
+          📚
+        </div>
+
+        <p>
+          No subjects have been assigned to you yet.
+        </p>
+
+      </div>
+
+
+      <div
+        class="subject-grid"
+        *ngIf="mySubjects.length > 0"
+      >
+
+        <div
+          class="subject-card"
+          *ngFor="let subject of mySubjects"
+        >
+
+          <div class="subject-icon">
+            📚
+          </div>
+
+          <div>
+
+            <span class="subject-code">
+              {{ subject.subjectCode }}
+            </span>
+
+            <h3>
+              {{ subject.subjectName }}
+            </h3>
+
+            <p
+              *ngIf="subject.category"
+            >
+              {{ subject.category | titlecase }}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- MY STUDENTS -->
+    <!-- ================================================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <p class="section-label">
+            Students
+          </p>
+
+          <h2>
+            My Students
+          </h2>
+
+        </div>
+
+        <span class="count-badge">
+          {{ myStudents.length }}
+        </span>
+
+      </div>
+
+
+      <div
+        class="empty-state"
+        *ngIf="myStudents.length === 0"
+      >
+
+        <div>
+          👨‍🎓
+        </div>
+
+        <p>
+          No students are currently assigned to your classes.
+        </p>
+
+      </div>
+
+
+      <div
+        class="students-table-wrapper"
+        *ngIf="myStudents.length > 0"
+      >
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                Student ID
+              </th>
+
+              <th>
+                Student Name
+              </th>
+
+              <th>
+                Class
+              </th>
+
+              <th>
+                Gender
+              </th>
+
+              <th>
+                Status
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="let student of myStudents"
+            >
+
+              <td>
+                {{ student.studentId }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ student.fullName }}
+                </strong>
+              </td>
+
+              <td>
+                {{ student.className || '—' }}
+              </td>
+
+              <td>
+                {{ student.gender | titlecase }}
+              </td>
+
+              <td>
+
+                <span
+                  class="status-badge"
+                  [class.inactive]="student.status === 'inactive'"
+                >
+                  {{ student.status | titlecase }}
+                </span>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- ASSIGNMENTS -->
+    <!-- ================================================= -->
+
+    <section class="section">
+
+      <div class="section-heading">
+
+        <div>
+
+          <p class="section-label">
+            Teaching Assignments
+          </p>
+
+          <h2>
+            My Teaching Schedule
+          </h2>
+
+        </div>
+
+        <span class="count-badge">
+          {{ assignments.length }}
+        </span>
+
+      </div>
+
+
+      <div
+        class="empty-state"
+        *ngIf="assignments.length === 0"
+      >
+
+        <div>
+          📋
+        </div>
+
+        <p>
+          No teaching assignments found.
+        </p>
+
+      </div>
+
+
+      <div
+        class="assignment-list"
+        *ngIf="assignments.length > 0"
+      >
+
+        <div
+          class="assignment-card"
+          *ngFor="let assignment of assignments"
+        >
+
+          <div class="assignment-icon">
+            📋
+          </div>
+
+          <div class="assignment-info">
+
+            <strong>
+              {{ assignment.subjectName }}
+            </strong>
+
+            <span>
+              {{ assignment.className }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- ================================================= -->
+  <!-- CHANGE PASSWORD MODAL -->
+  <!-- ================================================= -->
+
+  <div
+    class="password-modal-backdrop"
+    *ngIf="showChangePassword"
+    (click)="closeChangePassword()"
+  >
+
+    <div
+      class="password-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- MODAL HEADER -->
+
+      <div class="password-modal-header">
+
+        <div>
+
+          <p class="section-label">
+            Account Security
+          </p>
+
+          <h2>
+            Change Password
+          </h2>
+
+          <p>
+            Update your staff portal password.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="modal-close-btn"
+          (click)="closeChangePassword()"
+          [disabled]="changingPassword"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- SUCCESS -->
+
+      <div
+        class="password-success"
+        *ngIf="passwordSuccess"
+      >
+        ✓ {{ passwordSuccess }}
+      </div>
+
+
+      <!-- ERROR -->
+
+      <div
+        class="password-error"
+        *ngIf="passwordError"
+      >
+        {{ passwordError }}
+      </div>
+
+
+      <!-- PASSWORD FORM -->
+
+      <form
+        (ngSubmit)="changePassword()"
+        autocomplete="off"
+      >
+
+        <!-- CURRENT PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="currentPassword">
+            Current Password
+          </label>
+
+          <input
+            id="currentPassword"
+            name="currentPassword"
+            type="password"
+            [(ngModel)]="currentPassword"
+            autocomplete="current-password"
+            placeholder="Enter your current password"
+            [disabled]="changingPassword"
+          />
+
+        </div>
+
+
+        <!-- NEW PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="newPassword">
+            New Password
+          </label>
+
+          <input
+            id="newPassword"
+            name="newPassword"
+            type="password"
+            [(ngModel)]="newPassword"
+            autocomplete="new-password"
+            placeholder="Enter your new password"
+            [disabled]="changingPassword"
+          />
+
+          <small>
+            Password must be at least 6 characters.
+          </small>
+
+        </div>
+
+
+        <!-- CONFIRM PASSWORD -->
+
+        <div class="password-field">
+
+          <label for="confirmPassword">
+            Confirm New Password
+          </label>
+
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            autocomplete="new-password"
+            placeholder="Confirm your new password"
+            [disabled]="changingPassword"
+          />
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="password-modal-actions">
+
+          <button
+            type="button"
+            class="cancel-password-btn"
+            (click)="closeChangePassword()"
+            [disabled]="changingPassword"
+          >
+            Cancel
+          </button>
+
+
+          <button
+            type="submit"
+            class="save-password-btn"
+            [disabled]="changingPassword"
+          >
+
+            <span *ngIf="!changingPassword">
+              🔒 Change Password
+            </span>
+
+            <span *ngIf="changingPassword">
+              Changing Password...
+            </span>
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>

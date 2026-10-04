@@ -31,19 +31,33 @@ import { database } from '../../../core/firebase.config';
 // =====================================================
 
 interface SchoolClass {
+
   id: string;
+
   classCode: string;
+
   className: string;
+
   section: string;
+
   classTeacherId: string;
+
   classTeacherName: string;
+
   room: string;
+
   capacity: number;
+
   academicYear: string;
+
   status: string;
+
   description: string;
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
@@ -52,57 +66,111 @@ interface SchoolClass {
 // =====================================================
 
 interface SchoolSubject {
+
   id: string;
+
   subjectCode: string;
+
   subjectName: string;
+
   category: string;
+
   description: string;
+
   status: string;
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
 // =====================================================
 // STAFF
 // =====================================================
+//
+// Teachers are STAFF.
+// There is no separate teacher role.
+//
+// =====================================================
 
 interface StaffMember {
+
   id: string;
+
   staffId: string;
+
   fullName: string;
+
   email: string;
+
   phone: string;
+
   gender: string;
+
   position: string;
+
   department: string;
+
   qualification: string;
+
   employmentDate: string;
+
   address: string;
+
   emergencyContact: string;
+
   status: string;
+
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
 // =====================================================
 // TEACHING ASSIGNMENT
 // =====================================================
+//
+// IMPORTANT:
+//
+// The Firebase field `teacherId` is kept for
+// backward compatibility.
+//
+// It stores the STAFF RECORD ID.
+//
+// Example:
+//
+// teacherId: "-Oabc123..."
+//
+// means:
+//
+// /staff/-Oabc123...
+//
+// =====================================================
 
 interface TeachingAssignment {
+
   id: string;
 
   classId: string;
+
   subjectId: string;
+
   teacherId: string;
 
   className: string;
+
   subjectName: string;
+
   teacherName: string;
 
   createdAt: number;
+
   updatedAt?: number;
+
 }
 
 
@@ -111,7 +179,9 @@ interface TeachingAssignment {
 // =====================================================
 
 @Component({
+
   selector: 'app-teaching-assignments',
+
   standalone: true,
 
   imports: [
@@ -122,11 +192,14 @@ interface TeachingAssignment {
   ],
 
   templateUrl: './teaching-assignment.html',
+
   styleUrl: './teaching-assignment.css'
+
 })
 
 
-export class TeachingAssignments implements OnInit {
+export class TeachingAssignments
+  implements OnInit {
 
 
   // =====================================================
@@ -163,6 +236,18 @@ export class TeachingAssignments implements OnInit {
 
   selectedSubject = '';
 
+  selectedStaff = '';
+
+  /*
+   * Compatibility property.
+   *
+   * The existing HTML uses:
+   *
+   * [(ngModel)]="selectedTeacher"
+   *
+   * Teachers are staff in our system, so this value
+   * represents the selected STAFF record ID.
+   */
   selectedTeacher = '';
 
 
@@ -217,9 +302,13 @@ export class TeachingAssignments implements OnInit {
   // =====================================================
 
   newAssignment = {
+
     classId: '',
+
     subjectId: '',
+
     teacherId: ''
+
   };
 
 
@@ -228,10 +317,15 @@ export class TeachingAssignments implements OnInit {
   // =====================================================
 
   editAssignmentData = {
+
     id: '',
+
     classId: '',
+
     subjectId: '',
+
     teacherId: ''
+
   };
 
 
@@ -240,8 +334,11 @@ export class TeachingAssignments implements OnInit {
   // =====================================================
 
   constructor(
+
     private cdr: ChangeDetectorRef,
+
     private ngZone: NgZone
+
   ) {}
 
 
@@ -275,53 +372,24 @@ export class TeachingAssignments implements OnInit {
 
   async loadData(): Promise<void> {
 
-    /*
-     * Set loading immediately.
-     */
     this.loading = true;
 
     this.clearMessages();
 
-    /*
-     * Tell Angular to display the loading state
-     * before Firebase requests begin.
-     */
     this.cdr.detectChanges();
 
 
     try {
 
-      /*
-       * Load classes first.
-       */
       await this.loadClasses();
 
-
-      /*
-       * Load subjects second.
-       */
       await this.loadSubjects();
 
-
-      /*
-       * Load staff third.
-       */
       await this.loadStaff();
 
-
-      /*
-       * Load assignments last.
-       *
-       * This ensures class, subject and teacher
-       * names are already available when assignments
-       * are mapped.
-       */
       await this.loadAssignments();
 
 
-      /*
-       * Calculate statistics.
-       */
       this.ngZone.run(() => {
 
         this.totalClasses =
@@ -344,10 +412,6 @@ export class TeachingAssignments implements OnInit {
       );
 
 
-      /*
-       * Make sure the error message is also
-       * handled inside Angular.
-       */
       this.ngZone.run(() => {
 
         this.errorMessage =
@@ -355,17 +419,9 @@ export class TeachingAssignments implements OnInit {
 
       });
 
+
     } finally {
 
-      /*
-       * IMPORTANT:
-       *
-       * Firebase async operations can finish outside
-       * Angular's normal change-detection cycle.
-       *
-       * Running this inside NgZone guarantees that
-       * the loading screen disappears automatically.
-       */
       this.ngZone.run(() => {
 
         this.loading = false;
@@ -387,9 +443,13 @@ export class TeachingAssignments implements OnInit {
 
     try {
 
-      const snapshot = await get(
-        ref(database, 'classes')
-      );
+      const snapshot =
+        await get(
+          ref(
+            database,
+            'classes'
+          )
+        );
 
 
       if (!snapshot.exists()) {
@@ -405,36 +465,43 @@ export class TeachingAssignments implements OnInit {
       }
 
 
-      const data = snapshot.val();
+      const data =
+        snapshot.val();
 
 
-      this.classes = Object.entries(data)
+      this.classes =
+        Object.entries(data)
 
-        .map(
-          ([id, value]: [string, any]) => ({
-            id,
-            ...value
-          })
-        )
+          .map(
+            ([id, value]: [string, any]) => ({
 
-        .filter(
-          (item: SchoolClass) =>
-            item.status === 'active'
-        )
+              id,
 
-        .sort(
-          (
-            a: SchoolClass,
-            b: SchoolClass
-          ) =>
+              ...value
 
-            `${a.className} ${a.section}`
+            })
+          )
 
-              .localeCompare(
-                `${b.className} ${b.section}`
-              )
+          .filter(
+            (item: SchoolClass) =>
+              item.status === 'active'
+          )
 
-        );
+          .sort(
+            (
+              a: SchoolClass,
+              b: SchoolClass
+            ) =>
+
+              `${a.className} ${a.section}`
+
+                .localeCompare(
+
+                  `${b.className} ${b.section}`
+
+                )
+
+          );
 
 
       console.log(
@@ -467,9 +534,13 @@ export class TeachingAssignments implements OnInit {
 
     try {
 
-      const snapshot = await get(
-        ref(database, 'subjects')
-      );
+      const snapshot =
+        await get(
+          ref(
+            database,
+            'subjects'
+          )
+        );
 
 
       if (!snapshot.exists()) {
@@ -485,34 +556,39 @@ export class TeachingAssignments implements OnInit {
       }
 
 
-      const data = snapshot.val();
+      const data =
+        snapshot.val();
 
 
-      this.subjects = Object.entries(data)
+      this.subjects =
+        Object.entries(data)
 
-        .map(
-          ([id, value]: [string, any]) => ({
-            id,
-            ...value
-          })
-        )
+          .map(
+            ([id, value]: [string, any]) => ({
 
-        .filter(
-          (item: SchoolSubject) =>
-            item.status === 'active'
-        )
+              id,
 
-        .sort(
-          (
-            a: SchoolSubject,
-            b: SchoolSubject
-          ) =>
+              ...value
 
-            a.subjectName.localeCompare(
-              b.subjectName
-            )
+            })
+          )
 
-        );
+          .filter(
+            (item: SchoolSubject) =>
+              item.status === 'active'
+          )
+
+          .sort(
+            (
+              a: SchoolSubject,
+              b: SchoolSubject
+            ) =>
+
+              a.subjectName.localeCompare(
+                b.subjectName
+              )
+
+          );
 
 
       console.log(
@@ -540,14 +616,24 @@ export class TeachingAssignments implements OnInit {
   // =====================================================
   // LOAD STAFF
   // =====================================================
+  //
+  // Teachers are staff.
+  //
+  // Only ACTIVE staff can receive assignments.
+  //
+  // =====================================================
 
   async loadStaff(): Promise<void> {
 
     try {
 
-      const snapshot = await get(
-        ref(database, 'staff')
-      );
+      const snapshot =
+        await get(
+          ref(
+            database,
+            'staff'
+          )
+        );
 
 
       if (!snapshot.exists()) {
@@ -563,34 +649,39 @@ export class TeachingAssignments implements OnInit {
       }
 
 
-      const data = snapshot.val();
+      const data =
+        snapshot.val();
 
 
-      this.staff = Object.entries(data)
+      this.staff =
+        Object.entries(data)
 
-        .map(
-          ([id, value]: [string, any]) => ({
-            id,
-            ...value
-          })
-        )
+          .map(
+            ([id, value]: [string, any]) => ({
 
-        .filter(
-          (item: StaffMember) =>
-            item.status === 'active'
-        )
+              id,
 
-        .sort(
-          (
-            a: StaffMember,
-            b: StaffMember
-          ) =>
+              ...value
 
-            a.fullName.localeCompare(
-              b.fullName
-            )
+            })
+          )
 
-        );
+          .filter(
+            (item: StaffMember) =>
+              item.status === 'active'
+          )
+
+          .sort(
+            (
+              a: StaffMember,
+              b: StaffMember
+            ) =>
+
+              a.fullName.localeCompare(
+                b.fullName
+              )
+
+          );
 
 
       console.log(
@@ -623,12 +714,13 @@ export class TeachingAssignments implements OnInit {
 
     try {
 
-      const snapshot = await get(
-        ref(
-          database,
-          'teachingAssignments'
-        )
-      );
+      const snapshot =
+        await get(
+          ref(
+            database,
+            'teachingAssignments'
+          )
+        );
 
 
       if (!snapshot.exists()) {
@@ -644,110 +736,109 @@ export class TeachingAssignments implements OnInit {
       }
 
 
-      const data = snapshot.val();
+      const data =
+        snapshot.val();
 
 
-      this.assignments = Object.entries(data)
+      this.assignments =
 
-        .map(
-          (
-            [id, value]: [string, any]
-          ) => {
+        Object.entries(data)
 
-            const assignment =
-              value as TeachingAssignment;
+          .map(
+            (
+              [id, value]: [string, any]
+            ) => {
 
-
-            const schoolClass =
-              this.classes.find(
-                item =>
-                  item.id ===
-                  assignment.classId
-              );
+              const assignment =
+                value as TeachingAssignment;
 
 
-            const subject =
-              this.subjects.find(
-                item =>
-                  item.id ===
-                  assignment.subjectId
-              );
+              const schoolClass =
+                this.classes.find(
+                  item =>
+                    item.id ===
+                    assignment.classId
+                );
 
 
-            const teacher =
-              this.staff.find(
-                item =>
-                  item.id ===
-                  assignment.teacherId
-              );
+              const subject =
+                this.subjects.find(
+                  item =>
+                    item.id ===
+                    assignment.subjectId
+                );
 
 
-            return {
-
-              id,
-
-              classId:
-                assignment.classId || '',
-
-              subjectId:
-                assignment.subjectId || '',
-
-              teacherId:
-                assignment.teacherId || '',
+              const staffMember =
+                this.staff.find(
+                  item =>
+                    item.id ===
+                    assignment.teacherId
+                );
 
 
-              className:
+              return {
 
-                schoolClass
+                id,
 
-                  ? `${schoolClass.className} ${schoolClass.section}`.trim()
+                classId:
+                  assignment.classId || '',
 
-                  : 'Unknown Class',
+                subjectId:
+                  assignment.subjectId || '',
 
+                teacherId:
+                  assignment.teacherId || '',
 
-              subjectName:
+                className:
 
-                subject
+                  schoolClass
 
-                  ? subject.subjectName
+                    ? `${schoolClass.className} ${schoolClass.section}`.trim()
 
-                  : 'Unknown Subject',
+                    : 'Unknown Class',
 
+                subjectName:
 
-              teacherName:
+                  subject
 
-                teacher
+                    ? subject.subjectName
 
-                  ? teacher.fullName
+                    : 'Unknown Subject',
 
-                  : 'Unknown Teacher',
+                teacherName:
 
+                  staffMember
 
-              createdAt:
-                assignment.createdAt ||
-                Date.now(),
+                    ? staffMember.fullName
 
+                    : 'Unknown Staff',
 
-              updatedAt:
-                assignment.updatedAt
+                createdAt:
+                  assignment.createdAt ||
+                  Date.now(),
 
-            };
+                updatedAt:
+                  assignment.updatedAt
 
-          }
+              };
 
-        )
+            }
 
-        .sort(
-          (
-            a,
-            b
-          ) =>
+          )
 
-            a.className.localeCompare(
-              b.className
-            )
+          .sort(
 
-        );
+            (
+              a,
+              b
+            ) =>
+
+              a.className.localeCompare(
+                b.className
+              )
+
+          );
 
 
       console.log(
@@ -785,8 +876,20 @@ export class TeachingAssignments implements OnInit {
         .toLowerCase();
 
 
+    /*
+     * Keep selectedStaff and selectedTeacher
+     * synchronized because older/newer HTML may use
+     * either property.
+     */
+
+    const staffFilter =
+      this.selectedStaff ||
+      this.selectedTeacher;
+
+
     return this.assignments.filter(
       assignment => {
+
 
         const matchesSearch =
 
@@ -821,12 +924,12 @@ export class TeachingAssignments implements OnInit {
           this.selectedSubject;
 
 
-        const matchesTeacher =
+        const matchesStaff =
 
-          !this.selectedTeacher ||
+          !staffFilter ||
 
           assignment.teacherId ===
-          this.selectedTeacher;
+          staffFilter;
 
 
         return (
@@ -837,7 +940,7 @@ export class TeachingAssignments implements OnInit {
 
           matchesSubject &&
 
-          matchesTeacher
+          matchesStaff
 
         );
 
@@ -858,7 +961,8 @@ export class TeachingAssignments implements OnInit {
 
     this.resetForm();
 
-    this.showAddAssignment = true;
+    this.showAddAssignment =
+      true;
 
   }
 
@@ -876,7 +980,8 @@ export class TeachingAssignments implements OnInit {
     }
 
 
-    this.showAddAssignment = false;
+    this.showAddAssignment =
+      false;
 
     this.resetForm();
 
@@ -915,7 +1020,7 @@ export class TeachingAssignments implements OnInit {
     if (!this.newAssignment.teacherId) {
 
       this.errorMessage =
-        'Please select a teacher.';
+        'Please select a staff member.';
 
       return;
 
@@ -961,7 +1066,8 @@ export class TeachingAssignments implements OnInit {
         );
 
 
-      const now = Date.now();
+      const now =
+        Date.now();
 
 
       const assignmentData = {
@@ -972,6 +1078,10 @@ export class TeachingAssignments implements OnInit {
         subjectId:
           this.newAssignment.subjectId,
 
+        /*
+         * Kept as teacherId for compatibility.
+         * The value is the STAFF record ID.
+         */
         teacherId:
           this.newAssignment.teacherId,
 
@@ -1003,7 +1113,7 @@ export class TeachingAssignments implements OnInit {
         );
 
 
-      const teacher =
+      const staffMember =
         this.staff.find(
           item =>
             item.id ===
@@ -1026,7 +1136,6 @@ export class TeachingAssignments implements OnInit {
         teacherId:
           this.newAssignment.teacherId,
 
-
         className:
 
           schoolClass
@@ -1034,7 +1143,6 @@ export class TeachingAssignments implements OnInit {
             ? `${schoolClass.className} ${schoolClass.section}`.trim()
 
             : 'Unknown Class',
-
 
         subjectName:
 
@@ -1044,15 +1152,13 @@ export class TeachingAssignments implements OnInit {
 
             : 'Unknown Subject',
 
-
         teacherName:
 
-          teacher
+          staffMember
 
-            ? teacher.fullName
+            ? staffMember.fullName
 
-            : 'Unknown Teacher',
-
+            : 'Unknown Staff',
 
         createdAt:
           now
@@ -1262,7 +1368,7 @@ export class TeachingAssignments implements OnInit {
     if (!teacherId) {
 
       this.errorMessage =
-        'Please select a teacher.';
+        'Please select a staff member.';
 
       return;
 
@@ -1313,10 +1419,18 @@ export class TeachingAssignments implements OnInit {
       await update(
         assignmentRef,
         {
+
           classId,
+
           subjectId,
+
+          /*
+           * Existing Firebase field retained.
+           */
           teacherId,
+
           updatedAt
+
         }
       );
 
@@ -1335,7 +1449,7 @@ export class TeachingAssignments implements OnInit {
         );
 
 
-      const teacher =
+      const staffMember =
         this.staff.find(
           item =>
             item.id === teacherId
@@ -1388,11 +1502,11 @@ export class TeachingAssignments implements OnInit {
 
             teacherName:
 
-              teacher
+              staffMember
 
-                ? teacher.fullName
+                ? staffMember.fullName
 
-                : 'Unknown Teacher',
+                : 'Unknown Staff',
 
 
             updatedAt
@@ -1617,6 +1731,8 @@ export class TeachingAssignments implements OnInit {
     this.selectedClass = '';
 
     this.selectedSubject = '';
+
+    this.selectedStaff = '';
 
     this.selectedTeacher = '';
 

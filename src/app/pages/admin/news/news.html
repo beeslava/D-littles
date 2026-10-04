@@ -1,0 +1,875 @@
+<div class="news-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header">
+
+    <div>
+      <h1>News</h1>
+
+      <p>
+        Create, publish and manage school news and announcements.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="add-button"
+      (click)="openCreateForm()"
+      *ngIf="!showForm"
+    >
+      <span>+</span>
+      <span>New News</span>
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       ALERTS
+       ===================================================== -->
+
+  <div
+    class="alert success-alert"
+    *ngIf="successMessage"
+  >
+    <span>✓</span>
+    <span>{{ successMessage }}</span>
+
+    <button
+      type="button"
+      (click)="successMessage = ''"
+    >
+      ×
+    </button>
+  </div>
+
+
+  <div
+    class="alert error-alert"
+    *ngIf="errorMessage"
+  >
+    <span>!</span>
+    <span>{{ errorMessage }}</span>
+
+    <button
+      type="button"
+      (click)="errorMessage = ''"
+    >
+      ×
+    </button>
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+       ===================================================== -->
+
+  <div
+    class="stats-grid"
+    *ngIf="!showForm"
+  >
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        📰
+      </div>
+
+      <div>
+        <span>Total News</span>
+        <strong>{{ totalNews }}</strong>
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        ✓
+      </div>
+
+      <div>
+        <span>Published</span>
+        <strong>{{ publishedNews }}</strong>
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        📝
+      </div>
+
+      <div>
+        <span>Drafts</span>
+        <strong>{{ draftNews }}</strong>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       NEWS FORM
+       ===================================================== -->
+
+  <section
+    class="form-card"
+    *ngIf="showForm"
+  >
+
+    <div class="form-header">
+
+      <div>
+        <h2>
+          {{
+            editingNewsId
+              ? 'Edit News'
+              : 'Create News'
+          }}
+        </h2>
+
+        <p>
+          {{
+            editingNewsId
+              ? 'Update this school news article.'
+              : 'Create a new school news article.'
+          }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeForm()"
+        [disabled]="saving"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form
+      (ngSubmit)="saveNews()"
+      #newsForm="ngForm"
+    >
+
+      <!-- TITLE -->
+
+      <div class="form-group">
+
+        <label for="newsTitle">
+          News Title
+          <span>*</span>
+        </label>
+
+        <input
+          id="newsTitle"
+          type="text"
+          name="title"
+          [(ngModel)]="formTitle"
+          placeholder="Enter news title"
+          maxlength="150"
+          required
+        />
+
+      </div>
+
+
+      <!-- CATEGORY + STATUS -->
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="newsCategory">
+            Category
+          </label>
+
+          <select
+            id="newsCategory"
+            name="category"
+            [(ngModel)]="formCategory"
+          >
+
+            <option
+              *ngFor="let category of categories"
+              [value]="category"
+            >
+              {{ category }}
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="newsStatus">
+            Status
+          </label>
+
+          <select
+            id="newsStatus"
+            name="status"
+            [(ngModel)]="formStatus"
+          >
+
+            <option value="draft">
+              Draft
+            </option>
+
+            <option value="published">
+              Published
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <!-- IMAGE -->
+
+      <div class="form-group">
+
+        <label for="newsImage">
+          Featured Image URL
+        </label>
+
+        <input
+          id="newsImage"
+          type="url"
+          name="imageUrl"
+          [(ngModel)]="formImageUrl"
+          placeholder="https://example.com/image.jpg"
+        />
+
+        <small>
+          Enter an image URL. Image upload can be added later.
+        </small>
+
+      </div>
+
+
+      <!-- IMAGE PREVIEW -->
+
+      <div
+        class="image-preview"
+        *ngIf="formImageUrl"
+      >
+
+        <img
+          [src]="formImageUrl"
+          alt="News image preview"
+          (error)="handleImageError($event)"
+        />
+
+      </div>
+
+
+      <!-- EXCERPT -->
+
+      <div class="form-group">
+
+        <label for="newsExcerpt">
+          Short Description
+        </label>
+
+        <textarea
+          id="newsExcerpt"
+          name="excerpt"
+          [(ngModel)]="formExcerpt"
+          rows="3"
+          maxlength="300"
+          placeholder="Enter a short description. Leave blank to generate one automatically."
+        ></textarea>
+
+      </div>
+
+
+      <!-- CONTENT -->
+
+      <div class="form-group">
+
+        <label for="newsContent">
+          News Content
+          <span>*</span>
+        </label>
+
+        <textarea
+          id="newsContent"
+          name="content"
+          [(ngModel)]="formContent"
+          rows="10"
+          placeholder="Write the full news article here..."
+          required
+        ></textarea>
+
+      </div>
+
+
+      <!-- FORM ACTIONS -->
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="closeForm()"
+          [disabled]="saving"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="saving || !newsForm.valid"
+        >
+
+          <span
+            class="spinner"
+            *ngIf="saving"
+          ></span>
+
+          <span>
+            {{
+              saving
+                ? 'Saving...'
+                : editingNewsId
+                  ? 'Update News'
+                  : 'Create News'
+            }}
+          </span>
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </section>
+
+
+  <!-- =====================================================
+       SEARCH + FILTERS
+       ===================================================== -->
+
+  <section
+    class="filter-card"
+    *ngIf="!showForm"
+  >
+
+    <div class="search-box">
+
+      <span>🔍</span>
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+        placeholder="Search news..."
+      />
+
+    </div>
+
+
+    <div class="filter-control">
+
+      <label>
+        Category
+      </label>
+
+      <select
+        [(ngModel)]="selectedCategory"
+        (ngModelChange)="applyFilters()"
+      >
+
+        <option value="All">
+          All Categories
+        </option>
+
+        <option
+          *ngFor="let category of categories"
+          [value]="category"
+        >
+          {{ category }}
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="filter-control">
+
+      <label>
+        Status
+      </label>
+
+      <select
+        [(ngModel)]="selectedStatus"
+        (ngModelChange)="applyFilters()"
+      >
+
+        <option value="All">
+          All Status
+        </option>
+
+        <option value="published">
+          Published
+        </option>
+
+        <option value="draft">
+          Draft
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="clear-filter-button"
+      (click)="clearFilters()"
+    >
+      Clear
+    </button>
+
+  </section>
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    class="loading-state"
+    *ngIf="loading"
+  >
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Loading news...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       EMPTY STATE
+       ===================================================== -->
+
+  <div
+    class="empty-state"
+    *ngIf="
+      !loading &&
+      filteredNews.length === 0 &&
+      news.length === 0 &&
+      !showForm
+    "
+  >
+
+    <div class="empty-icon">
+      📰
+    </div>
+
+    <h2>
+      No News Yet
+    </h2>
+
+    <p>
+      You haven't created any school news.
+    </p>
+
+    <button
+      type="button"
+      class="add-button"
+      (click)="openCreateForm()"
+    >
+      <span>+</span>
+      <span>Create Your First News</span>
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       NO FILTER RESULTS
+       ===================================================== -->
+
+  <div
+    class="empty-state small-empty"
+    *ngIf="
+      !loading &&
+      filteredNews.length === 0 &&
+      news.length > 0 &&
+      !showForm
+    "
+  >
+
+    <div class="empty-icon">
+      🔍
+    </div>
+
+    <h2>
+      No Matching News
+    </h2>
+
+    <p>
+      Try changing your search or filters.
+    </p>
+
+    <button
+      type="button"
+      class="clear-filter-button"
+      (click)="clearFilters()"
+    >
+      Clear Filters
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       NEWS TABLE
+       ===================================================== -->
+
+  <section
+    class="news-table-card"
+    *ngIf="
+      !loading &&
+      filteredNews.length > 0 &&
+      !showForm
+    "
+  >
+
+    <div class="table-header">
+
+      <div>
+        <h2>
+          School News
+        </h2>
+
+        <p>
+          {{ filteredNews.length }} article(s)
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              News
+            </th>
+
+            <th>
+              Category
+            </th>
+
+            <th>
+              Author
+            </th>
+
+            <th>
+              Date
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let item of filteredNews;
+              trackBy: trackByNewsId
+            "
+          >
+
+            <!-- NEWS -->
+
+            <td>
+
+              <div class="news-info">
+
+                <div
+                  class="news-image"
+                  *ngIf="item.imageUrl"
+                >
+
+                  <img
+                    [src]="item.imageUrl"
+                    [alt]="item.title"
+                    (error)="handleImageError($event)"
+                  />
+
+                </div>
+
+                <div
+                  class="news-image placeholder"
+                  *ngIf="!item.imageUrl"
+                >
+                  📰
+                </div>
+
+
+                <div class="news-details">
+
+                  <strong>
+                    {{ item.title }}
+                  </strong>
+
+                  <span>
+                    {{
+                      item.excerpt ||
+                      createExcerpt(item.content)
+                    }}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- CATEGORY -->
+
+            <td>
+
+              <span class="category-badge">
+                {{ item.category }}
+              </span>
+
+            </td>
+
+
+            <!-- AUTHOR -->
+
+            <td>
+
+              {{ item.authorName }}
+
+            </td>
+
+
+            <!-- DATE -->
+
+            <td>
+
+              <div class="date-info">
+
+                <span>
+                  Created:
+                  {{ formatDate(item.createdAt) }}
+                </span>
+
+                <span
+                  *ngIf="
+                    item.publishedAt &&
+                    item.status === 'published'
+                  "
+                >
+                  Published:
+                  {{ formatDate(item.publishedAt) }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <!-- STATUS -->
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.published]="
+                  item.status === 'published'
+                "
+                [class.draft]="
+                  item.status === 'draft'
+                "
+              >
+
+                <span>
+                  {{
+                    item.status === 'published'
+                      ? '●'
+                      : '○'
+                  }}
+                </span>
+
+                {{
+                  item.status === 'published'
+                    ? 'Published'
+                    : 'Draft'
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- ACTIONS -->
+
+            <td>
+
+              <div class="action-buttons">
+
+                <button
+                  type="button"
+                  class="action-button edit"
+                  title="Edit"
+                  (click)="openEditForm(item)"
+                >
+                  ✏️
+                </button>
+
+
+                <button
+                  type="button"
+                  class="action-button publish"
+                  [title]="
+                    item.status === 'published'
+                      ? 'Move to Draft'
+                      : 'Publish'
+                  "
+                  (click)="togglePublish(item)"
+                >
+                  {{
+                    item.status === 'published'
+                      ? '↩'
+                      : '✓'
+                  }}
+                </button>
+
+
+                <button
+                  type="button"
+                  class="action-button delete"
+                  title="Delete"
+                  (click)="confirmDelete(item)"
+                >
+                  🗑️
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       DELETE MODAL
+       ===================================================== -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="showDeleteModal"
+  >
+
+    <div class="delete-modal">
+
+      <div class="delete-icon">
+        🗑️
+      </div>
+
+      <h2>
+        Delete News?
+      </h2>
+
+      <p>
+        Are you sure you want to delete
+        <strong>
+          "{{ newsToDelete?.title }}"
+        </strong>
+        ?
+      </p>
+
+      <p class="warning-text">
+        This action cannot be undone.
+      </p>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="cancelDelete()"
+          [disabled]="deleting"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="delete-confirm-button"
+          (click)="deleteNews()"
+          [disabled]="deleting"
+        >
+
+          <span
+            class="spinner"
+            *ngIf="deleting"
+          ></span>
+
+          {{
+            deleting
+              ? 'Deleting...'
+              : 'Delete News'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+

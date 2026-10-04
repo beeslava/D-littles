@@ -1,0 +1,783 @@
+/* =========================================================
+   EVENTS PAGE
+========================================================= */
+
+.events-page {
+  min-height: 100vh;
+  background: #f7f8fc;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.events-hero {
+  min-height: 300px;
+  background:
+    linear-gradient(
+      rgba(20, 38, 70, 0.82),
+      rgba(20, 38, 70, 0.82)
+    ),
+    linear-gradient(
+      135deg,
+      #163d70,
+      #2866a8
+    );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-overlay {
+  width: 100%;
+  padding: 70px 20px;
+}
+
+.hero-content {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.hero-label {
+  display: inline-block;
+  margin-bottom: 15px;
+
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+
+  color: #f7c948;
+}
+
+.hero-content h1 {
+  margin: 0 0 18px;
+
+  font-size: 48px;
+  font-weight: 800;
+
+  color: #ffffff;
+}
+
+.hero-content p {
+  margin: 0;
+
+  font-size: 17px;
+  line-height: 1.7;
+
+  color: rgba(255, 255, 255, 0.9);
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.events-container {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 55px 0 80px;
+}
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.events-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
+
+.search-box {
+  width: 360px;
+
+  display: flex;
+  align-items: center;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e5ec;
+  border-radius: 10px;
+
+  padding: 0 15px;
+
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.search-icon {
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.search-box input {
+  width: 100%;
+  height: 48px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 14px;
+  color: #253858;
+}
+
+.search-box input::placeholder {
+  color: #9aa4b2;
+}
+
+
+/* =========================================================
+   ALERT
+========================================================= */
+
+.alert {
+  padding: 15px 18px;
+  margin-bottom: 25px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+}
+
+.error-alert {
+  background: #fff0f0;
+  color: #b42318;
+  border: 1px solid #f5c2c0;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading-state {
+  min-height: 300px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+
+  color: #687386;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+
+  border: 4px solid #e5e9ef;
+  border-top-color: #2866a8;
+
+  border-radius: 50%;
+
+  animation: eventSpinner 0.8s linear infinite;
+
+  margin-bottom: 15px;
+}
+
+@keyframes eventSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty-state {
+  padding: 80px 20px;
+
+  text-align: center;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  border: 1px solid #e7eaf0;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.empty-state h2 {
+  margin: 0 0 10px;
+
+  color: #24324a;
+
+  font-size: 24px;
+}
+
+.empty-state p {
+  margin: 0;
+
+  color: #7a8494;
+
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   EVENTS GRID
+========================================================= */
+
+.events-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 25px;
+}
+
+
+/* =========================================================
+   EVENT CARD
+========================================================= */
+
+.event-card {
+  display: flex;
+
+  background: #ffffff;
+
+  border: 1px solid #e6e9ef;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.05);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.09);
+}
+
+
+/* =========================================================
+   EVENT DATE
+========================================================= */
+
+.event-date {
+  width: 105px;
+  min-width: 105px;
+
+  background: #163d70;
+
+  color: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 20px 10px;
+}
+
+.event-day {
+  font-size: 13px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1px;
+
+  opacity: 0.9;
+}
+
+.event-day-number {
+  margin: 4px 0;
+
+  font-size: 38px;
+  line-height: 1;
+
+  font-weight: 800;
+}
+
+.event-month {
+  font-size: 14px;
+
+  text-transform: uppercase;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  color: #f7c948;
+}
+
+
+/* =========================================================
+   EVENT CONTENT
+========================================================= */
+
+.event-content {
+  flex: 1;
+
+  padding: 25px;
+}
+
+.event-label {
+  display: inline-block;
+
+  margin-bottom: 8px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+
+  color: #2866a8;
+}
+
+.event-content h2 {
+  margin: 0 0 12px;
+
+  font-size: 22px;
+
+  line-height: 1.3;
+
+  color: #1d2b44;
+}
+
+.event-description {
+  margin: 0 0 20px;
+
+  color: #697586;
+
+  font-size: 14px;
+
+  line-height: 1.7;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   EVENT INFO
+========================================================= */
+
+.event-info {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-bottom: 22px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.info-icon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f0f5fb;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+}
+
+.info-item small {
+  display: block;
+
+  margin-bottom: 2px;
+
+  font-size: 11px;
+
+  color: #8993a3;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+}
+
+.info-item strong {
+  display: block;
+
+  font-size: 13px;
+
+  color: #29384f;
+}
+
+
+/* =========================================================
+   READ MORE
+========================================================= */
+
+.read-more-button {
+  border: none;
+
+  background: transparent;
+
+  padding: 0;
+
+  color: #2866a8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.read-more-button span {
+  margin-left: 5px;
+
+  transition: margin-left 0.2s ease;
+}
+
+.read-more-button:hover span {
+  margin-left: 10px;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.event-modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(15, 25, 42, 0.72);
+
+  overflow-y: auto;
+}
+
+.event-modal-content {
+  position: relative;
+
+  width: min(700px, 100%);
+
+  background: #ffffff;
+
+  border-radius: 16px;
+
+  padding: 40px;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+.close-button {
+  position: absolute;
+
+  top: 15px;
+  right: 18px;
+
+  width: 38px;
+  height: 38px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f1f3f6;
+
+  color: #344054;
+
+  font-size: 25px;
+
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background: #e5e7eb;
+}
+
+
+/* =========================================================
+   MODAL DATE
+========================================================= */
+
+.modal-date {
+  width: 75px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+
+  padding: 12px 8px;
+
+  border-radius: 10px;
+
+  background: #163d70;
+
+  color: #ffffff;
+
+  text-align: center;
+}
+
+.modal-date span {
+  font-size: 11px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.8px;
+}
+
+.modal-date strong {
+  margin: 3px 0;
+
+  font-size: 27px;
+}
+
+
+/* =========================================================
+   MODAL TITLE
+========================================================= */
+
+.event-modal-content h2 {
+  margin: 0 0 25px;
+
+  font-size: 32px;
+
+  line-height: 1.25;
+
+  color: #1d2b44;
+}
+
+
+/* =========================================================
+   MODAL INFO
+========================================================= */
+
+.modal-event-info {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 15px;
+
+  margin-bottom: 30px;
+}
+
+.modal-info-item {
+  display: flex;
+
+  gap: 10px;
+
+  align-items: flex-start;
+
+  padding: 14px;
+
+  background: #f7f9fc;
+
+  border-radius: 10px;
+}
+
+.modal-info-item > span {
+  font-size: 18px;
+}
+
+.modal-info-item small {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #8993a3;
+
+  font-size: 11px;
+
+  text-transform: uppercase;
+}
+
+.modal-info-item strong {
+  display: block;
+
+  color: #29384f;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   MODAL DESCRIPTION
+========================================================= */
+
+.modal-description {
+  padding-top: 5px;
+}
+
+.modal-description h3 {
+  margin: 0 0 10px;
+
+  color: #1d2b44;
+
+  font-size: 18px;
+}
+
+.modal-description p {
+  margin: 0;
+
+  color: #5e697a;
+
+  font-size: 15px;
+
+  line-height: 1.8;
+
+  white-space: pre-line;
+}
+
+
+/* =========================================================
+   MODAL CLOSE
+========================================================= */
+
+.modal-close-button {
+  margin-top: 30px;
+
+  padding: 11px 24px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #163d70;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.modal-close-button:hover {
+  background: #2866a8;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-event-info {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .events-hero {
+    min-height: 260px;
+  }
+
+  .hero-content h1 {
+    font-size: 36px;
+  }
+
+  .hero-content p {
+    font-size: 15px;
+  }
+
+  .events-container {
+    width: min(100% - 25px, 1180px);
+    padding-top: 35px;
+  }
+
+  .events-toolbar {
+    justify-content: stretch;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .event-card {
+    flex-direction: column;
+  }
+
+  .event-date {
+    width: auto;
+    min-width: 0;
+
+    flex-direction: row;
+
+    gap: 10px;
+
+    justify-content: flex-start;
+
+    padding: 14px 20px;
+  }
+
+  .event-day-number {
+    font-size: 28px;
+    margin: 0;
+  }
+
+  .event-content {
+    padding: 20px;
+  }
+
+  .event-modal-content {
+    padding: 30px 22px;
+  }
+
+  .event-modal-content h2 {
+    font-size: 25px;
+  }
+
+}
+

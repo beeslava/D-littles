@@ -1,0 +1,888 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.payment-page {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.payment-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 80px 24px;
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #1e3a8a
+    );
+}
+
+.payment-hero::before,
+.payment-hero::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.payment-hero::before {
+  width: 420px;
+  height: 420px;
+  top: -220px;
+  right: -100px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.payment-hero::after {
+  width: 300px;
+  height: 300px;
+  bottom: -180px;
+  left: -80px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-label {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #bfdbfe;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.hero-content h1 {
+  margin: 0 0 16px;
+  color: #ffffff;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+}
+
+.hero-content p {
+  max-width: 650px;
+  margin: 0 auto;
+  color: #dbeafe;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.payment-container {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 48px 0 70px;
+}
+
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.application-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  gap: 28px;
+  align-items: start;
+}
+
+.application-details {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card,
+.summary-card,
+.help-card,
+.state-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.card {
+  padding: 30px;
+}
+
+.card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.card-heading h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   PAYMENT STATUS
+   ========================================================= */
+
+.payment-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.status-paid {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.status-unpaid {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.status-pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.status-failed {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+
+/* =========================================================
+   APPLICATION NUMBER
+   ========================================================= */
+
+.application-number {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 24px 0;
+  padding: 18px 20px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.application-number span {
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.application-number strong {
+  color: #1d4ed8;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+
+
+/* =========================================================
+   DETAILS
+   ========================================================= */
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.detail-label {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.detail-item strong {
+  color: #0f172a;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+
+/* =========================================================
+   FEE SUMMARY
+   ========================================================= */
+
+.fee-summary {
+  margin-top: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.fee-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.fee-summary-row + .fee-summary-row {
+  border-top: 1px solid #e2e8f0;
+}
+
+.fee-summary-row strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.total-row {
+  background: #f8fafc;
+}
+
+.total-row span {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.total-row strong {
+  color: #1d4ed8;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   PAYMENT NOTICE
+   ========================================================= */
+
+.payment-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.payment-notice > i {
+  margin-top: 2px;
+  color: #2563eb;
+  font-size: 1.2rem;
+}
+
+.payment-notice strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.payment-notice p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   SUCCESS MESSAGE
+   ========================================================= */
+
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  color: #166534;
+  background: #dcfce7;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.success-message i {
+  font-size: 1rem;
+}
+
+
+/* =========================================================
+   PAY BUTTON
+   ========================================================= */
+
+.pay-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 24px;
+  padding: 17px 24px;
+  border: 0;
+  border-radius: 12px;
+  color: #ffffff;
+  background: #2563eb;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pay-button:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.pay-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.payment-note {
+  margin: 12px 0 0;
+  color: #64748b;
+  text-align: center;
+  font-size: 0.78rem;
+}
+
+
+/* =========================================================
+   PAID MESSAGE
+   ========================================================= */
+
+.paid-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  background: #f0fdf4;
+}
+
+.paid-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #16a34a;
+}
+
+.paid-message h3 {
+  margin: 0 0 6px;
+  color: #166534;
+  font-size: 1rem;
+}
+
+.paid-message p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.reference {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.reference span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.reference strong {
+  color: #166534;
+  font-size: 0.82rem;
+  word-break: break-all;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.payment-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+.summary-card {
+  padding: 28px;
+  text-align: center;
+}
+
+.summary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  color: #2563eb;
+  background: #dbeafe;
+  font-size: 1.35rem;
+}
+
+.summary-card h2 {
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.summary-amount {
+  margin-bottom: 10px;
+  color: #1d4ed8;
+  font-size: 2.3rem;
+  font-weight: 900;
+}
+
+.summary-card > p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.summary-divider {
+  height: 1px;
+  margin: 24px 0;
+  background: #e2e8f0;
+}
+
+.summary-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 11px 0;
+  text-align: left;
+}
+
+.summary-item span {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.summary-item strong {
+  max-width: 180px;
+  color: #0f172a;
+  font-size: 0.78rem;
+  text-align: right;
+  word-break: break-word;
+}
+
+.summary-item strong.status-paid {
+  color: #166534;
+}
+
+.summary-item strong.status-unpaid {
+  color: #991b1b;
+}
+
+.summary-item strong.status-pending {
+  color: #92400e;
+}
+
+.summary-item strong.status-failed {
+  color: #991b1b;
+}
+
+.reference-text {
+  word-break: break-all;
+}
+
+
+/* =========================================================
+   HELP CARD
+   ========================================================= */
+
+.help-card {
+  padding: 24px;
+}
+
+.help-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.help-card h3 {
+  margin: 0 0 8px;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.help-card p {
+  margin: 0 0 15px;
+  color: #64748b;
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+
+.help-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.help-link:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   STATES
+   ========================================================= */
+
+.state-card {
+  max-width: 650px;
+  margin: 30px auto;
+  padding: 50px 30px;
+  text-align: center;
+}
+
+.state-card h2 {
+  margin: 18px 0 8px;
+  color: #0f172a;
+  font-size: 1.3rem;
+}
+
+.state-card p {
+  max-width: 500px;
+  margin: 0 auto;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.state-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  border-radius: 50%;
+  color: #dc2626;
+  background: #fee2e2;
+  font-size: 1.35rem;
+}
+
+.error-card {
+  border-color: #fecaca;
+}
+
+.state-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background: #2563eb;
+}
+
+.btn-secondary {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+
+/* =========================================================
+   SPINNERS
+   ========================================================= */
+
+.loading-spinner,
+.button-spinner {
+  border: 3px solid rgba(37, 99, 235, 0.18);
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto;
+}
+
+.button-spinner {
+  width: 17px;
+  height: 17px;
+  border-width: 2px;
+  border-color: rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   BOTTOM ACTIONS
+   ========================================================= */
+
+.bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.back-link,
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  color: #475569;
+  background: transparent;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.back-link:hover,
+.home-link:hover {
+  color: #2563eb;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .application-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-sidebar {
+    position: static;
+  }
+
+  .summary-card {
+    text-align: left;
+  }
+
+  .summary-icon {
+    margin-left: 0;
+  }
+
+  .summary-amount {
+    font-size: 2rem;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .payment-hero {
+    padding: 60px 20px;
+  }
+
+  .payment-container {
+    width: min(100% - 28px, 1180px);
+    padding-top: 28px;
+  }
+
+  .card,
+  .summary-card,
+  .help-card {
+    padding: 22px;
+    border-radius: 14px;
+  }
+
+  .card-heading {
+    flex-direction: column;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .application-number {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fee-summary-row {
+    padding: 16px;
+  }
+
+  .bottom-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .payment-hero {
+    padding: 48px 16px;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .payment-container {
+    width: min(100% - 20px, 1180px);
+    padding-bottom: 45px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .summary-card,
+  .help-card {
+    padding: 18px;
+  }
+
+  .fee-summary-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .total-row strong {
+    font-size: 1.2rem;
+  }
+
+  .paid-message {
+    flex-direction: column;
+  }
+
+  .state-card {
+    padding: 40px 20px;
+  }
+
+  .state-actions {
+    flex-direction: column;
+  }
+
+  .state-actions .btn {
+    width: 100%;
+  }
+
+}

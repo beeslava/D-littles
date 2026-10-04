@@ -16,14 +16,16 @@ import {
 
 import {
   get,
-  push,
   ref,
   remove,
-  set,
   update
 } from 'firebase/database';
 
 import { database } from '../../../core/firebase.config';
+
+import {
+  SchoolAuthService
+} from '../../../core/Auth/school-auth.service';
 
 
 // =====================================================
@@ -35,6 +37,8 @@ interface StaffMember {
   id: string;
 
   staffId: string;
+
+  uid?: string;
 
   fullName: string;
 
@@ -61,6 +65,21 @@ interface StaffMember {
   createdAt: number;
 
   updatedAt?: number;
+}
+
+
+// =====================================================
+// STAFF CREDENTIALS
+// =====================================================
+
+interface StaffCredentials {
+
+  staffId: string;
+
+  email: string;
+
+  temporaryPassword: string;
+
 }
 
 
@@ -147,6 +166,8 @@ export class Staff implements OnInit {
 
   showDeleteStaff = false;
 
+  showCredentials = false;
+
 
   // =====================================================
   // SELECTED STAFF
@@ -155,6 +176,14 @@ export class Staff implements OnInit {
   selectedStaff: StaffMember | null = null;
 
   staffToDelete: StaffMember | null = null;
+
+
+  // =====================================================
+  // NEW STAFF CREDENTIALS
+  // =====================================================
+
+  staffCredentials:
+    StaffCredentials | null = null;
 
 
   // =====================================================
@@ -202,11 +231,23 @@ export class Staff implements OnInit {
 
 
   // =====================================================
+  // BACKEND URL
+  // =====================================================
+
+  private readonly backendUrl =
+    'http://localhost:10000';
+
+
+  // =====================================================
   // CONSTRUCTOR
   // =====================================================
 
   constructor(
-    private readonly cdr: ChangeDetectorRef
+
+    private readonly cdr: ChangeDetectorRef,
+
+    private readonly authService: SchoolAuthService
+
   ) {}
 
 
@@ -265,6 +306,10 @@ export class Staff implements OnInit {
                 staffId:
                   value.staffId ||
                   this.generateStaffId(),
+
+                uid:
+                  value.uid ||
+                  undefined,
 
                 fullName:
                   value.fullName ||
@@ -518,6 +563,20 @@ export class Staff implements OnInit {
   // =====================================================
   // SAVE STAFF
   // =====================================================
+  //
+  // IMPORTANT:
+  //
+  // Staff creation is now handled by the backend.
+  //
+  // The backend creates:
+  //
+  // Firebase Auth
+  // /users/{uid}
+  // /staff/{staffRecordId}
+  //
+  // and returns the temporary password.
+  //
+  // =====================================================
 
   async saveStaff(): Promise<void> {
 
@@ -532,6 +591,12 @@ export class Staff implements OnInit {
 
     this.successMessage = '';
 
+    this.staffCredentials = null;
+
+
+    // =====================================================
+    // VALIDATION
+    // =====================================================
 
     if (!this.newStaff.fullName?.trim()) {
 
@@ -563,117 +628,253 @@ export class Staff implements OnInit {
     }
 
 
+    // =====================================================
+    // CHECK ADMIN LOGIN
+    // =====================================================
+
+    const currentUser =
+      this.authService.getUser();
+
+
+    if (!currentUser) {
+
+      this.errorMessage =
+        'Your admin session has expired. Please log in again.';
+
+      return;
+
+    }
+
+
     this.saving = true;
 
 
     try {
 
-      const staffRef =
-        ref(
-          database,
-          'staff'
+      // ===================================================
+      // GET FIREBASE ID TOKEN
+      // ===================================================
+
+      const idToken =
+        await currentUser.getIdToken();
+
+
+      // ===================================================
+      // SEND STAFF DATA TO BACKEND
+      // ===================================================
+
+      const response =
+        await fetch(
+          `${this.backendUrl}/api/staff/create`,
+          {
+
+            method: 'POST',
+
+            headers: {
+
+              'Content-Type':
+                'application/json',
+
+              'Authorization':
+                `Bearer ${idToken}`
+
+            },
+
+            body:
+              JSON.stringify({
+
+                staffId:
+                  this.newStaff.staffId?.trim() ||
+                  undefined,
+
+                fullName:
+                  this.newStaff.fullName.trim(),
+
+                email:
+                  this.newStaff.email?.trim() ||
+                  undefined,
+
+                phone:
+                  this.newStaff.phone?.trim() ||
+                  '',
+
+                gender:
+                  this.newStaff.gender?.trim() ||
+                  '',
+
+                position:
+                  this.newStaff.position?.trim() ||
+                  '',
+
+                department:
+                  this.newStaff.department?.trim() ||
+                  '',
+
+                qualification:
+                  this.newStaff.qualification?.trim() ||
+                  '',
+
+                employmentDate:
+                  this.newStaff.employmentDate ||
+                  '',
+
+                address:
+                  this.newStaff.address?.trim() ||
+                  '',
+
+                emergencyContact:
+                  this.newStaff.emergencyContact?.trim() ||
+                  '',
+
+                status:
+                  this.newStaff.status ||
+                  'active'
+
+              })
+
+          }
         );
 
 
-      const newStaffRef =
-        push(staffRef);
+      // ===================================================
+      // READ RESPONSE
+      // ===================================================
+
+      const result =
+        await response.json();
 
 
-      const now =
-        Date.now();
+      // ===================================================
+      // HANDLE ERROR
+      // ===================================================
+
+      if (!response.ok) {
+
+        throw new Error(
+          result?.message ||
+          'Unable to create staff account.'
+        );
+
+      }
 
 
-      const staffData: StaffMember = {
+      // ===================================================
+      // SAVE CREDENTIALS
+      // ===================================================
 
-        id:
-          newStaffRef.key!,
-
-        staffId:
-          this.newStaff.staffId?.trim() ||
-          this.generateStaffId(),
-
-        fullName:
-          this.newStaff.fullName.trim(),
-
-        email:
-          this.newStaff.email?.trim() ||
-          '',
-
-        phone:
-          this.newStaff.phone.trim(),
-
-        gender:
-          this.newStaff.gender?.trim() ||
-          '',
-
-        position:
-          this.newStaff.position.trim(),
-
-        department:
-          this.newStaff.department?.trim() ||
-          '',
-
-        qualification:
-          this.newStaff.qualification?.trim() ||
-          '',
-
-        employmentDate:
-          this.newStaff.employmentDate ||
-          '',
-
-        address:
-          this.newStaff.address?.trim() ||
-          '',
-
-        emergencyContact:
-          this.newStaff.emergencyContact?.trim() ||
-          '',
-
-        status:
-          this.newStaff.status ||
-          'active',
-
-        createdAt:
-          now,
-
-        updatedAt:
-          now
-
-      };
+      this.staffCredentials =
+        result.credentials;
 
 
-      await set(
-        newStaffRef,
-        staffData
-      );
+      // ===================================================
+      // ADD NEW STAFF TO LOCAL LIST
+      // ===================================================
+
+      if (result.staff) {
+
+        this.staff.unshift({
+
+          id:
+            result.staff.id,
+
+          staffId:
+            result.staff.staffId,
+
+          uid:
+            result.staff.uid,
+
+          fullName:
+            result.staff.fullName,
+
+          email:
+            result.staff.email,
+
+          phone:
+            this.newStaff.phone?.trim() ||
+            '',
+
+          gender:
+            this.newStaff.gender?.trim() ||
+            '',
+
+          position:
+            result.staff.position ||
+            this.newStaff.position?.trim() ||
+            '',
+
+          department:
+            result.staff.department ||
+            this.newStaff.department?.trim() ||
+            '',
+
+          qualification:
+            this.newStaff.qualification?.trim() ||
+            '',
+
+          employmentDate:
+            this.newStaff.employmentDate ||
+            '',
+
+          address:
+            this.newStaff.address?.trim() ||
+            '',
+
+          emergencyContact:
+            this.newStaff.emergencyContact?.trim() ||
+            '',
+
+          status:
+            result.staff.status === 'inactive'
+              ? 'inactive'
+              : 'active',
+
+          createdAt:
+            Date.now(),
+
+          updatedAt:
+            Date.now()
+
+        });
+
+      }
 
 
-      this.staff.unshift(
-        staffData
-      );
-
+      // ===================================================
+      // UPDATE STATISTICS
+      // ===================================================
 
       this.calculateStats();
 
 
-      this.successMessage =
-        `${staffData.fullName} has been added successfully.`;
+      // ===================================================
+      // SUCCESS
+      // ===================================================
 
+      this.successMessage =
+        `${this.newStaff.fullName} has been created successfully.`;
+
+
+      // ===================================================
+      // CLOSE ADD FORM
+      // =====================================================
 
       this.resetForm();
 
       this.showAddStaff = false;
 
+      this.showCredentials = true;
 
-    } catch (error) {
+
+    } catch (error: any) {
 
       console.error(
-        'Error saving staff:',
+        'Error creating staff account:',
         error
       );
 
       this.errorMessage =
-        'Unable to save staff member. Please try again.';
+        error?.message ||
+        'Unable to create staff member. Please try again.';
 
     } finally {
 
@@ -682,6 +883,21 @@ export class Staff implements OnInit {
       this.cdr.detectChanges();
 
     }
+
+  }
+
+
+  // =====================================================
+  // CLOSE CREDENTIALS
+  // =====================================================
+
+  closeCredentials(): void {
+
+    this.showCredentials = false;
+
+    this.staffCredentials = null;
+
+    this.cdr.detectChanges();
 
   }
 
@@ -1156,4 +1372,3 @@ export class Staff implements OnInit {
   }
 
 }
-

@@ -1,0 +1,532 @@
+<div class="staff-page">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+    <div class="header-left">
+
+      <a
+        routerLink="/staff/dashboard"
+        class="back-button"
+      >
+        ← Dashboard
+      </a>
+
+      <div class="page-title">
+
+        <h1>
+          My Students
+        </h1>
+
+        <p>
+          Students in your assigned classes
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="refresh()"
+      [disabled]="loading"
+    >
+
+      <span *ngIf="!loading">
+        ↻
+      </span>
+
+      <span *ngIf="loading">
+        ⟳
+      </span>
+
+      Refresh
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       ERROR
+  ====================================================== -->
+
+  <div
+    class="error-message"
+    *ngIf="errorMessage"
+  >
+
+    <div class="error-icon">
+      !
+    </div>
+
+    <div>
+      {{ errorMessage }}
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    class="loading-container"
+    *ngIf="loading"
+  >
+
+    <div class="loading-spinner"></div>
+
+    <p>
+      Loading your students...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+
+  <div
+    class="students-content"
+    *ngIf="!loading"
+  >
+
+
+    <!-- ===================================================
+         STATISTICS
+    ==================================================== -->
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          👨‍🎓
+        </div>
+
+        <div class="stat-info">
+
+          <span class="stat-label">
+            My Students
+          </span>
+
+          <strong class="stat-value">
+            {{ totalStudents }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon">
+          🏫
+        </div>
+
+        <div class="stat-info">
+
+          <span class="stat-label">
+            My Classes
+          </span>
+
+          <strong class="stat-value">
+            {{ totalClasses }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ===================================================
+         SEARCH
+    ==================================================== -->
+
+    <div class="filter-card">
+
+      <div class="search-box">
+
+        <span class="search-icon">
+          🔍
+        </span>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          placeholder="Search student, student ID, or class..."
+        />
+
+      </div>
+
+
+      <button
+        type="button"
+        class="clear-button"
+        *ngIf="searchTerm"
+        (click)="clearFilters()"
+      >
+        Clear
+      </button>
+
+    </div>
+
+
+    <!-- ===================================================
+         NO STUDENTS AT ALL
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        students.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        👨‍🎓
+      </div>
+
+      <h2>
+        No Students Found
+      </h2>
+
+      <p>
+        You currently have no students assigned to your classes.
+      </p>
+
+    </div>
+
+
+    <!-- ===================================================
+         SEARCH RETURNED NOTHING
+    ==================================================== -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        students.length > 0 &&
+        filteredStudents.length === 0
+      "
+    >
+
+      <div class="empty-icon">
+        🔍
+      </div>
+
+      <h2>
+        No Matching Students
+      </h2>
+
+      <p>
+        No students match your current search.
+      </p>
+
+      <button
+        type="button"
+        class="clear-button"
+        (click)="clearFilters()"
+      >
+        Clear Search
+      </button>
+
+    </div>
+
+
+    <!-- ===================================================
+         SEPARATE TABLE FOR EACH CLASS
+    ==================================================== -->
+
+    <div
+      class="class-section"
+      *ngFor="
+        let classGroup of groupedStudents
+      "
+    >
+
+      <!-- =================================================
+           CLASS HEADER
+      ================================================== -->
+
+      <div class="class-header">
+
+        <div class="class-header-left">
+
+          <div class="class-icon">
+            🏫
+          </div>
+
+          <div>
+
+            <h2>
+              {{ classGroup.className }}
+            </h2>
+
+            <p>
+              Students in this class
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- CLASS STUDENT COUNT -->
+
+        <div class="class-count">
+
+          {{ classGroup.students.length }}
+
+          Student<span
+            *ngIf="
+              classGroup.students.length !== 1
+            "
+          >
+            s
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           TABLE FOR THIS CLASS ONLY
+      ================================================== -->
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>
+                #
+              </th>
+
+              <th>
+                Student
+              </th>
+
+              <th>
+                Student ID
+              </th>
+
+              <th>
+                Gender
+              </th>
+
+              <th>
+                Date of Birth
+              </th>
+
+              <th>
+                Parent
+              </th>
+
+              <th>
+                Parent Phone
+              </th>
+
+              <th>
+                Status
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="
+                let student of classGroup.students;
+                let i = index
+              "
+            >
+
+              <!-- =========================================
+                   NUMBER
+              ========================================== -->
+
+              <td class="number-cell">
+
+                {{ i + 1 }}
+
+              </td>
+
+
+              <!-- =========================================
+                   STUDENT
+              ========================================== -->
+
+              <td>
+
+                <div class="student-info">
+
+                  <div class="student-avatar">
+
+                    {{
+                      student.fullName
+                        .charAt(0)
+                        .toUpperCase()
+                    }}
+
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      {{ student.fullName }}
+                    </strong>
+
+                    <small
+                      *ngIf="
+                        student.firstName ||
+                        student.lastName
+                      "
+                    >
+
+                      {{ student.firstName }}
+                      {{ student.lastName }}
+
+                    </small>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+
+              <!-- =========================================
+                   STUDENT ID
+              ========================================== -->
+
+              <td>
+
+                <span class="student-id">
+
+                  {{ student.studentId }}
+
+                </span>
+
+              </td>
+
+
+              <!-- =========================================
+                   GENDER
+              ========================================== -->
+
+              <td>
+
+                {{ student.gender || '—' }}
+
+              </td>
+
+
+              <!-- =========================================
+                   DATE OF BIRTH
+              ========================================== -->
+
+              <td>
+
+                {{ student.dateOfBirth || '—' }}
+
+              </td>
+
+
+              <!-- =========================================
+                   PARENT
+              ========================================== -->
+
+              <td>
+
+                <div class="parent-info">
+
+                  <strong
+                    *ngIf="
+                      student.parentName
+                    "
+                  >
+
+                    {{ student.parentName }}
+
+                  </strong>
+
+                  <span
+                    *ngIf="
+                      !student.parentName
+                    "
+                  >
+                    —
+                  </span>
+
+                </div>
+
+              </td>
+
+
+              <!-- =========================================
+                   PARENT PHONE
+              ========================================== -->
+
+              <td>
+
+                {{ student.parentPhone || '—' }}
+
+              </td>
+
+
+              <!-- =========================================
+                   STATUS
+              ========================================== -->
+
+              <td>
+
+                <span
+                  class="status-badge"
+                  [class.active]="
+                    student.status === 'active'
+                  "
+                  [class.inactive]="
+                    student.status !== 'active'
+                  "
+                >
+
+                  {{ student.status || 'active' }}
+
+                </span>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+</div>
+

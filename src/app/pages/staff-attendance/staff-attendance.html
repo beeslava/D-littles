@@ -1,0 +1,986 @@
+<div class="staff-page">
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <div class="page-header">
+
+
+<div class="header-left">
+
+  <a
+    routerLink="/staff/dashboard"
+    class="back-button"
+  >
+    ← Dashboard
+  </a>
+
+  <div class="page-title">
+
+    <h1>
+      Attendance
+    </h1>
+
+    <p>
+      Mark and manage student attendance
+    </p>
+
+  </div>
+
+</div>
+
+<div
+  class="staff-info"
+  *ngIf="staffName"
+>
+  <span>Staff:</span>
+  <strong>{{ staffName }}</strong>
+</div>
+
+  </div>
+
+  <!-- =====================================================
+       ALERTS
+  ====================================================== -->
+
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-error"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success"
+  >
+    {{ successMessage }}
+  </div>
+
+  <!-- =====================================================
+       LOADING
+  ====================================================== -->
+
+  <div
+    *ngIf="loading"
+    class="loading-state"
+  >
+
+
+<div class="loading-spinner"></div>
+
+<div>
+  Loading attendance...
+</div>
+```
+
+  </div>
+
+  <!-- =====================================================
+       ATTENDANCE CONTROLS
+  ====================================================== -->
+
+  <div
+    class="controls-card"
+    *ngIf="!loading"
+  >
+
+
+<div class="controls-header">
+
+  <div>
+
+    <h2>
+      Attendance Setup
+    </h2>
+
+    <p>
+      Select the class, date, session and term
+    </p>
+
+  </div>
+
+</div>
+
+
+<div class="form-grid">
+
+  <!-- CLASS -->
+
+  <div class="form-group">
+
+    <label for="attendanceClass">
+      Class
+    </label>
+
+    <select
+      id="attendanceClass"
+      [(ngModel)]="selectedClassId"
+      (ngModelChange)="onClassChange()"
+    >
+
+      <option value="">
+        Select class
+      </option>
+
+      <option
+        *ngFor="let schoolClass of classes"
+        [value]="schoolClass.id"
+      >
+        {{ schoolClass.className }}
+        <ng-container *ngIf="schoolClass.section">
+          - {{ schoolClass.section }}
+        </ng-container>
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- DATE -->
+
+  <div class="form-group">
+
+    <label for="attendanceDate">
+      Attendance Date
+    </label>
+
+    <input
+      id="attendanceDate"
+      type="date"
+      [(ngModel)]="selectedDate"
+      (ngModelChange)="onDateChange()"
+    />
+
+  </div>
+
+
+  <!-- SESSION -->
+
+  <div class="form-group">
+
+    <label for="attendanceSession">
+      Academic Session
+    </label>
+
+    <select
+      id="attendanceSession"
+      [(ngModel)]="selectedSessionId"
+      (ngModelChange)="onSessionChange()"
+    >
+
+      <option value="">
+        Select session
+      </option>
+
+      <option
+        *ngFor="let session of sessions"
+        [value]="session.id"
+      >
+        {{
+          session.name ||
+          session.sessionName ||
+          session.academicYear
+        }}
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <!-- TERM -->
+
+  <div class="form-group">
+
+    <label for="attendanceTerm">
+      Academic Term
+    </label>
+
+    <select
+      id="attendanceTerm"
+      [(ngModel)]="selectedTermId"
+      (ngModelChange)="onTermChange()"
+    >
+
+      <option value="">
+        Select term
+      </option>
+
+      <option
+        *ngFor="let term of terms"
+        [value]="term.id"
+      >
+        {{ term.name || term.termName }}
+      </option>
+
+    </select>
+
+  </div>
+
+</div>
+
+
+<!-- CONTROL ACTIONS -->
+
+<div class="action-row">
+
+  <button
+    type="button"
+    class="secondary-button"
+    (click)="clearSelection()"
+  >
+    Clear
+  </button>
+
+  <button
+    type="button"
+    class="primary-button"
+    (click)="refresh()"
+    [disabled]="loading"
+  >
+    Refresh
+  </button>
+
+</div>
+
+
+  </div>
+
+  <!-- =====================================================
+       CURRENT CLASS ATTENDANCE
+  ====================================================== -->
+
+  <div
+    class="attendance-card"
+    *ngIf="
+      !loading &&
+      selectedClassId &&
+      selectedDate &&
+      selectedSessionId &&
+      selectedTermId
+    "
+  >
+
+
+<!-- ===================================================
+     ATTENDANCE HEADER
+==================================================== -->
+
+<div class="attendance-card-header">
+
+  <div class="attendance-title">
+
+    <h2>
+      {{ getSelectedClassName() }}
+    </h2>
+
+    <p>
+
+      {{ selectedDate }}
+
+      <span *ngIf="getSelectedSessionName()">
+        • {{ getSelectedSessionName() }}
+      </span>
+
+      <span *ngIf="getSelectedTermName()">
+        • {{ getSelectedTermName() }}
+      </span>
+
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================
+     ATTENDANCE SUMMARY
+==================================================== -->
+
+<div class="attendance-summary">
+
+  <!-- TOTAL -->
+
+  <div class="summary-item summary-total">
+
+    <span>
+      Total
+    </span>
+
+    <strong>
+      {{ getTotalStudents() }}
+    </strong>
+
+  </div>
+
+
+  <!-- PRESENT -->
+
+  <div class="summary-item summary-present">
+
+    <span>
+      Present
+    </span>
+
+    <strong>
+      {{ getPresentCount() }}
+    </strong>
+
+  </div>
+
+
+  <!-- ABSENT -->
+
+  <div class="summary-item summary-absent">
+
+    <span>
+      Absent
+    </span>
+
+    <strong>
+      {{ getAbsentCount() }}
+    </strong>
+
+  </div>
+
+
+  <!-- LATE -->
+
+  <div class="summary-item summary-late">
+
+    <span>
+      Late
+    </span>
+
+    <strong>
+      {{ getLateCount() }}
+    </strong>
+
+  </div>
+
+
+  <!-- EXCUSED -->
+
+  <div class="summary-item summary-excused">
+
+    <span>
+      Excused
+    </span>
+
+    <strong>
+      {{ getExcusedCount() }}
+    </strong>
+
+  </div>
+
+
+  <!-- ATTENDANCE RATE -->
+
+  <div class="summary-item summary-rate">
+
+    <span>
+      Attendance Rate
+    </span>
+
+    <strong>
+      {{ getAttendancePercentage() }}%
+    </strong>
+
+  </div>
+
+</div>
+
+
+<!-- ===================================================
+     QUICK ACTIONS
+==================================================== -->
+
+<div
+  class="attendance-actions"
+  *ngIf="classStudents.length > 0"
+>
+
+  <div class="quick-actions">
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="markAllPresent()"
+      [disabled]="saving || deleting"
+    >
+      ✓ Mark All Present
+    </button>
+
+    <button
+      type="button"
+      class="secondary-button"
+      (click)="resetAttendance()"
+      [disabled]="saving || deleting"
+    >
+      ↺ Reset
+    </button>
+
+  </div>
+
+
+  <button
+    type="button"
+    class="save-all-button"
+    (click)="saveAttendance()"
+    [disabled]="saving || deleting"
+  >
+
+    <span *ngIf="!saving">
+      Save All Attendance
+    </span>
+
+    <span *ngIf="saving">
+      Saving Attendance...
+    </span>
+
+  </button>
+
+</div>
+
+
+<!-- ===================================================
+     NO STUDENTS
+==================================================== -->
+
+<div
+  class="empty-state"
+  *ngIf="classStudents.length === 0"
+>
+
+  <div class="empty-icon">
+    👥
+  </div>
+
+  <h3>
+    No Students Found
+  </h3>
+
+  <p>
+    There are no active students assigned to this class.
+  </p>
+
+</div>
+
+
+<!-- ===================================================
+     STUDENT ATTENDANCE TABLE
+==================================================== -->
+
+<div
+  class="table-wrapper"
+  *ngIf="classStudents.length > 0"
+>
+
+  <table class="attendance-table">
+
+    <thead>
+
+      <tr>
+
+        <th>
+          #
+        </th>
+
+        <th>
+          Student
+        </th>
+
+        <th>
+          Student ID
+        </th>
+
+        <th>
+          Status
+        </th>
+
+        <th>
+          Remark
+        </th>
+
+        <th>
+          Action
+        </th>
+
+      </tr>
+
+    </thead>
+
+
+    <tbody>
+
+      <tr
+        *ngFor="
+          let student of classStudents;
+          let i = index
+        "
+        [class.locked-row]="
+          isEditingStudent(student)
+        "
+      >
+
+        <!-- NUMBER -->
+
+        <td>
+
+          <span class="student-number">
+            {{ i + 1 }}
+          </span>
+
+        </td>
+
+
+        <!-- STUDENT -->
+
+        <td>
+
+          <div class="student-name">
+            {{ student.fullName }}
+          </div>
+
+        </td>
+
+
+        <!-- STUDENT ID -->
+
+        <td>
+
+          <div class="student-id">
+            {{ student.studentId }}
+          </div>
+
+        </td>
+
+
+        <!-- STATUS -->
+
+        <td>
+
+          <select
+            class="status-select"
+            [ngModel]="
+              getAttendanceForm(student).status
+            "
+            (ngModelChange)="
+              setAttendanceStatus(
+                student,
+                $event
+              )
+            "
+            [ngClass]="{
+
+              'status-present':
+                getAttendanceForm(student).status === 'present',
+
+              'status-absent':
+                getAttendanceForm(student).status === 'absent',
+
+              'status-late':
+                getAttendanceForm(student).status === 'late',
+
+              'status-excused':
+                getAttendanceForm(student).status === 'excused'
+
+            }"
+          >
+
+            <option value="present">
+              Present
+            </option>
+
+            <option value="absent">
+              Absent
+            </option>
+
+            <option value="late">
+              Late
+            </option>
+
+            <option value="excused">
+              Excused
+            </option>
+
+          </select>
+
+        </td>
+
+
+        <!-- REMARK -->
+
+        <td>
+
+          <input
+            type="text"
+            class="remark-input"
+            placeholder="Optional remark"
+            [ngModel]="
+              getAttendanceForm(student).remark
+            "
+            (ngModelChange)="
+              getAttendanceForm(student).remark = $event
+            "
+          />
+
+        </td>
+
+
+        <!-- ACTION -->
+
+        <td>
+
+          <div class="row-actions">
+
+            <button
+              type="button"
+              class="row-action"
+              [class.edit]="
+                hasSavedAttendance(student)
+              "
+              (click)="
+                saveAttendance(student)
+              "
+              [disabled]="saving"
+            >
+
+              {{
+                hasSavedAttendance(student)
+                  ? 'Update'
+                  : 'Save'
+              }}
+
+            </button>
+
+
+            <button
+              type="button"
+              class="row-action delete"
+              *ngIf="
+                hasSavedAttendance(student)
+              "
+              (click)="
+                deleteAttendance(student)
+              "
+              [disabled]="deleting"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+
+<!-- ===================================================
+     FOOTER
+==================================================== -->
+
+<div
+  class="footer-actions"
+  *ngIf="classStudents.length > 0"
+>
+
+  <div class="footer-info">
+
+    Students:
+    <strong>
+      {{ classStudents.length }}
+    </strong>
+
+    <span>
+      • Present:
+      <strong>
+        {{ getPresentCount() }}
+      </strong>
+    </span>
+
+    <span>
+      • Absent:
+      <strong>
+        {{ getAbsentCount() }}
+      </strong>
+    </span>
+
+    <span>
+      • Late:
+      <strong>
+        {{ getLateCount() }}
+      </strong>
+    </span>
+
+    <span>
+      • Excused:
+      <strong>
+        {{ getExcusedCount() }}
+      </strong>
+    </span>
+
+  </div>
+
+
+  <button
+    type="button"
+    class="secondary-button"
+    (click)="refresh()"
+    [disabled]="saving || deleting"
+  >
+    Refresh Attendance
+  </button>
+
+
+
+  </div>
+
+  <!-- =====================================================
+       NO CLASS SELECTED
+  ====================================================== -->
+
+  <div
+    class="attendance-card"
+    *ngIf="
+      !loading &&
+      (
+        !selectedClassId ||
+        !selectedDate ||
+        !selectedSessionId ||
+        !selectedTermId
+      )
+    "
+  >
+
+
+<div class="empty-state">
+
+  <div class="empty-icon">
+    📋
+  </div>
+
+  <h3>
+    Attendance Not Ready
+  </h3>
+
+  <p>
+    Select a class, attendance date, academic session
+    and academic term to load students.
+  </p>
+
+</div>
+
+  </div>
+
+  <!-- =====================================================
+       SAVED ATTENDANCE
+  ====================================================== -->
+
+  <div
+    class="saved-attendance"
+    *ngIf="
+      !loading &&
+      attendanceRecords.length > 0
+    "
+  >
+
+
+<div class="saved-attendance-header">
+
+  <div>
+
+    <h2>
+      Saved Attendance
+    </h2>
+
+    <p>
+      Attendance records you have submitted
+    </p>
+
+  </div>
+
+  <span class="saved-badge">
+    {{ attendanceRecords.length }} Records
+  </span>
+
+</div>
+
+
+<div class="table-wrapper">
+
+  <table class="attendance-table">
+
+    <thead>
+
+      <tr>
+
+        <th>
+          Date
+        </th>
+
+        <th>
+          Student
+        </th>
+
+        <th>
+          Class
+        </th>
+
+        <th>
+          Status
+        </th>
+
+        <th>
+          Remark
+        </th>
+
+        <th>
+          Actions
+        </th>
+
+      </tr>
+
+    </thead>
+
+
+    <tbody>
+
+      <tr
+        *ngFor="
+          let record of attendanceRecords
+        "
+      >
+
+        <!-- DATE -->
+
+        <td>
+          {{ record.date }}
+        </td>
+
+
+        <!-- STUDENT -->
+
+        <td>
+
+          <div class="student-name">
+            {{ record.studentName }}
+          </div>
+
+          <div class="student-id">
+            {{ record.studentId }}
+          </div>
+
+        </td>
+
+
+        <!-- CLASS -->
+
+        <td>
+          {{ record.className }}
+        </td>
+
+
+        <!-- STATUS -->
+
+        <td>
+
+          <span
+            class="saved-badge"
+            *ngIf="record.status === 'present'"
+          >
+            Present
+          </span>
+
+          <span
+            class="locked-label"
+            *ngIf="record.status === 'absent'"
+          >
+            Absent
+          </span>
+
+          <span
+            class="summary-item summary-late"
+            *ngIf="record.status === 'late'"
+          >
+            Late
+          </span>
+
+          <span
+            class="summary-item summary-excused"
+            *ngIf="record.status === 'excused'"
+          >
+            Excused
+          </span>
+
+        </td>
+
+
+        <!-- REMARK -->
+
+        <td>
+
+          <span
+            *ngIf="record.remark"
+          >
+            {{ record.remark }}
+          </span>
+
+          <span
+            *ngIf="!record.remark"
+            class="student-id"
+          >
+            —
+          </span>
+
+        </td>
+
+
+        <!-- ACTIONS -->
+
+        <td>
+
+          <div class="row-actions">
+
+            <button
+              type="button"
+              class="row-action edit"
+              (click)="editAttendance(record)"
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              class="row-action delete"
+              (click)="deleteSavedAttendance(record)"
+              [disabled]="deleting"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+
+  </div>
+
+</div>

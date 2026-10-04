@@ -1,505 +1,644 @@
 import { Injectable } from '@angular/core';
 
 import {
-signInWithEmailAndPassword,
-signOut,
-onAuthStateChanged,
-User
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  User
 } from 'firebase/auth';
 
 import {
-get,
-ref
+  get,
+  ref
 } from 'firebase/database';
 
-import { auth, database } from '../firebase.config';
+import {
+  auth,
+  database
+} from '../firebase.config';
+
+
+// =========================================================
+// SCHOOL USER
+// =========================================================
 
 export interface SchoolUser {
 
-uid: string;
+  uid: string;
 
-fullName: string;
+  fullName: string;
 
-email: string;
+  email: string;
 
-role: string;
+  role: string;
 
-phone?: string;
+  phone?: string;
 
-studentId?: string;
+  studentId?: string;
 
-parentId?: string;
+  parentId?: string;
 
-staffId?: string;
+  staffId?: string;
 
-status?: string;
+  status?: string;
 
 }
 
+
+// =========================================================
+// SCHOOL AUTH SERVICE
+// =========================================================
+
 @Injectable({
-providedIn: 'root'
+  providedIn: 'root'
 })
 export class SchoolAuthService {
 
-private currentUser: User | null = null;
 
-private currentUserData: SchoolUser | null = null;
+  // =========================================================
+  // CURRENT FIREBASE USER
+  // =========================================================
 
-constructor() {
+  private currentUser: User | null = null;
 
 
-onAuthStateChanged(
-  auth,
-  async (user) => {
+  // =========================================================
+  // CURRENT SCHOOL USER DATA
+  // =========================================================
 
-    this.currentUser = user;
+  private currentUserData: SchoolUser | null = null;
 
-    if (user) {
 
-      await this.loadUserData(
-        user.uid
+  // =========================================================
+  // AUTH INITIALIZATION
+  // =========================================================
+
+  private authReady: Promise<void>;
+
+
+  // =========================================================
+  // CONSTRUCTOR
+  // =========================================================
+
+  constructor() {
+
+    this.authReady =
+      new Promise<void>((resolve) => {
+
+        onAuthStateChanged(
+          auth,
+          async (user) => {
+
+            try {
+
+              this.currentUser =
+                user;
+
+
+              if (user) {
+
+                await this.loadUserData(
+                  user.uid
+                );
+
+              } else {
+
+                this.currentUserData =
+                  null;
+
+              }
+
+            } catch (error) {
+
+              console.error(
+                'Error restoring school user session:',
+                error
+              );
+
+              this.currentUserData =
+                null;
+
+            } finally {
+
+              resolve();
+
+            }
+
+          }
+        );
+
+      });
+
+  }
+
+
+  // =========================================================
+  // WAIT FOR AUTHENTICATION TO INITIALIZE
+  // =========================================================
+
+  async waitForAuthReady(): Promise<void> {
+
+    await this.authReady;
+
+  }
+
+
+  // =========================================================
+  // GET CURRENT FIREBASE USER
+  // =========================================================
+
+  getUser(): User | null {
+
+    return this.currentUser;
+
+  }
+
+
+  // =========================================================
+  // GET CURRENT FIREBASE USER
+  // =========================================================
+  //
+  // Compatibility alias.
+  //
+  // Some pages may use getCurrentUser()
+  // while other existing pages use getUser().
+  //
+  // =========================================================
+
+  getCurrentUser(): User | null {
+
+    return this.currentUser;
+
+  }
+
+
+  // =========================================================
+  // GET CURRENT SCHOOL USER
+  // =========================================================
+
+  getUserData(): SchoolUser | null {
+
+    return this.currentUserData;
+
+  }
+
+
+  // =========================================================
+  // SCHOOL USER LOGIN
+  // =========================================================
+  //
+  // Supported school IDs:
+  //
+  // DL-S-000001  -> Student
+  // DL-P-000001  -> Parent
+  // DL-T-000001  -> Staff / Teacher
+  //
+  // Teachers are STAFF.
+  //
+  // =========================================================
+
+  async login(
+    schoolId: string,
+    password: string
+  ): Promise<User> {
+
+
+    // =======================================================
+    // NORMALIZE SCHOOL ID
+    // =======================================================
+
+    const normalizedId =
+      schoolId
+        .trim()
+        .toUpperCase();
+
+
+    // =======================================================
+    // VALIDATE SCHOOL ID
+    // =======================================================
+
+    if (!normalizedId) {
+
+      throw new Error(
+        'School ID is required.'
       );
-
-    } else {
-
-      this.currentUserData = null;
 
     }
 
+
+    // =======================================================
+    // VALIDATE PASSWORD
+    // =======================================================
+
+    if (!password) {
+
+      throw new Error(
+        'Password is required.'
+      );
+
+    }
+
+
+    // =======================================================
+    // DETERMINE FIREBASE LOGIN EMAIL
+    // =======================================================
+
+    let loginEmail =
+      normalizedId;
+
+
+    // =======================================================
+    // STUDENT LOGIN
+    // =======================================================
+
+    if (
+      normalizedId.startsWith('DL-S-')
+    ) {
+
+      loginEmail =
+        `${normalizedId.toLowerCase()}@students.dlittles.com`;
+
+    }
+
+
+    // =======================================================
+    // PARENT LOGIN
+    // =======================================================
+
+    else if (
+      normalizedId.startsWith('DL-P-')
+    ) {
+
+      loginEmail =
+        `${normalizedId.toLowerCase()}@parents.dlittles.com`;
+
+    }
+
+
+    // =======================================================
+    // STAFF / TEACHER LOGIN
+    // =======================================================
+
+    else if (
+      normalizedId.startsWith('DL-T-')
+    ) {
+
+      loginEmail =
+        `${normalizedId.toLowerCase()}@teachers.dlittles.com`;
+
+    }
+
+
+    // =======================================================
+    // FIREBASE AUTHENTICATION
+    // =======================================================
+
+    const credential =
+      await signInWithEmailAndPassword(
+        auth,
+        loginEmail,
+        password
+      );
+
+
+    const user =
+      credential.user;
+
+
+    // =======================================================
+    // LOAD USER RECORD
+    // =======================================================
+
+    const userRef =
+      ref(
+        database,
+        `users/${user.uid}`
+      );
+
+
+    const snapshot =
+      await get(userRef);
+
+
+    // =======================================================
+    // USER RECORD NOT FOUND
+    // =======================================================
+
+    if (!snapshot.exists()) {
+
+      await signOut(auth);
+
+      throw new Error(
+        'Your account could not be found.'
+      );
+
+    }
+
+
+    const userData =
+      snapshot.val();
+
+
+    // =======================================================
+    // ALLOWED SCHOOL ROLES
+    // =======================================================
+
+    const allowedRoles = [
+
+      'student',
+
+      'parent',
+
+      'staff'
+
+    ];
+
+
+    if (
+      !allowedRoles.includes(
+        userData.role
+      )
+    ) {
+
+      await signOut(auth);
+
+      throw new Error(
+        'This account is not authorized for school user access.'
+      );
+
+    }
+
+
+    // =======================================================
+    // ACCOUNT STATUS
+    // =======================================================
+
+    if (
+      userData.status &&
+      userData.status !== 'active'
+    ) {
+
+      await signOut(auth);
+
+      throw new Error(
+        'This account is not currently active.'
+      );
+
+    }
+
+
+    // =======================================================
+    // STORE AUTHENTICATED USER
+    // =======================================================
+
+    this.currentUser =
+      user;
+
+
+    this.currentUserData = {
+
+      uid:
+        user.uid,
+
+      fullName:
+        userData.fullName ||
+        userData.fullname ||
+        userData.name ||
+        '',
+
+      email:
+        userData.email ||
+        user.email ||
+        '',
+
+      role:
+        userData.role,
+
+      phone:
+        userData.phone ||
+        userData.phoneNumber ||
+        '',
+
+      studentId:
+        userData.studentId ||
+        '',
+
+      parentId:
+        userData.parentId ||
+        '',
+
+      staffId:
+        userData.staffId ||
+        '',
+
+      status:
+        userData.status ||
+        'active'
+
+    };
+
+
+    return user;
+
   }
-);
 
 
-}
+  // =========================================================
+  // LOAD USER DATA FROM FIREBASE
+  // =========================================================
 
-/**
-
-* Get currently signed-in Firebase user
-  */
-  getUser(): User | null {
-
-return this.currentUser;
-
-
-}
-
-/**
-
-* Get currently signed-in school user
-  */
-  getUserData(): SchoolUser | null {
-
-
-return this.currentUserData;
-
-
-}
-
-/**
-
-* School user login
-*
-* Students log in using their School ID.
-*
-* Example:
-*
-* DL-S-000001
-*
-* Internally this becomes:
-*
-* [dl-s-000001@students.dlittles.com](mailto:dl-s-000001@students.dlittles.com)
-*
-* This matches the Firebase Auth account
-* created by approveAdmissionApplication.
-  */
-  async login(
-  schoolId: string,
-  password: string
-  ): Promise<User> {
-
-const normalizedId =
-
-  schoolId
-    .trim()
-    .toUpperCase();
-
-
-if (!normalizedId) {
-
-  throw new Error(
-    'School ID is required.'
-  );
-
-}
-
-
-if (!password) {
-
-  throw new Error(
-    'Password is required.'
-  );
-
-}
-
-
-/**
- * Determine Firebase login email.
- *
- * Student IDs created by the admission
- * Cloud Function use:
- *
- * DL-S-000001
- *
- * and are converted internally to:
- *
- * dl-s-000001@students.dlittles.com
- */
-let loginEmail =
-  normalizedId;
-
-
-if (
-  normalizedId.startsWith('DL-S-')
-) {
-
-  loginEmail =
-    `${normalizedId.toLowerCase()}@students.dlittles.com`;
-
-}
-
-
-/**
- * Authenticate with Firebase
- */
-const credential =
-  await signInWithEmailAndPassword(
-    auth,
-    loginEmail,
-    password
-  );
-
-
-const user =
-  credential.user;
-
-
-/**
- * Load user record
- */
-const userRef =
-  ref(
-    database,
-    `users/${user.uid}`
-  );
-
-
-const snapshot =
-  await get(userRef);
-
-
-if (!snapshot.exists()) {
-
-  await signOut(auth);
-
-  throw new Error(
-    'Your account could not be found.'
-  );
-
-}
-
-
-const userData =
-  snapshot.val();
-
-
-/**
- * Allowed school user roles
- */
-const allowedRoles = [
-  'student',
-  'parent',
-  'teacher'
-];
-
-
-if (
-  !allowedRoles.includes(
-    userData.role
-  )
-) {
-
-  await signOut(auth);
-
-  throw new Error(
-    'This account is not authorized for school user access.'
-  );
-
-}
-
-
-/**
- * Check account status
- */
-if (
-  userData.status &&
-  userData.status !== 'active'
-) {
-
-  await signOut(auth);
-
-  throw new Error(
-    'This account is not currently active.'
-  );
-
-}
-
-
-/**
- * Store authenticated user
- */
-this.currentUser =
-  user;
-
-
-this.currentUserData = {
-
-  uid:
-    user.uid,
-
-  fullName:
-    userData.fullName ||
-    userData.fullname ||
-    userData.name ||
-    '',
-
-  email:
-    userData.email ||
-    user.email ||
-    '',
-
-  role:
-    userData.role,
-
-  phone:
-    userData.phone ||
-    userData.phoneNumber ||
-    '',
-
-  studentId:
-    userData.studentId ||
-    '',
-
-  parentId:
-    userData.parentId ||
-    '',
-
-  staffId:
-    userData.staffId ||
-    '',
-
-  status:
-    userData.status ||
-    'active'
-
-};
-
-
-return user;
-
-
-}
-
-/**
-
-* Load user data from Firebase
-  */
   private async loadUserData(
-  uid: string
+    uid: string
   ): Promise<void> {
 
 
-const userRef =
-
-  ref(
-    database,
-    `users/${uid}`
-  );
-
-
-const snapshot =
-  await get(userRef);
+    const userRef =
+      ref(
+        database,
+        `users/${uid}`
+      );
 
 
-if (!snapshot.exists()) {
-
-  this.currentUserData =
-    null;
-
-  return;
-
-}
+    const snapshot =
+      await get(userRef);
 
 
-const userData =
-  snapshot.val();
+    // =======================================================
+    // USER RECORD DOES NOT EXIST
+    // =======================================================
+
+    if (!snapshot.exists()) {
+
+      this.currentUserData =
+        null;
+
+      return;
+
+    }
 
 
-this.currentUserData = {
-
-  uid,
-
-  fullName:
-    userData.fullName ||
-    userData.fullname ||
-    userData.name ||
-    '',
-
-  email:
-    userData.email ||
-    auth.currentUser?.email ||
-    '',
-
-  role:
-    userData.role ||
-    '',
-
-  phone:
-    userData.phone ||
-    userData.phoneNumber ||
-    '',
-
-  studentId:
-    userData.studentId ||
-    '',
-
-  parentId:
-    userData.parentId ||
-    '',
-
-  staffId:
-    userData.staffId ||
-    '',
-
-  status:
-    userData.status ||
-    'active'
-
-};
+    const userData =
+      snapshot.val();
 
 
-}
+    // =======================================================
+    // STORE SCHOOL USER DATA
+    // =======================================================
 
-/**
+    this.currentUserData = {
 
-* Get Firebase ID token for backend authentication
-  */
+      uid,
+
+      fullName:
+        userData.fullName ||
+        userData.fullname ||
+        userData.name ||
+        '',
+
+      email:
+        userData.email ||
+        auth.currentUser?.email ||
+        '',
+
+      role:
+        userData.role ||
+        '',
+
+      phone:
+        userData.phone ||
+        userData.phoneNumber ||
+        '',
+
+      studentId:
+        userData.studentId ||
+        '',
+
+      parentId:
+        userData.parentId ||
+        '',
+
+      staffId:
+        userData.staffId ||
+        '',
+
+      status:
+        userData.status ||
+        'active'
+
+    };
+
+  }
+
+
+  // =========================================================
+  // GET FIREBASE ID TOKEN
+  // =========================================================
+
   async getIdToken(): Promise<string | null> {
 
-const user =
-
-  auth.currentUser;
-
-
-if (!user) {
-
-  return null;
-
-}
+    const user =
+      auth.currentUser;
 
 
-return await user.getIdToken();
+    if (!user) {
+
+      return null;
+
+    }
 
 
-}
+    return await user.getIdToken();
 
-/**
+  }
 
-* School user logout
-  */
+
+  // =========================================================
+  // SCHOOL USER LOGOUT
+  // =========================================================
+
   async logout(): Promise<void> {
 
-
-await signOut(auth);
-
-this.currentUser =
-  null;
-
-this.currentUserData =
-  null;
+    await signOut(auth);
 
 
-}
+    this.currentUser =
+      null;
 
-/**
 
-* Check whether a school user is logged in
-  */
+    this.currentUserData =
+      null;
+
+  }
+
+
+  // =========================================================
+  // CHECK WHETHER USER IS LOGGED IN
+  // =========================================================
+
   isLoggedIn(): boolean {
 
+    return !!auth.currentUser;
 
-return !!auth.currentUser;
+  }
 
 
-}
+  // =========================================================
+  // CHECK CURRENT USER ROLE
+  // =========================================================
 
-/**
-
-* Check current user's role
-  */
   hasRole(
-  role: string
+    role: string
   ): boolean {
 
+    return (
+      this.currentUserData?.role ===
+      role
+    );
 
-return (
-
-  this.currentUserData?.role ===
-  role
-);
+  }
 
 
-}
+  // =========================================================
+  // CHECK WHETHER CURRENT USER IS A STUDENT
+  // =========================================================
 
-/**
-
-* Check whether current user is a student
-  */
   isStudent(): boolean {
 
-return this.hasRole(
+    return this.hasRole(
+      'student'
+    );
 
-  'student'
-);
+  }
 
 
-}
+  // =========================================================
+  // CHECK WHETHER CURRENT USER IS A PARENT
+  // =========================================================
 
-/**
-
-* Check whether current user is a parent
-  */
   isParent(): boolean {
 
-return this.hasRole(
+    return this.hasRole(
+      'parent'
+    );
 
-  'parent'
-);
+  }
 
+
+  // =========================================================
+  // CHECK WHETHER CURRENT USER IS STAFF
+  // =========================================================
+  //
+  // Teachers are STAFF.
+  //
+  // =========================================================
+
+  isStaff(): boolean {
+
+    return this.hasRole(
+      'staff'
+    );
+
+  }
 
 }
 
-/**
-
-* Check whether current user is a teacher
-  */
-  isTeacher(): boolean {
-
-return this.hasRole(
-
-  'teacher'
-);
-
-
-}
-
-}

@@ -1,55 +1,60 @@
 <div class="admissions-page">
 
-  <!-- =====================================================
-       HEADER
-  ====================================================== -->
+  <!-- ===================================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ===================================================== -->
 
-  <header class="page-header">
+  <div class="page-header">
 
-    <div>
+    <div class="header-left">
 
-      <a
-        routerLink="/admin/dashboard"
-        class="back-link"
-      >
-        ← Dashboard
-      </a>
+      <div class="page-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
 
-      <span class="header-label">
-        SCHOOL ADMINISTRATION
-      </span>
+      <div>
+        <div class="page-label">
+          Admissions
+        </div>
 
-      <h1>
-        Admissions
-      </h1>
+        <h1>
+          Admission Applications
+        </h1>
 
-      <p>
-        Review and manage student admission applications.
-      </p>
+        <p>
+          Review and manage student admission applications.
+        </p>
+      </div>
 
     </div>
 
-    <button
-      type="button"
-      class="refresh-button"
-      (click)="loadApplications()"
-      [disabled]="loading"
-    >
 
-      @if (!loading) {
+    <div class="header-actions">
+
+      <a
+        routerLink="/admin"
+        class="dashboard-link">
+        ← Dashboard
+      </a>
+
+      <button
+        type="button"
+        class="refresh-button"
+        (click)="loadApplications()"
+        [disabled]="loading">
+
         ↻ Refresh
-      } @else {
-        Loading...
-      }
 
-    </button>
+      </button>
 
-  </header>
+    </div>
+
+  </div>
 
 
-  <!-- =====================================================
-       ERROR
-  ====================================================== -->
+  <!-- ===================================================== -->
+  <!-- ERROR -->
+  <!-- ===================================================== -->
 
   @if (errorMessage) {
 
@@ -60,118 +65,134 @@
   }
 
 
-  <!-- =====================================================
-       STATISTICS
-  ====================================================== -->
+  <!-- ===================================================== -->
+  <!-- STATISTICS -->
+  <!-- ===================================================== -->
 
-  <section class="stats-grid">
+  <div class="stats-grid">
 
-    <div class="stat-card total">
+    <div class="stat-card">
 
-      <span>
-        Total Applications
-      </span>
+      <div class="stat-icon">
+        📋
+      </div>
 
-      <strong>
-        {{ totalApplications }}
-      </strong>
-
-    </div>
-
-
-    <div class="stat-card pending">
-
-      <span>
-        Pending
-      </span>
-
-      <strong>
-        {{ pendingApplications }}
-      </strong>
+      <div class="stat-content">
+        <span>Total Applications</span>
+        <strong>{{ totalApplications }}</strong>
+      </div>
 
     </div>
 
 
-    <div class="stat-card approved">
+    <div class="stat-card">
 
-      <span>
-        Approved
-      </span>
+      <div class="stat-icon">
+        ⏳
+      </div>
 
-      <strong>
-        {{ approvedApplications }}
-      </strong>
+      <div class="stat-content">
+        <span>Pending</span>
+        <strong>{{ pendingApplications }}</strong>
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon">
+        ✓
+      </div>
+
+      <div class="stat-content">
+        <span>Approved</span>
+        <strong>{{ approvedApplications }}</strong>
+      </div>
 
     </div>
 
 
-    <div class="stat-card rejected">
+    <div class="stat-card">
 
-      <span>
-        Rejected
-      </span>
+      <div class="stat-icon">
+        ✕
+      </div>
 
-      <strong>
-        {{ rejectedApplications }}
-      </strong>
+      <div class="stat-content">
+        <span>Rejected</span>
+        <strong>{{ rejectedApplications }}</strong>
+      </div>
 
     </div>
 
-  </section>
+  </div>
 
 
-  <!-- =====================================================
-       APPLICATIONS
-  ====================================================== -->
+  <!-- ===================================================== -->
+  <!-- APPLICATIONS -->
+  <!-- ===================================================== -->
 
-  <section class="applications-card">
+  <div class="applications-panel">
 
-    <div class="card-header">
+    <div class="panel-header">
 
       <div>
-
-        <span>
-          ADMISSIONS
-        </span>
-
         <h2>
           Applications
         </h2>
 
+        <p>
+          Review submitted admission applications and payment status.
+        </p>
       </div>
 
 
-      <div class="search-box">
+      <div class="search-wrapper">
 
         <input
-          type="search"
+          type="text"
           [(ngModel)]="searchTerm"
           (input)="filterApplications()"
           placeholder="Search applications..."
-          aria-label="Search applications"
-        >
+        />
 
       </div>
 
     </div>
 
 
-    <!-- ===================================================
-         LOADING
-    ==================================================== -->
+    <!-- =================================================== -->
+    <!-- LOADING -->
+    <!-- =================================================== -->
 
     @if (loading) {
 
+      <div class="loading-state">
+
+        <div>
+          Loading applications...
+        </div>
+
+      </div>
+
+    }
+
+
+    <!-- =================================================== -->
+    <!-- EMPTY -->
+    <!-- =================================================== -->
+
+    @else if (filteredApplications.length === 0) {
+
       <div class="empty-state">
 
-        <div class="loader"></div>
-
         <h3>
-          Loading applications
+          No applications found
         </h3>
 
         <p>
-          Please wait while we retrieve the applications.
+          There are currently no admission applications to display.
         </p>
 
       </div>
@@ -179,55 +200,15 @@
     }
 
 
-    <!-- ===================================================
-         EMPTY
-    ==================================================== -->
-
-    @else if (filteredApplications.length === 0) {
-
-      <div class="empty-state">
-
-        <div class="empty-icon">
-          —
-        </div>
-
-        @if (searchTerm) {
-
-          <h3>
-            No applications found
-          </h3>
-
-          <p>
-            Try a different search term.
-          </p>
-
-        } @else {
-
-          <h3>
-            No admission applications
-          </h3>
-
-          <p>
-            Applications submitted through the school website
-            will appear here.
-          </p>
-
-        }
-
-      </div>
-
-    }
-
-
-    <!-- ===================================================
-         TABLE
-    ==================================================== -->
+    <!-- =================================================== -->
+    <!-- TABLE -->
+    <!-- =================================================== -->
 
     @else {
 
       <div class="table-wrapper">
 
-        <table>
+        <table class="applications-table">
 
           <thead>
 
@@ -250,7 +231,15 @@
               </th>
 
               <th>
-                Submitted
+                Admission Fee
+              </th>
+
+              <th>
+                Payment
+              </th>
+
+              <th>
+                Date
               </th>
 
               <th>
@@ -275,79 +264,178 @@
 
               <tr>
 
+                <!-- ================================================= -->
+                <!-- APPLICATION -->
+                <!-- ================================================= -->
+
                 <td>
 
-                  <strong class="application-number">
+                  <span class="application-number">
                     {{ application.applicationNumber }}
-                  </strong>
-
-                </td>
-
-
-                <td>
-
-                  <strong>
-                    {{ getStudentName(application) }}
-                  </strong>
-
-                  <span class="secondary-text">
-                    {{ application.student.gender }}
                   </span>
 
                 </td>
 
+
+                <!-- ================================================= -->
+                <!-- STUDENT -->
+                <!-- ================================================= -->
+
+                <td>
+
+                  <div class="student-cell">
+
+                    <div class="student-avatar">
+                      {{ getStudentName(application).charAt(0) | uppercase }}
+                    </div>
+
+                    <strong>
+                      {{ getStudentName(application) }}
+                    </strong>
+
+                  </div>
+
+                </td>
+
+
+                <!-- ================================================= -->
+                <!-- CLASS -->
+                <!-- ================================================= -->
 
                 <td>
 
                   <span class="class-badge">
-                    {{ application.student.classApplied || 'N/A' }}
+                    {{ application.student.classApplied }}
                   </span>
 
                 </td>
 
 
+                <!-- ================================================= -->
+                <!-- PARENT -->
+                <!-- ================================================= -->
+
                 <td>
 
-                  <strong>
-                    {{ application.parentGuardian.name }}
-                  </strong>
+                  <div class="parent-cell">
 
-                  <span class="secondary-text">
-                    {{ application.parentGuardian.phone }}
-                  </span>
+                    <strong>
+                      {{ application.parentGuardian.name }}
+                    </strong>
+
+                    <small>
+                      {{ application.parentGuardian.relationship }}
+                    </small>
+
+                  </div>
 
                 </td>
 
 
+                <!-- ================================================= -->
+                <!-- ADMISSION FEE -->
+                <!-- ================================================= -->
+
                 <td>
 
-                  <span class="date-text">
+                  <div class="payment-amount-cell">
+
+                    <strong>
+                      {{ formatAmount(application.applicationFee) }}
+                    </strong>
+
+                    <small>
+                      Required
+                    </small>
+
+                  </div>
+
+                </td>
+
+
+                <!-- ================================================= -->
+                <!-- PAYMENT -->
+                <!-- ================================================= -->
+
+                <td>
+
+                  <div class="payment-cell">
+
+                    <span
+                      class="payment-status-badge"
+                      [ngClass]="getPaymentStatusClass(application.paymentStatus)">
+
+                      @if (application.paymentStatus === 'paid') {
+                        ✓
+                      } @else if (application.paymentStatus === 'pending') {
+                        ⏳
+                      } @else if (application.paymentStatus === 'failed') {
+                        ✕
+                      } @else {
+                        !
+                      }
+
+                      {{ getPaymentStatusLabel(application.paymentStatus) }}
+
+                    </span>
+
+
+                    @if (application.paymentAmount > 0) {
+
+                      <small>
+                        {{ formatAmount(application.paymentAmount) }}
+                      </small>
+
+                    }
+
+                  </div>
+
+                </td>
+
+
+                <!-- ================================================= -->
+                <!-- DATE -->
+                <!-- ================================================= -->
+
+                <td>
+
+                  <span class="date-value">
                     {{ formatDate(application.submittedAt) }}
                   </span>
 
                 </td>
 
 
+                <!-- ================================================= -->
+                <!-- APPLICATION STATUS -->
+                <!-- ================================================= -->
+
                 <td>
 
                   <span
                     class="status-badge"
-                    [class]="getStatusClass(application.status)"
-                  >
+                    [ngClass]="getStatusClass(application.status)">
+
                     {{ application.status }}
+
                   </span>
 
                 </td>
 
+
+                <!-- ================================================= -->
+                <!-- ACTION -->
+                <!-- ================================================= -->
 
                 <td>
 
                   <button
                     type="button"
                     class="view-button"
-                    (click)="viewApplication(application)"
-                  >
+                    (click)="viewApplication(application)">
+
                     View
+
                   </button>
 
                 </td>
@@ -364,38 +452,39 @@
 
     }
 
-  </section>
+  </div>
 
 </div>
 
 
-<!-- =========================================================
-     APPLICATION DETAILS MODAL
-========================================================== -->
+
+<!-- ========================================================= -->
+<!-- APPLICATION DETAILS MODAL -->
+<!-- ========================================================= -->
 
 @if (selectedApplication) {
 
   <div
     class="modal-overlay"
-    (click)="closeApplication()"
-  >
+    (click)="closeApplication()">
+
 
     <div
       class="application-modal"
-      (click)="$event.stopPropagation()"
-    >
+      (click)="$event.stopPropagation()">
 
-      <!-- ===================================================
-           MODAL HEADER
-      ==================================================== -->
+
+      <!-- =================================================== -->
+      <!-- MODAL HEADER -->
+      <!-- =================================================== -->
 
       <div class="modal-header">
 
         <div>
 
-          <span>
-            APPLICATION DETAILS
-          </span>
+          <div class="page-label">
+            Admission Application
+          </div>
 
           <h2>
             {{ selectedApplication.applicationNumber }}
@@ -406,120 +495,294 @@
 
         <button
           type="button"
-          class="close-button"
-          (click)="closeApplication()"
-          aria-label="Close"
-        >
+          class="modal-close"
+          (click)="closeApplication()">
+
           ×
+
         </button>
 
       </div>
 
 
-      <!-- ===================================================
-           MODAL BODY
-      ==================================================== -->
+      <!-- =================================================== -->
+      <!-- MODAL BODY -->
+      <!-- =================================================== -->
 
       <div class="modal-body">
 
 
-        <!-- =================================================
-             STATUS
-        ================================================== -->
+        <!-- ================================================= -->
+        <!-- APPLICATION STATUS -->
+        <!-- ================================================= -->
 
-        <div class="detail-status">
+        <div class="application-status-row">
 
-          <span>
-            Application Status
+          <div class="status-group">
+
+            <span
+              class="status-badge"
+              [ngClass]="getStatusClass(selectedApplication.status)">
+
+              {{ selectedApplication.status }}
+
+            </span>
+
+
+            <span
+              class="payment-status-badge"
+              [ngClass]="getPaymentStatusClass(selectedApplication.paymentStatus)">
+
+              @if (selectedApplication.paymentStatus === 'paid') {
+                ✓
+              } @else if (selectedApplication.paymentStatus === 'pending') {
+                ⏳
+              } @else if (selectedApplication.paymentStatus === 'failed') {
+                ✕
+              } @else {
+                !
+              }
+
+              {{ getPaymentStatusLabel(selectedApplication.paymentStatus) }}
+
+            </span>
+
+          </div>
+
+
+          <span class="date-value">
+
+            Submitted:
+            {{ formatDate(selectedApplication.submittedAt) }}
+
           </span>
-
-          <strong
-            class="status-badge"
-            [class]="getStatusClass(selectedApplication.status)"
-          >
-            {{ selectedApplication.status }}
-          </strong>
 
         </div>
 
 
-        <!-- =================================================
-             GENERATED RECORD IDS
-        ================================================== -->
 
-        @if (
-          selectedApplication.status.toLowerCase() ===
-          'approved'
-        ) {
+        <!-- ================================================= -->
+        <!-- PAYMENT INFORMATION -->
+        <!-- ================================================= -->
 
-          <section class="record-created-box">
+        <div class="detail-section payment-section">
 
-            <div class="record-created-header">
+          <div class="detail-section-title">
 
-              <span>
+            <span class="detail-icon">
+              💳
+            </span>
+
+            <h3>
+              Admission Payment
+            </h3>
+
+          </div>
+
+
+          <!-- PAYMENT CONFIRMED -->
+          @if (isPaymentConfirmed(selectedApplication)) {
+
+            <div class="payment-confirmed-box">
+
+              <div class="payment-confirmed-icon">
                 ✓
-              </span>
+              </div>
 
               <div>
 
                 <strong>
-                  Student Record Created
+                  Admission Payment Confirmed
                 </strong>
 
                 <p>
-                  This application has been converted
-                  into a school student record.
+                  The applicant has successfully paid the required admission fee.
                 </p>
 
               </div>
 
             </div>
 
+          }
 
-            <div class="record-id-grid">
 
-              <div class="record-id-item">
+          <!-- PAYMENT NOT CONFIRMED -->
+          @else {
 
-                <span>
-                  Student ID
-                </span>
+            <div class="payment-warning-box">
 
-                <strong>
-                  {{ selectedApplication.studentId || 'N/A' }}
-                </strong>
-
+              <div class="payment-warning-icon">
+                !
               </div>
 
-
-              <div class="record-id-item">
-
-                <span>
-                  Parent ID
-                </span>
+              <div>
 
                 <strong>
-                  {{ selectedApplication.parentId || 'N/A' }}
+                  Admission Payment Not Confirmed
                 </strong>
+
+                <p>
+                  The admission cannot be approved until the required admission
+                  payment has been successfully verified.
+                </p>
 
               </div>
 
             </div>
 
-          </section>
-
-        }
+          }
 
 
-        <!-- =================================================
-             STUDENT
-        ================================================== -->
+          <div class="details-grid">
 
-        <section class="detail-section">
 
-          <div class="detail-heading">
+            <!-- REQUIRED FEE -->
 
-            <span>
-              01
+            <div class="detail-item">
+
+              <label>
+                Required Admission Fee
+              </label>
+
+              <strong>
+                {{ formatAmount(selectedApplication.applicationFee) }}
+              </strong>
+
+            </div>
+
+
+            <!-- AMOUNT PAID -->
+
+            <div class="detail-item">
+
+              <label>
+                Amount Paid
+              </label>
+
+              <strong
+                [class.payment-paid-value]="selectedApplication.paymentAmount > 0"
+                [class.payment-unpaid-value]="selectedApplication.paymentAmount <= 0">
+
+                {{ formatAmount(selectedApplication.paymentAmount) }}
+
+              </strong>
+
+            </div>
+
+
+            <!-- PAYMENT STATUS -->
+
+            <div class="detail-item">
+
+              <label>
+                Payment Status
+              </label>
+
+              <strong>
+
+                <span
+                  class="payment-status-badge"
+                  [ngClass]="getPaymentStatusClass(selectedApplication.paymentStatus)">
+
+                  {{ getPaymentStatusLabel(selectedApplication.paymentStatus) }}
+
+                </span>
+
+              </strong>
+
+            </div>
+
+
+            <!-- PAYMENT REFERENCE -->
+
+            <div class="detail-item">
+
+              <label>
+                Payment Reference
+              </label>
+
+              <strong class="reference-value">
+
+                @if (selectedApplication.paymentReference) {
+
+                  {{ selectedApplication.paymentReference }}
+
+                } @else {
+
+                  —
+
+                }
+
+              </strong>
+
+            </div>
+
+
+            <!-- PAYMENT DATE -->
+
+            <div class="detail-item">
+
+              <label>
+                Payment Date
+              </label>
+
+              <strong>
+
+                @if (selectedApplication.paymentDate) {
+
+                  {{ formatPaymentDate(selectedApplication.paymentDate) }}
+
+                } @else {
+
+                  —
+
+                }
+
+              </strong>
+
+            </div>
+
+
+            <!-- VERIFIED DATE -->
+
+            <div class="detail-item">
+
+              <label>
+                Payment Verified
+              </label>
+
+              <strong>
+
+                @if (selectedApplication.paymentVerifiedAt) {
+
+                  {{ formatPaymentDate(selectedApplication.paymentVerifiedAt) }}
+
+                } @else {
+
+                  —
+
+                }
+
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ================================================= -->
+        <!-- STUDENT INFORMATION -->
+        <!-- ================================================= -->
+
+        <div class="detail-section">
+
+          <div class="detail-section-title">
+
+            <span class="detail-icon">
+              👨‍🎓
             </span>
 
             <h3>
@@ -529,13 +792,14 @@
           </div>
 
 
-          <div class="detail-grid">
+          <div class="details-grid">
+
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Full Name
-              </span>
+              </label>
 
               <strong>
                 {{ getStudentName(selectedApplication) }}
@@ -546,12 +810,12 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Date of Birth
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.student.dateOfBirth || 'N/A' }}
+                {{ selectedApplication.student.dateOfBirth }}
               </strong>
 
             </div>
@@ -559,12 +823,12 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Gender
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.student.gender || 'N/A' }}
+                {{ selectedApplication.student.gender }}
               </strong>
 
             </div>
@@ -572,48 +836,32 @@
 
             <div class="detail-item">
 
-              <span>
-                Class Applied For
-              </span>
+              <label>
+                Class Applied
+              </label>
 
               <strong>
-                {{ selectedApplication.student.classApplied || 'N/A' }}
+                {{ selectedApplication.student.classApplied }}
               </strong>
 
             </div>
-
-
-            @if (selectedApplication.studentId) {
-
-              <div class="detail-item">
-
-                <span>
-                  Student ID
-                </span>
-
-                <strong>
-                  {{ selectedApplication.studentId }}
-                </strong>
-
-              </div>
-
-            }
 
           </div>
 
-        </section>
+        </div>
 
 
-        <!-- =================================================
-             PARENT
-        ================================================== -->
 
-        <section class="detail-section">
+        <!-- ================================================= -->
+        <!-- PARENT INFORMATION -->
+        <!-- ================================================= -->
 
-          <div class="detail-heading">
+        <div class="detail-section">
 
-            <span>
-              02
+          <div class="detail-section-title">
+
+            <span class="detail-icon">
+              👨‍👩‍👦
             </span>
 
             <h3>
@@ -623,13 +871,14 @@
           </div>
 
 
-          <div class="detail-grid">
+          <div class="details-grid">
+
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Name
-              </span>
+              </label>
 
               <strong>
                 {{ selectedApplication.parentGuardian.name }}
@@ -640,12 +889,12 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Relationship
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.parentGuardian.relationship || 'N/A' }}
+                {{ selectedApplication.parentGuardian.relationship }}
               </strong>
 
             </div>
@@ -653,9 +902,9 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Phone
-              </span>
+              </label>
 
               <strong>
                 {{ selectedApplication.parentGuardian.phone }}
@@ -666,48 +915,32 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Email
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.parentGuardian.email || 'N/A' }}
+                {{ selectedApplication.parentGuardian.email }}
               </strong>
 
             </div>
 
-
-            @if (selectedApplication.parentId) {
-
-              <div class="detail-item">
-
-                <span>
-                  Parent ID
-                </span>
-
-                <strong>
-                  {{ selectedApplication.parentId }}
-                </strong>
-
-              </div>
-
-            }
-
           </div>
 
-        </section>
+        </div>
 
 
-        <!-- =================================================
-             PREVIOUS SCHOOL
-        ================================================== -->
 
-        <section class="detail-section">
+        <!-- ================================================= -->
+        <!-- PREVIOUS SCHOOL -->
+        <!-- ================================================= -->
 
-          <div class="detail-heading">
+        <div class="detail-section">
 
-            <span>
-              03
+          <div class="detail-section-title">
+
+            <span class="detail-icon">
+              🏫
             </span>
 
             <h3>
@@ -717,16 +950,17 @@
           </div>
 
 
-          <div class="detail-grid">
+          <div class="details-grid">
+
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 School
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.previousSchool.name || 'N/A' }}
+                {{ selectedApplication.previousSchool.name }}
               </strong>
 
             </div>
@@ -734,31 +968,32 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Previous Class
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.previousSchool.previousClass || 'N/A' }}
+                {{ selectedApplication.previousSchool.previousClass }}
               </strong>
 
             </div>
 
           </div>
 
-        </section>
+        </div>
 
 
-        <!-- =================================================
-             EMERGENCY
-        ================================================== -->
 
-        <section class="detail-section">
+        <!-- ================================================= -->
+        <!-- EMERGENCY CONTACT -->
+        <!-- ================================================= -->
 
-          <div class="detail-heading">
+        <div class="detail-section">
 
-            <span>
-              04
+          <div class="detail-section-title">
+
+            <span class="detail-icon">
+              🚨
             </span>
 
             <h3>
@@ -768,16 +1003,17 @@
           </div>
 
 
-          <div class="detail-grid">
+          <div class="details-grid">
+
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Name
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.emergencyContact.name || 'N/A' }}
+                {{ selectedApplication.emergencyContact.name }}
               </strong>
 
             </div>
@@ -785,103 +1021,652 @@
 
             <div class="detail-item">
 
-              <span>
+              <label>
                 Phone
-              </span>
+              </label>
 
               <strong>
-                {{ selectedApplication.emergencyContact.phone || 'N/A' }}
+                {{ selectedApplication.emergencyContact.phone }}
               </strong>
 
             </div>
 
           </div>
 
-        </section>
+        </div>
 
 
-        <!-- =================================================
-             NOTES
-        ================================================== -->
 
-        <section class="detail-section">
+        <!-- ================================================= -->
+        <!-- ADDITIONAL NOTES -->
+        <!-- ================================================= -->
 
-          <div class="detail-heading">
+        @if (selectedApplication.additionalNotes) {
 
-            <span>
-              05
-            </span>
+          <div class="detail-section">
 
-            <h3>
-              Additional Notes
-            </h3>
+            <div class="detail-section-title">
+
+              <span class="detail-icon">
+                📝
+              </span>
+
+              <h3>
+                Additional Notes
+              </h3>
+
+            </div>
+
+
+            <div class="notes-box">
+
+              {{ selectedApplication.additionalNotes }}
+
+            </div>
 
           </div>
 
+        }
 
-          <div class="notes-box">
 
-            {{ selectedApplication.additionalNotes || 'No additional notes provided.' }}
+
+        <!-- ================================================= -->
+        <!-- APPROVED RECORD -->
+        <!-- ================================================= -->
+
+        @if (
+          selectedApplication.status === 'approved' &&
+          selectedApplication.studentId
+        ) {
+
+          <div class="approved-record">
+
+            <div class="approved-record-header">
+
+              <div class="approved-icon">
+                ✓
+              </div>
+
+              <div>
+
+                <h3>
+                  Account Created
+                </h3>
+
+                <p>
+                  This admission has already been approved.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="approved-record-grid">
+
+
+              <div class="detail-item">
+
+                <label>
+                  Student ID
+                </label>
+
+                <strong>
+                  {{ selectedApplication.studentId }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <label>
+                  Parent ID
+                </label>
+
+                <strong>
+                  {{ selectedApplication.parentId || '—' }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <label>
+                  Student UID
+                </label>
+
+                <strong>
+                  {{ selectedApplication.studentUid || '—' }}
+                </strong>
+
+              </div>
+
+
+              <div class="detail-item">
+
+                <label>
+                  Parent UID
+                </label>
+
+                <strong>
+                  {{ selectedApplication.parentUid || '—' }}
+                </strong>
+
+              </div>
+
+            </div>
 
           </div>
 
-        </section>
-
+        }
 
       </div>
 
 
-      <!-- ===================================================
-           MODAL FOOTER
-      ==================================================== -->
+
+      <!-- =================================================== -->
+      <!-- MODAL FOOTER -->
+      <!-- =================================================== -->
 
       <div class="modal-footer">
 
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeApplication()">
+
+          Close
+
+        </button>
+
+
         @if (
-          selectedApplication.status.toLowerCase() === 'pending'
+          selectedApplication.status !== 'approved' &&
+          selectedApplication.status !== 'rejected'
         ) {
 
           <button
             type="button"
             class="reject-button"
-            (click)="rejectApplication(selectedApplication)"
             [disabled]="updating"
-          >
+            (click)="rejectApplication(selectedApplication)">
 
-            @if (!updating) {
-              Reject
-            } @else {
-              Processing...
-            }
+            Reject
 
           </button>
 
+
+          <!-- ================================================= -->
+          <!-- APPROVE BUTTON -->
+          <!-- ================================================= -->
 
           <button
             type="button"
             class="approve-button"
-            (click)="approveApplication(selectedApplication)"
-            [disabled]="updating"
-          >
+            [disabled]="updating || !isPaymentConfirmed(selectedApplication)"
+            (click)="approveApplication(selectedApplication)">
 
-            @if (!updating) {
-              Approve & Create Student
+            @if (updating) {
+
+              Approving...
+
+            } @else if (!isPaymentConfirmed(selectedApplication)) {
+
+              Payment Required
+
             } @else {
-              Creating Records...
+
+              Approve Admission
+
             }
 
           </button>
 
-        } @else {
+        }
 
-          <span class="status-message">
+      </div>
 
-            This application has already been
-            {{ selectedApplication.status }}.
 
+      <!-- =================================================== -->
+      <!-- PAYMENT APPROVAL WARNING -->
+      <!-- =================================================== -->
+
+      @if (
+        selectedApplication.status !== 'approved' &&
+        selectedApplication.status !== 'rejected' &&
+        !isPaymentConfirmed(selectedApplication)
+      ) {
+
+        <div class="approval-payment-warning">
+
+          <span class="warning-icon">
+            ⚠
           </span>
 
-        }
+          <div>
+
+            <strong>
+              Payment required before approval
+            </strong>
+
+            <p>
+              The applicant must complete and have the
+              {{ formatAmount(selectedApplication.applicationFee) }}
+              admission fee verified before this application can be approved.
+            </p>
+
+          </div>
+
+        </div>
+
+      }
+
+
+    </div>
+
+  </div>
+
+}
+
+
+
+<!-- ========================================================= -->
+<!-- APPROVAL CREDENTIALS MODAL -->
+<!-- ========================================================= -->
+
+@if (showCredentialsModal && approvalCredentials) {
+
+  <div
+    class="modal-overlay credentials-overlay"
+    (click)="closeCredentialsModal()">
+
+    <div
+      class="credentials-modal"
+      (click)="$event.stopPropagation()">
+
+
+      <!-- ================================================= -->
+      <!-- HEADER -->
+      <!-- ================================================= -->
+
+      <div class="credentials-header">
+
+        <div class="credentials-header-icon">
+          🔐
+        </div>
+
+        <div>
+
+          <div class="page-label">
+            Admission Approved
+          </div>
+
+          <h2>
+            Account Credentials
+          </h2>
+
+          <p>
+            The student and parent accounts have been created successfully.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeCredentialsModal()">
+
+          ×
+
+        </button>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- BODY -->
+      <!-- ================================================= -->
+
+      <div class="credentials-body">
+
+
+        <!-- ================================================= -->
+        <!-- IMPORTANT NOTICE -->
+        <!-- ================================================= -->
+
+        <div class="credentials-notice">
+
+          <strong>
+            ⚠ Save these credentials now
+          </strong>
+
+          <p>
+            The temporary passwords are shown only here.
+            Make sure they are securely provided to the student and parent.
+          </p>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- APPLICATION -->
+        <!-- ================================================= -->
+
+        <div class="credential-application">
+
+          <span>
+            Application Number
+          </span>
+
+          <strong>
+            {{ approvalCredentials.applicationNumber }}
+          </strong>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STUDENT ACCOUNT -->
+        <!-- ================================================= -->
+
+        <div class="credential-card student-credential">
+
+          <div class="credential-card-header">
+
+            <div class="credential-icon">
+              👨‍🎓
+            </div>
+
+            <div>
+
+              <h3>
+                Student Account
+              </h3>
+
+              <p>
+                Login credentials for the student
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="credential-grid">
+
+
+            <!-- STUDENT ID -->
+
+            <div class="credential-item">
+
+              <label>
+                Student ID
+              </label>
+
+              <div class="credential-value">
+
+                <strong>
+                  {{ approvalCredentials.student.studentId }}
+                </strong>
+
+                <button
+                  type="button"
+                  class="copy-button"
+                  title="Copy Student ID"
+                  (click)="copyCredential(approvalCredentials.student.studentId)">
+
+                  📋
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="credential-item">
+
+              <label>
+                Email
+              </label>
+
+              <div class="credential-value">
+
+                <strong>
+                  {{ approvalCredentials.student.email || '—' }}
+                </strong>
+
+                @if (approvalCredentials.student.email) {
+
+                  <button
+                    type="button"
+                    class="copy-button"
+                    title="Copy email"
+                    (click)="copyCredential(approvalCredentials.student.email)">
+
+                    📋
+
+                  </button>
+
+                }
+
+              </div>
+
+            </div>
+
+
+            <!-- TEMPORARY PASSWORD -->
+
+            <div class="credential-item password-item">
+
+              <label>
+                Temporary Password
+              </label>
+
+              <div class="credential-value password-value">
+
+                @if (approvalCredentials.student.temporaryPassword) {
+
+                  <strong>
+                    {{ approvalCredentials.student.temporaryPassword }}
+                  </strong>
+
+                  <button
+                    type="button"
+                    class="copy-button"
+                    title="Copy temporary password"
+                    (click)="copyCredential(approvalCredentials.student.temporaryPassword!)">
+
+                    📋
+
+                  </button>
+
+                } @else {
+
+                  <strong class="not-generated">
+                    Not generated
+                  </strong>
+
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- PARENT ACCOUNT -->
+        <!-- ================================================= -->
+
+        <div class="credential-card parent-credential">
+
+          <div class="credential-card-header">
+
+            <div class="credential-icon">
+              👨‍👩‍👦
+            </div>
+
+            <div>
+
+              <h3>
+                Parent Account
+              </h3>
+
+              <p>
+                Login credentials for the parent / guardian
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="credential-grid">
+
+
+            <!-- PARENT ID -->
+
+            <div class="credential-item">
+
+              <label>
+                Parent ID
+              </label>
+
+              <div class="credential-value">
+
+                <strong>
+                  {{ approvalCredentials.parent.parentId }}
+                </strong>
+
+                <button
+                  type="button"
+                  class="copy-button"
+                  title="Copy Parent ID"
+                  (click)="copyCredential(approvalCredentials.parent.parentId)">
+
+                  📋
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <div class="credential-item">
+
+              <label>
+                Email
+              </label>
+
+              <div class="credential-value">
+
+                <strong>
+                  {{ approvalCredentials.parent.email || '—' }}
+                </strong>
+
+                @if (approvalCredentials.parent.email) {
+
+                  <button
+                    type="button"
+                    class="copy-button"
+                    title="Copy email"
+                    (click)="copyCredential(approvalCredentials.parent.email)">
+
+                    📋
+
+                  </button>
+
+                }
+
+              </div>
+
+            </div>
+
+
+            <!-- PARENT PASSWORD -->
+
+            <div class="credential-item password-item">
+
+              <label>
+                Temporary Password
+              </label>
+
+              <div class="credential-value password-value">
+
+                @if (approvalCredentials.parent.temporaryPassword) {
+
+                  <strong>
+                    {{ approvalCredentials.parent.temporaryPassword }}
+                  </strong>
+
+                  <button
+                    type="button"
+                    class="copy-button"
+                    title="Copy temporary password"
+                    (click)="copyCredential(approvalCredentials.parent.temporaryPassword!)">
+
+                    📋
+
+                  </button>
+
+                } @else {
+
+                  <strong class="existing-account">
+                    Existing parent account
+                  </strong>
+
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- COPY ALL -->
+        <!-- ================================================= -->
+
+        <button
+          type="button"
+          class="copy-all-button"
+          (click)="copyAllCredentials()">
+
+          📋 Copy All Credentials
+
+        </button>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- FOOTER -->
+      <!-- ================================================= -->
+
+      <div class="credentials-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeCredentialsModal()">
+
+          Done
+
+        </button>
 
       </div>
 

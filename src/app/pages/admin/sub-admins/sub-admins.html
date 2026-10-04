@@ -1,0 +1,1322 @@
+<div class="sub-admin-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <div class="page-header">
+
+    <div class="header-content">
+
+      <div class="title-section">
+
+        <div class="title-icon">
+          <i class="fas fa-user-shield"></i>
+        </div>
+
+        <div>
+
+          <h1>
+            Sub Admins
+          </h1>
+
+          <p>
+            Create and manage administrative accounts and
+            their system permissions.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="openCreateModal()"
+      >
+
+        <i class="fas fa-plus"></i>
+
+        Create Sub Admin
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       STATISTICS
+       ===================================================== -->
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+
+      <div class="stat-icon total">
+        <i class="fas fa-users-cog"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Total Sub Admins
+        </span>
+
+        <strong>
+          {{ subAdmins.length }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon active">
+        <i class="fas fa-user-check"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Active
+        </span>
+
+        <strong>
+          {{
+            subAdmins.filter(
+              s => s.status === 'active'
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon inactive">
+        <i class="fas fa-user-slash"></i>
+      </div>
+
+      <div class="stat-content">
+
+        <span class="stat-label">
+          Inactive
+        </span>
+
+        <strong>
+          {{
+            subAdmins.filter(
+              s => s.status !== 'active'
+            ).length
+          }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       TOOLBAR
+       ===================================================== -->
+
+  <div class="toolbar">
+
+    <div class="search-box">
+
+      <i class="fas fa-search"></i>
+
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        placeholder="Search Sub Admins..."
+      />
+
+      <button
+        *ngIf="searchTerm"
+        type="button"
+        class="clear-search"
+        (click)="searchTerm = ''; onSearch()"
+        title="Clear search"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="refresh-button"
+      (click)="loadSubAdmins()"
+      [disabled]="loading"
+    >
+
+      <i
+        class="fas fa-sync-alt"
+        [class.spinning]="loading"
+      ></i>
+
+      Refresh
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    *ngIf="loading"
+    class="loading-state"
+  >
+
+    <div class="spinner"></div>
+
+    <p>
+      Loading Sub Admin accounts...
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       EMPTY STATE
+       ===================================================== -->
+
+  <div
+    *ngIf="
+      !loading &&
+      filteredSubAdmins.length === 0 &&
+      !searchTerm
+    "
+    class="empty-state"
+  >
+
+    <div class="empty-icon">
+
+      <i class="fas fa-user-shield"></i>
+
+    </div>
+
+    <h2>
+      No Sub Admins Yet
+    </h2>
+
+    <p>
+      Create your first Sub Admin account to delegate
+      selected school administration responsibilities.
+    </p>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="openCreateModal()"
+    >
+
+      <i class="fas fa-plus"></i>
+
+      Create First Sub Admin
+
+    </button>
+
+  </div>
+
+
+  <!-- =====================================================
+       NO SEARCH RESULTS
+       ===================================================== -->
+
+  <div
+    *ngIf="
+      !loading &&
+      filteredSubAdmins.length === 0 &&
+      searchTerm
+    "
+    class="empty-state"
+  >
+
+    <div class="empty-icon">
+
+      <i class="fas fa-search"></i>
+
+    </div>
+
+    <h2>
+      No Results Found
+    </h2>
+
+    <p>
+      No Sub Admin account matches
+      "{{ searchTerm }}".
+    </p>
+
+  </div>
+
+
+  <!-- =====================================================
+       TABLE
+       ===================================================== -->
+
+  <div
+    *ngIf="
+      !loading &&
+      filteredSubAdmins.length > 0
+    "
+    class="table-card"
+  >
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>
+              Sub Admin
+            </th>
+
+            <th>
+              ID
+            </th>
+
+            <th>
+              Contact
+            </th>
+
+            <th>
+              Permissions
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              Created
+            </th>
+
+            <th class="actions-column">
+              Actions
+            </th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let subAdmin of filteredSubAdmins
+            "
+          >
+
+            <!-- -----------------------------------------
+                 SUB ADMIN
+                 ----------------------------------------- -->
+
+            <td>
+
+              <div class="user-cell">
+
+                <div class="avatar">
+
+                  {{
+                    (
+                      subAdmin.fullName ||
+                      'SA'
+                    )
+                      .trim()
+                      .charAt(0)
+                      .toUpperCase()
+                  }}
+
+                </div>
+
+                <div class="user-info">
+
+                  <strong>
+                    {{
+                      subAdmin.fullName ||
+                      'Unnamed Sub Admin'
+                    }}
+                  </strong>
+
+                  <span>
+                    {{
+                      subAdmin.email ||
+                      'No email'
+                    }}
+                  </span>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- -----------------------------------------
+                 ID
+                 ----------------------------------------- -->
+
+            <td>
+
+              <span class="id-badge">
+
+                {{
+                  subAdmin.subAdminId ||
+                  '—'
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- -----------------------------------------
+                 CONTACT
+                 ----------------------------------------- -->
+
+            <td>
+
+              <span class="phone">
+
+                {{
+                  subAdmin.phone ||
+                  '—'
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- -----------------------------------------
+                 PERMISSIONS
+                 ----------------------------------------- -->
+
+            <td>
+
+              <span class="permission-badge">
+
+                <i class="fas fa-key"></i>
+
+                {{
+                  permissionCount(subAdmin)
+                }}
+
+                permissions
+
+              </span>
+
+            </td>
+
+
+            <!-- -----------------------------------------
+                 STATUS
+                 ----------------------------------------- -->
+
+            <td>
+
+              <span
+                class="status-badge"
+                [class.active]="
+                  isActive(subAdmin)
+                "
+                [class.inactive]="
+                  !isActive(subAdmin)
+                "
+              >
+
+                <span class="status-dot"></span>
+
+                {{
+                  isActive(subAdmin)
+                    ? 'Active'
+                    : 'Inactive'
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- -----------------------------------------
+                 CREATED
+                 ----------------------------------------- -->
+
+            <td>
+
+              <span class="date-text">
+
+                {{
+                  formatDate(
+                    subAdmin.createdAt
+                  )
+                }}
+
+              </span>
+
+            </td>
+
+
+            <!-- -----------------------------------------
+                 ACTIONS
+                 ----------------------------------------- -->
+
+            <td>
+
+              <div class="action-buttons">
+
+                <button
+                  type="button"
+                  class="icon-button edit"
+                  title="Edit Sub Admin"
+                  (click)="openEditModal(subAdmin)"
+                >
+
+                  <i class="fas fa-edit"></i>
+
+                </button>
+
+
+                <button
+                  *ngIf="
+                    isActive(subAdmin)
+                  "
+                  type="button"
+                  class="icon-button deactivate"
+                  title="Deactivate Sub Admin"
+                  (click)="openDeleteModal(subAdmin)"
+                >
+
+                  <i class="fas fa-user-slash"></i>
+
+                </button>
+
+
+                <button
+                  *ngIf="
+                    !isActive(subAdmin)
+                  "
+                  type="button"
+                  class="icon-button activate"
+                  title="Reactivate Sub Admin"
+                  (click)="reactivateSubAdmin(subAdmin)"
+                >
+
+                  <i class="fas fa-user-check"></i>
+
+                </button>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       CREATE MODAL
+       ===================================================== -->
+
+  <div
+    *ngIf="showCreateModal"
+    class="modal-backdrop"
+    (click)="closeCreateModal()"
+  >
+
+    <div
+      class="modal large"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <div class="modal-title-icon">
+            <i class="fas fa-user-plus"></i>
+          </div>
+
+          <div>
+
+            <h2>
+              Create Sub Admin
+            </h2>
+
+            <p>
+              Create an administrative account with
+              selected permissions.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeCreateModal()"
+        >
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <!-- ---------------------------------------------
+             PERSONAL DETAILS
+             --------------------------------------------- -->
+
+        <div class="form-section">
+
+          <div class="section-heading">
+
+            <i class="fas fa-user"></i>
+
+            <div>
+
+              <h3>
+                Account Information
+              </h3>
+
+              <p>
+                The backend will automatically generate
+                the Sub Admin ID, school email and
+                temporary password.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label>
+                Full Name
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                [(ngModel)]="form.fullName"
+                placeholder="Enter full name"
+                autocomplete="off"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Phone Number
+              </label>
+
+              <input
+                type="tel"
+                [(ngModel)]="form.phone"
+                placeholder="Enter phone number"
+                autocomplete="off"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ---------------------------------------------
+             PERMISSIONS
+             --------------------------------------------- -->
+
+        <div class="form-section">
+
+          <div class="section-heading permission-heading">
+
+            <div>
+
+              <h3>
+                Administrative Permissions
+              </h3>
+
+              <p>
+                Select the school modules this Sub Admin
+                is allowed to manage.
+              </p>
+
+            </div>
+
+
+            <div class="permission-actions">
+
+              <button
+                type="button"
+                class="small-button"
+                (click)="selectAllPermissions()"
+              >
+
+                Select All
+
+              </button>
+
+              <button
+                type="button"
+                class="small-button secondary"
+                (click)="clearAllPermissions()"
+              >
+
+                Clear All
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="permissions-grid">
+
+            <label
+              *ngFor="
+                let permission of permissionItems
+              "
+              class="permission-card"
+              [class.selected]="
+                hasFormPermission(
+                  permission.key
+                )
+              "
+            >
+
+              <input
+                type="checkbox"
+                [checked]="
+                  hasFormPermission(
+                    permission.key
+                  )
+                "
+                (change)="
+                  togglePermission(
+                    permission.key
+                  )
+                "
+              />
+
+              <span class="checkbox-custom">
+
+                <i class="fas fa-check"></i>
+
+              </span>
+
+
+              <span class="permission-content">
+
+                <strong>
+                  {{ permission.label }}
+                </strong>
+
+                <small>
+                  {{ permission.description }}
+                </small>
+
+              </span>
+
+            </label>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeCreateModal()"
+          [disabled]="saving"
+        >
+
+          Cancel
+
+        </button>
+
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="createSubAdmin()"
+          [disabled]="saving"
+        >
+
+          <i
+            *ngIf="!saving"
+            class="fas fa-user-plus"
+          ></i>
+
+          <i
+            *ngIf="saving"
+            class="fas fa-spinner fa-spin"
+          ></i>
+
+          {{
+            saving
+              ? 'Creating...'
+              : 'Create Sub Admin'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       EDIT MODAL
+       ===================================================== -->
+
+  <div
+    *ngIf="showEditModal"
+    class="modal-backdrop"
+    (click)="closeEditModal()"
+  >
+
+    <div
+      class="modal large"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <div class="modal-title-icon">
+            <i class="fas fa-user-edit"></i>
+          </div>
+
+          <div>
+
+            <h2>
+              Edit Sub Admin
+            </h2>
+
+            <p>
+
+              {{
+                selectedSubAdmin?.subAdminId ||
+                selectedSubAdmin?.email ||
+                ''
+              }}
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="modal-close"
+          (click)="closeEditModal()"
+        >
+
+          <i class="fas fa-times"></i>
+
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <div class="form-section">
+
+          <div class="form-grid">
+
+            <div class="form-group">
+
+              <label>
+                Full Name
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                [(ngModel)]="form.fullName"
+                placeholder="Enter full name"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Phone Number
+              </label>
+
+              <input
+                type="tel"
+                [(ngModel)]="form.phone"
+                placeholder="Enter phone number"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-section">
+
+          <div class="section-heading permission-heading">
+
+            <div>
+
+              <h3>
+                Permissions
+              </h3>
+
+              <p>
+                Update the modules this Sub Admin can
+                access.
+              </p>
+
+            </div>
+
+
+            <div class="permission-actions">
+
+              <button
+                type="button"
+                class="small-button"
+                (click)="selectAllPermissions()"
+              >
+                Select All
+              </button>
+
+              <button
+                type="button"
+                class="small-button secondary"
+                (click)="clearAllPermissions()"
+              >
+                Clear All
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="permissions-grid">
+
+            <label
+              *ngFor="
+                let permission of permissionItems
+              "
+              class="permission-card"
+              [class.selected]="
+                hasFormPermission(
+                  permission.key
+                )
+              "
+            >
+
+              <input
+                type="checkbox"
+                [checked]="
+                  hasFormPermission(
+                    permission.key
+                  )
+                "
+                (change)="
+                  togglePermission(
+                    permission.key
+                  )
+                "
+              />
+
+              <span class="checkbox-custom">
+
+                <i class="fas fa-check"></i>
+
+              </span>
+
+
+              <span class="permission-content">
+
+                <strong>
+                  {{ permission.label }}
+                </strong>
+
+                <small>
+                  {{ permission.description }}
+                </small>
+
+              </span>
+
+            </label>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeEditModal()"
+          [disabled]="saving"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="updateSubAdmin()"
+          [disabled]="saving"
+        >
+
+          <i
+            *ngIf="!saving"
+            class="fas fa-save"
+          ></i>
+
+          <i
+            *ngIf="saving"
+            class="fas fa-spinner fa-spin"
+          ></i>
+
+          {{
+            saving
+              ? 'Saving...'
+              : 'Save Changes'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       CREDENTIALS MODAL
+       ===================================================== -->
+
+  <div
+    *ngIf="showCredentialsModal"
+    class="modal-backdrop"
+  >
+
+    <div
+      class="modal credentials-modal"
+    >
+
+      <div class="success-header">
+
+        <div class="success-icon">
+
+          <i class="fas fa-check"></i>
+
+        </div>
+
+        <h2>
+          Sub Admin Created
+        </h2>
+
+        <p>
+          The account was created successfully.
+        </p>
+
+      </div>
+
+
+      <div class="credentials-warning">
+
+        <i class="fas fa-exclamation-triangle"></i>
+
+        <div>
+
+          <strong>
+            Save these credentials now
+          </strong>
+
+          <p>
+            The temporary password is displayed here so
+            you can securely provide the login details to
+            the new Sub Admin.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="credential-list">
+
+        <div class="credential-row">
+
+          <div>
+
+            <span>
+              Sub Admin ID
+            </span>
+
+            <strong>
+              {{
+                generatedCredentials.subAdminId ||
+                '—'
+              }}
+            </strong>
+
+          </div>
+
+          <button
+            type="button"
+            class="copy-button"
+            (click)="
+              copyText(
+                generatedCredentials.subAdminId
+              )
+            "
+          >
+
+            <i class="fas fa-copy"></i>
+
+          </button>
+
+        </div>
+
+
+        <div class="credential-row">
+
+          <div>
+
+            <span>
+              Email
+            </span>
+
+            <strong>
+              {{
+                generatedCredentials.email ||
+                '—'
+              }}
+            </strong>
+
+          </div>
+
+          <button
+            type="button"
+            class="copy-button"
+            (click)="
+              copyText(
+                generatedCredentials.email
+              )
+            "
+          >
+
+            <i class="fas fa-copy"></i>
+
+          </button>
+
+        </div>
+
+
+        <div class="credential-row password">
+
+          <div>
+
+            <span>
+              Temporary Password
+            </span>
+
+            <strong>
+              {{
+                generatedCredentials.password ||
+                '—'
+              }}
+            </strong>
+
+          </div>
+
+          <button
+            type="button"
+            class="copy-button"
+            (click)="
+              copyText(
+                generatedCredentials.password
+              )
+            "
+          >
+
+            <i class="fas fa-copy"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="primary-button full-width"
+          (click)="closeCredentialsModal()"
+        >
+
+          <i class="fas fa-check"></i>
+
+          Done
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       DEACTIVATE MODAL
+       ===================================================== -->
+
+  <div
+    *ngIf="showDeleteModal"
+    class="modal-backdrop"
+    (click)="closeDeleteModal()"
+  >
+
+    <div
+      class="modal confirmation-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="confirmation-icon danger">
+
+        <i class="fas fa-user-slash"></i>
+
+      </div>
+
+
+      <h2>
+        Deactivate Sub Admin?
+      </h2>
+
+
+      <p>
+
+        Are you sure you want to deactivate
+
+        <strong>
+          {{
+            selectedSubAdmin?.fullName ||
+            'this Sub Admin'
+          }}
+        </strong>?
+
+        They will no longer be able to sign in or use
+        administrative modules.
+
+      </p>
+
+
+      <div class="modal-footer">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="closeDeleteModal()"
+          [disabled]="deleting"
+        >
+          Cancel
+        </button>
+
+
+        <button
+          type="button"
+          class="danger-button"
+          (click)="deactivateSubAdmin()"
+          [disabled]="deleting"
+        >
+
+          <i
+            *ngIf="!deleting"
+            class="fas fa-user-slash"
+          ></i>
+
+          <i
+            *ngIf="deleting"
+            class="fas fa-spinner fa-spin"
+          ></i>
+
+          {{
+            deleting
+              ? 'Deactivating...'
+              : 'Deactivate'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

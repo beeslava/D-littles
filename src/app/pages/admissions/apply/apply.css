@@ -1,57 +1,89 @@
 /* =========================================================
-   HERO
-========================================================= */
-
-.application-hero {
-  padding: 100px 0;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--school-primary),
-      var(--school-primary-dark)
-    );
-
-  color: #ffffff;
-}
-
-.application-hero .hero-eyebrow {
-  display: inline-block;
-  margin-bottom: 15px;
-
-  color: var(--school-secondary);
-
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-}
-
-.application-hero h1 {
-  max-width: 800px;
-  margin-bottom: 18px;
-
-  font-size: clamp(40px, 6vw, 60px);
-}
-
-.application-hero p {
-  max-width: 650px;
-  margin: 0;
-
-  color: #cbd5e1;
-  font-size: 18px;
-}
-
-
-/* =========================================================
    APPLICATION PAGE
 ========================================================= */
 
 .application-page {
-  background: var(--school-background);
+  padding: 70px 0 90px;
 }
 
+
+/* =========================================================
+   APPLICATION HERO
+========================================================= */
+
+.application-hero {
+  position: relative;
+  padding: 90px 0;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.96),
+      rgba(30, 41, 59, 0.92)
+    );
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.application-hero::before {
+  content: '';
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  top: -160px;
+  right: -100px;
+}
+
+.application-hero::after {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  bottom: -150px;
+  left: -80px;
+}
+
+.application-hero .container {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.application-hero h1 {
+  margin: 0 0 18px;
+  font-size: clamp(2.1rem, 5vw, 3.7rem);
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.application-hero p {
+  max-width: 680px;
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  opacity: 0.88;
+}
+
+
+/* =========================================================
+   APPLICATION FORM
+========================================================= */
+
 .application-form {
-  max-width: 950px;
+  width: 100%;
+  max-width: 1050px;
   margin: 0 auto;
 }
 
@@ -62,55 +94,46 @@
 
 .form-section {
   margin-bottom: 28px;
-  padding: 35px;
-
+  padding: 34px;
   background: #ffffff;
-
-  border: 1px solid var(--school-border);
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
 }
 
 .form-section-heading {
   display: flex;
   align-items: flex-start;
   gap: 18px;
-
   margin-bottom: 30px;
 }
 
 .section-number {
   flex: 0 0 auto;
-
-  width: 48px;
-  height: 48px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: var(--school-primary);
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #0f172a;
   color: #ffffff;
-
-  border-radius: 6px;
-
-  font-size: 13px;
+  font-size: 0.82rem;
   font-weight: 800;
 }
 
 .form-section-heading h2 {
-  margin-bottom: 7px;
-
-  color: var(--school-primary);
-
-  font-size: 25px;
+  margin: 0 0 7px;
+  color: #0f172a;
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
 .form-section-heading p {
   margin: 0;
-
-  color: var(--school-muted);
-
-  font-size: 14px;
+  color: #64748b;
+  font-size: 0.94rem;
+  line-height: 1.6;
 }
 
 
@@ -120,70 +143,139 @@
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .form-group.full-width {
   grid-column: 1 / -1;
 }
 
+
+/* =========================================================
+   FORM LABELS
+========================================================= */
+
 .form-group label {
   margin-bottom: 8px;
-
-  color: var(--school-text);
-
-  font-size: 14px;
+  color: #334155;
+  font-size: 0.9rem;
   font-weight: 700;
 }
+
+
+/* =========================================================
+   INPUTS / SELECT / TEXTAREA
+========================================================= */
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-
-  padding: 13px 14px;
-
-  border: 1px solid var(--school-border);
-  border-radius: 6px;
-
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
   background: #ffffff;
-  color: var(--school-text);
-
+  color: #0f172a;
+  font-family: inherit;
+  font-size: 0.95rem;
   outline: none;
-
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .form-group input,
 .form-group select {
   min-height: 48px;
+  padding: 0 14px;
 }
 
 .form-group textarea {
+  min-height: 150px;
+  padding: 14px;
   resize: vertical;
-  min-height: 140px;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--school-primary);
-
-  box-shadow:
-    0 0 0 3px rgba(23, 37, 84, 0.08);
+  line-height: 1.6;
 }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
   color: #94a3b8;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: #94a3b8;
+}
+
+
+/* =========================================================
+   APPLICATION FEE NOTICE
+========================================================= */
+
+.application-fee-notice {
+  overflow: hidden;
+}
+
+.fee-notice-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #f8fafc
+    );
+}
+
+.fee-notice-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.fee-label {
+  margin-bottom: 8px;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fee-amount {
+  display: block;
+  margin-bottom: 14px;
+  color: #0f172a;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  font-weight: 900;
+}
+
+.fee-notice-content p {
+  max-width: 720px;
+  margin: 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.7;
 }
 
 
@@ -192,31 +284,45 @@
 ========================================================= */
 
 .declaration-section {
-  background: #f8fafc;
+  padding: 24px 28px;
 }
 
 .declaration {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-
+  gap: 13px;
   cursor: pointer;
 }
 
 .declaration input {
+  flex: 0 0 auto;
   width: 18px;
   height: 18px;
-
-  margin-top: 3px;
-
-  accent-color: var(--school-primary);
+  margin: 2px 0 0;
+  accent-color: #0f172a;
+  cursor: pointer;
 }
 
 .declaration span {
-  color: var(--school-text);
+  color: #475569;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
 
-  font-size: 14px;
-  line-height: 1.7;
+
+/* =========================================================
+   ERROR MESSAGE
+========================================================= */
+
+.form-error {
+  margin-bottom: 24px;
+  padding: 15px 18px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 
@@ -228,16 +334,65 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  gap: 20px;
-
-  padding-bottom: 20px;
+  gap: 16px;
+  margin-top: 30px;
 }
 
-.form-actions button:disabled {
-  opacity: 0.5;
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+}
+
+.btn-primary {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1e293b;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.btn-outline:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
 }
 
 
@@ -246,55 +401,66 @@
 ========================================================= */
 
 .success-message {
-  max-width: 700px;
-
-  margin: 30px auto;
-  padding: 60px 40px;
-
-  background: #ffffff;
-
-  border: 1px solid var(--school-border);
-  border-radius: 12px;
-
+  max-width: 720px;
+  margin: 20px auto;
+  padding: 50px 40px;
   text-align: center;
-
-  box-shadow:
-    0 15px 40px rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
 }
 
 .success-icon {
-  width: 70px;
-  height: 70px;
-
-  margin: 0 auto 25px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  background: #dcfce7;
-  color: var(--school-success);
-
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 22px;
   border-radius: 50%;
-
-  font-size: 30px;
-  font-weight: 800;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 2rem;
+  font-weight: 900;
 }
 
 .success-message h2 {
-  margin-bottom: 15px;
-
-  color: var(--school-primary);
-
-  font-size: 32px;
+  margin: 0 0 14px;
+  color: #0f172a;
+  font-size: 1.8rem;
 }
 
 .success-message p {
-  max-width: 560px;
+  margin: 0 auto 20px;
+  max-width: 580px;
+  color: #64748b;
+  line-height: 1.7;
+}
 
-  margin: 0 auto 28px;
+.application-number {
+  margin: 28px 0;
+  padding: 20px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
 
-  color: var(--school-muted);
+.application-number span {
+  display: block;
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.application-number strong {
+  display: block;
+  color: #0f172a;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
 }
 
 
@@ -302,35 +468,48 @@
    RESPONSIVE
 ========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
 
   .application-hero {
-    padding: 75px 0;
+    padding: 70px 0;
+  }
+
+  .application-page {
+    padding: 45px 0 65px;
   }
 
   .form-section {
     padding: 25px 20px;
+    border-radius: 15px;
+  }
+
+  .form-section-heading {
+    gap: 13px;
+    margin-bottom: 24px;
+  }
+
+  .section-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+  }
+
+  .form-section-heading h2 {
+    font-size: 1.15rem;
   }
 
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 18px;
   }
 
   .form-group.full-width {
     grid-column: auto;
   }
 
-  .form-section-heading {
-    gap: 13px;
-  }
-
-  .section-number {
-    width: 42px;
-    height: 42px;
-  }
-
-  .form-section-heading h2 {
-    font-size: 21px;
+  .fee-notice-card {
+    padding: 22px;
   }
 
   .form-actions {
@@ -343,7 +522,53 @@
   }
 
   .success-message {
-    padding: 45px 25px;
+    padding: 38px 22px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .application-hero {
+    padding: 55px 0;
+  }
+
+  .application-hero h1 {
+    font-size: 2rem;
+  }
+
+  .application-hero p {
+    font-size: 0.95rem;
+  }
+
+  .form-section {
+    padding: 22px 16px;
+  }
+
+  .form-section-heading {
+    align-items: flex-start;
+  }
+
+  .fee-notice-card {
+    padding: 20px;
+  }
+
+  .fee-amount {
+    font-size: 2.25rem;
+  }
+
+  .declaration-section {
+    padding: 20px 16px;
+  }
+
+  .declaration span {
+    font-size: 0.87rem;
+  }
+
+  .btn {
+    min-height: 46px;
+    padding: 0 18px;
   }
 
 }

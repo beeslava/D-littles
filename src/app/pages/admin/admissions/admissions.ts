@@ -13,11 +13,13 @@ import {
 } from 'firebase/database';
 
 import { database } from '../../../core/firebase.config';
-
 import { FormsModule } from '@angular/forms';
-
 import { FirebaseService } from '../../../core/firebase.service';
 
+
+// =========================================================
+// ADMISSION INTERFACE
+// =========================================================
 
 interface AdmissionApplication {
 
@@ -29,15 +31,41 @@ interface AdmissionApplication {
 
   submittedAt: string;
 
+  // =======================================================
+  // PAYMENT INFORMATION
+  // =======================================================
+
+  applicationFee: number;
+
+  paymentStatus: string;
+
+  paymentAmount: number;
+
+  paymentReference: string;
+
+  paymentDate: string;
+
+  paymentVerifiedAt?: number | string;
+
+  // =======================================================
+  // ACCOUNT INFORMATION
+  // =======================================================
+
   studentId?: string;
 
   studentUid?: string;
 
   parentId?: string;
 
+  parentUid?: string;
+
   approvedAt?: string;
 
   updatedAt?: string;
+
+  // =======================================================
+  // STUDENT
+  // =======================================================
 
   student: {
 
@@ -52,7 +80,12 @@ interface AdmissionApplication {
     gender: string;
 
     classApplied: string;
+
   };
+
+  // =======================================================
+  // PARENT / GUARDIAN
+  // =======================================================
 
   parentGuardian: {
 
@@ -63,27 +96,82 @@ interface AdmissionApplication {
     email: string;
 
     relationship: string;
+
   };
+
+  // =======================================================
+  // PREVIOUS SCHOOL
+  // =======================================================
 
   previousSchool: {
 
     name: string;
 
     previousClass: string;
+
   };
+
+  // =======================================================
+  // EMERGENCY CONTACT
+  // =======================================================
 
   emergencyContact: {
 
     name: string;
 
     phone: string;
+
   };
 
   additionalNotes?: string;
 
   declarationAccepted?: boolean;
+
 }
 
+
+// =========================================================
+// APPROVAL CREDENTIALS
+// =========================================================
+
+interface ApprovalCredentials {
+
+  applicationNumber?: string;
+
+  student: {
+
+    studentId: string;
+
+    temporaryPassword: string | null;
+
+    email: string;
+
+    uid?: string;
+
+  };
+
+  parent: {
+
+    parentId: string;
+
+    temporaryPassword: string | null;
+
+    email: string;
+
+    uid?: string;
+
+    accountCreated: boolean;
+
+  };
+
+  existingParent: boolean;
+
+}
+
+
+// =========================================================
+// COMPONENT
+// =========================================================
 
 @Component({
 
@@ -100,22 +188,31 @@ interface AdmissionApplication {
   templateUrl: './admissions.html',
 
   styleUrl: './admissions.css'
+
 })
 export class Admissions {
+
 
   // =========================================================
   // APPLICATIONS
   // =========================================================
 
-  applications:
-    AdmissionApplication[] = [];
+  applications: AdmissionApplication[] = [];
 
-  filteredApplications:
-    AdmissionApplication[] = [];
-
+  filteredApplications: AdmissionApplication[] = [];
 
   selectedApplication:
     AdmissionApplication | null = null;
+
+
+  // =========================================================
+  // APPROVAL CREDENTIALS
+  // =========================================================
+
+  approvalCredentials:
+    ApprovalCredentials | null = null;
+
+  showCredentialsModal = false;
 
 
   // =========================================================
@@ -185,11 +282,9 @@ export class Admissions {
       return;
     }
 
-
     this.loading = true;
 
     this.errorMessage = '';
-
 
     try {
 
@@ -209,12 +304,61 @@ export class Admissions {
 
       if (snapshot.exists()) {
 
-        const data =
-          snapshot.val();
+        const data = snapshot.val();
 
 
         Object.entries(data).forEach(
           ([key, value]: [string, any]) => {
+
+            // =================================================
+            // PAYMENT NORMALIZATION
+            //
+            // Older applications may not have payment fields.
+            // =================================================
+
+            const applicationFee =
+              Number(
+                value.applicationFee ??
+                5000
+              );
+
+
+            const paymentAmount =
+              Number(
+                value.paymentAmount ??
+                0
+              );
+
+
+            const paymentStatus =
+              String(
+                value.paymentStatus ??
+                'unpaid'
+              ).toLowerCase();
+
+
+            const paymentReference =
+              String(
+                value.paymentReference ??
+                ''
+              );
+
+
+            const paymentDate =
+              String(
+                value.paymentDate ??
+                ''
+              );
+
+
+            const paymentVerifiedAt =
+              value.paymentVerifiedAt ??
+              '';
+
+
+            // =================================================
+            // BUILD APPLICATION
+            // =================================================
 
             this.applications.push({
 
@@ -222,46 +366,65 @@ export class Admissions {
                 value.applicationId ||
                 key,
 
-
               applicationNumber:
                 value.applicationNumber ||
                 'N/A',
-
 
               status:
                 value.status ||
                 'pending',
 
-
               submittedAt:
                 value.submittedAt ||
                 '',
 
+              // =================================================
+              // PAYMENT INFORMATION
+              // =================================================
+
+              applicationFee,
+
+              paymentStatus,
+
+              paymentAmount,
+
+              paymentReference,
+
+              paymentDate,
+
+              paymentVerifiedAt,
+
+              // =================================================
+              // ACCOUNT INFORMATION
+              // =================================================
 
               studentId:
                 value.studentId ||
                 '',
 
-
               studentUid:
                 value.studentUid ||
                 '',
-
 
               parentId:
                 value.parentId ||
                 '',
 
+              parentUid:
+                value.parentUid ||
+                '',
 
               approvedAt:
                 value.approvedAt ||
                 '',
 
-
               updatedAt:
                 value.updatedAt ||
                 '',
 
+              // =================================================
+              // STUDENT
+              // =================================================
 
               student: {
 
@@ -288,8 +451,12 @@ export class Admissions {
                 classApplied:
                   value.student?.classApplied ||
                   ''
+
               },
 
+              // =================================================
+              // PARENT / GUARDIAN
+              // =================================================
 
               parentGuardian: {
 
@@ -308,8 +475,12 @@ export class Admissions {
                 relationship:
                   value.parentGuardian?.relationship ||
                   ''
+
               },
 
+              // =================================================
+              // PREVIOUS SCHOOL
+              // =================================================
 
               previousSchool: {
 
@@ -320,8 +491,12 @@ export class Admissions {
                 previousClass:
                   value.previousSchool?.previousClass ||
                   ''
+
               },
 
+              // =================================================
+              // EMERGENCY CONTACT
+              // =================================================
 
               emergencyContact: {
 
@@ -332,13 +507,12 @@ export class Admissions {
                 phone:
                   value.emergencyContact?.phone ||
                   ''
-              },
 
+              },
 
               additionalNotes:
                 value.additionalNotes ||
                 '',
-
 
               declarationAccepted:
                 value.declarationAccepted ||
@@ -352,9 +526,9 @@ export class Admissions {
       }
 
 
-      // =====================================================
+      // =======================================================
       // NEWEST FIRST
-      // =====================================================
+      // =======================================================
 
       this.applications.sort(
 
@@ -371,7 +545,16 @@ export class Admissions {
       );
 
 
+      // =======================================================
+      // STATISTICS
+      // =======================================================
+
       this.calculateStatistics();
+
+
+      // =======================================================
+      // FILTER
+      // =======================================================
 
       this.filterApplications();
 
@@ -501,6 +684,27 @@ export class Admissions {
             ).toLowerCase();
 
 
+          const parentId =
+            (
+              application.parentId ||
+              ''
+            ).toLowerCase();
+
+
+          const paymentReference =
+            (
+              application.paymentReference ||
+              ''
+            ).toLowerCase();
+
+
+          const paymentStatus =
+            (
+              application.paymentStatus ||
+              ''
+            ).toLowerCase();
+
+
           return (
 
             studentName.includes(search) ||
@@ -511,7 +715,13 @@ export class Admissions {
 
             classApplied.includes(search) ||
 
-            studentId.includes(search)
+            studentId.includes(search) ||
+
+            parentId.includes(search) ||
+
+            paymentReference.includes(search) ||
+
+            paymentStatus.includes(search)
 
           );
 
@@ -544,6 +754,183 @@ export class Admissions {
       .filter(Boolean)
 
       .join(' ');
+
+  }
+
+
+  // =========================================================
+  // PAYMENT STATUS
+  // =========================================================
+
+  getPaymentStatusClass(
+    status: string
+  ): string {
+
+    switch (
+      String(status || '')
+        .toLowerCase()
+        .trim()
+    ) {
+
+      case 'paid':
+        return 'paid';
+
+
+      case 'pending':
+        return 'payment-pending';
+
+
+      case 'failed':
+        return 'payment-failed';
+
+
+      case 'unpaid':
+      default:
+        return 'unpaid';
+
+    }
+
+  }
+
+
+  // =========================================================
+  // PAYMENT STATUS LABEL
+  // =========================================================
+
+  getPaymentStatusLabel(
+    status: string
+  ): string {
+
+    switch (
+      String(status || '')
+        .toLowerCase()
+        .trim()
+    ) {
+
+      case 'paid':
+        return 'PAID';
+
+
+      case 'pending':
+        return 'PAYMENT PENDING';
+
+
+      case 'failed':
+        return 'PAYMENT FAILED';
+
+
+      case 'unpaid':
+      default:
+        return 'UNPAID';
+
+    }
+
+  }
+
+
+  // =========================================================
+  // PAYMENT CONFIRMATION
+  // =========================================================
+
+  isPaymentConfirmed(
+    application:
+      AdmissionApplication
+  ): boolean {
+
+    return (
+
+      String(
+        application.paymentStatus || ''
+      )
+        .toLowerCase()
+        .trim() === 'paid'
+
+      &&
+
+      Number(
+        application.paymentAmount || 0
+      ) >=
+
+      Number(
+        application.applicationFee || 5000
+      )
+
+      &&
+
+      !!(
+        application.paymentReference
+      )
+
+    );
+
+  }
+
+
+  // =========================================================
+  // FORMAT PAYMENT AMOUNT
+  // =========================================================
+
+  formatAmount(
+    amount: number
+  ): string {
+
+    return Number(
+      amount || 0
+    ).toLocaleString(
+      'en-NG',
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    );
+
+  }
+
+
+  // =========================================================
+  // PAYMENT DATE
+  // =========================================================
+
+  formatPaymentDate(
+    date: string | number
+  ): string {
+
+    if (!date) {
+      return 'N/A';
+    }
+
+
+    const parsedDate =
+      new Date(date);
+
+
+    if (
+      Number.isNaN(
+        parsedDate.getTime()
+      )
+    ) {
+
+      return String(date);
+
+    }
+
+
+    return parsedDate.toLocaleString(
+      'en-NG',
+      {
+
+        day: '2-digit',
+
+        month: 'short',
+
+        year: 'numeric',
+
+        hour: '2-digit',
+
+        minute: '2-digit'
+
+      }
+    );
 
   }
 
@@ -616,6 +1003,37 @@ export class Admissions {
 
 
     // -------------------------------------------------------
+    // PAYMENT MUST BE CONFIRMED
+    // -------------------------------------------------------
+
+    if (
+      !this.isPaymentConfirmed(
+        application
+      )
+    ) {
+
+      window.alert(
+
+        `This application cannot be approved yet.\n\n` +
+
+        `Admission payment has not been confirmed.\n\n` +
+
+        `Required payment: ₦${this.formatAmount(
+          application.applicationFee || 5000
+        )}\n` +
+
+        `Current payment status: ${this.getPaymentStatusLabel(
+          application.paymentStatus
+        )}`
+
+      );
+
+      return;
+
+    }
+
+
+    // -------------------------------------------------------
     // CONFIRM APPROVAL
     // -------------------------------------------------------
 
@@ -628,7 +1046,15 @@ export class Admissions {
 
         `Parent/Guardian: ${application.parentGuardian.name}\n\n` +
 
-        `A student account will be created automatically.`
+        `Payment: CONFIRMED\n` +
+
+        `Amount Paid: ₦${this.formatAmount(
+          application.paymentAmount
+        )}\n` +
+
+        `Payment Reference: ${application.paymentReference}\n\n` +
+
+        `A student account and parent account will be created automatically.`
 
       );
 
@@ -646,20 +1072,259 @@ export class Admissions {
     try {
 
       // =====================================================
-      // CALL SECURE CLOUD FUNCTION
+      // CALL SECURE BACKEND
       // =====================================================
 
-      const result =
+      const rawResult =
         await this.firebaseService
           .approveAdmissionApplication(
             application.applicationId
           );
 
 
+      // =====================================================
+      // DEBUG FULL RESPONSE
+      // =====================================================
+
       console.log(
-        'Admission approved:',
+        'FULL ADMISSION APPROVAL RESPONSE:',
+        rawResult
+      );
+
+
+      // =====================================================
+      // NORMALIZE RESPONSE
+      // =====================================================
+
+      const result: any =
+        rawResult?.data ??
+        rawResult?.result ??
+        rawResult;
+
+
+      console.log(
+        'NORMALIZED ADMISSION RESPONSE:',
         result
       );
+
+
+      // =====================================================
+      // CHECK RESPONSE
+      // =====================================================
+
+      if (!result) {
+
+        throw new Error(
+          'The server returned an empty response after approving the admission.'
+        );
+
+      }
+
+
+      // =====================================================
+      // EXTRACT STUDENT ACCOUNT
+      // =====================================================
+
+      const studentResult: any =
+
+        result.student ??
+
+        result.studentAccount ??
+
+        result.account?.student ??
+
+        (
+          result.studentId ||
+          result.studentUid
+            ? {
+
+                studentId:
+                  result.studentId ??
+                  '',
+
+                uid:
+                  result.studentUid ??
+                  '',
+
+                email:
+                  result.studentEmail ??
+                  '',
+
+                temporaryPassword:
+                  result.studentTemporaryPassword ??
+                  result.temporaryPassword ??
+                  null
+
+              }
+            : null
+        );
+
+
+      // =====================================================
+      // EXTRACT PARENT ACCOUNT
+      // =====================================================
+
+      const parentResult: any =
+
+        result.parent ??
+
+        result.parentAccount ??
+
+        result.account?.parent ??
+
+        (
+          result.parentId ||
+          result.parentUid
+            ? {
+
+                parentId:
+                  result.parentId ??
+                  '',
+
+                uid:
+                  result.parentUid ??
+                  '',
+
+                email:
+                  result.parentEmail ??
+                  '',
+
+                temporaryPassword:
+                  result.parentTemporaryPassword ??
+                  null,
+
+                accountCreated:
+                  result.parentAccountCreated ??
+                  result.accountCreated ??
+                  true
+
+              }
+            : null
+        );
+
+
+      // =====================================================
+      // DEBUG EXTRACTED ACCOUNTS
+      // =====================================================
+
+      console.log(
+        'STUDENT ACCOUNT RESPONSE:',
+        studentResult
+      );
+
+
+      console.log(
+        'PARENT ACCOUNT RESPONSE:',
+        parentResult
+      );
+
+
+      // =====================================================
+      // VERIFY REQUIRED ACCOUNT INFORMATION
+      // =====================================================
+
+      if (!studentResult) {
+
+        throw new Error(
+          'The admission was approved, but the student account information was not returned by the server.'
+        );
+
+      }
+
+
+      if (!parentResult) {
+
+        throw new Error(
+          'The admission was approved, but the parent account information was not returned by the server.'
+        );
+
+      }
+
+
+      // =====================================================
+      // EXTRACT STUDENT CREDENTIALS
+      // =====================================================
+
+      const finalStudentId =
+        studentResult.studentId ??
+        result.studentId ??
+        '';
+
+
+      const finalStudentUid =
+        studentResult.uid ??
+        result.studentUid ??
+        '';
+
+
+      const finalStudentEmail =
+        studentResult.email ??
+        result.studentEmail ??
+        '';
+
+
+      const finalStudentPassword =
+        studentResult.temporaryPassword ??
+        result.studentTemporaryPassword ??
+        result.temporaryPassword ??
+        null;
+
+
+      // =====================================================
+      // EXTRACT PARENT CREDENTIALS
+      // =====================================================
+
+      const finalParentId =
+        parentResult.parentId ??
+        result.parentId ??
+        '';
+
+
+      const finalParentUid =
+        parentResult.uid ??
+        result.parentUid ??
+        '';
+
+
+      const finalParentEmail =
+        parentResult.email ??
+        result.parentEmail ??
+        '';
+
+
+      const finalParentPassword =
+        parentResult.temporaryPassword ??
+        result.parentTemporaryPassword ??
+        null;
+
+
+      const finalParentAccountCreated =
+        parentResult.accountCreated ??
+        result.parentAccountCreated ??
+        result.accountCreated ??
+        true;
+
+
+      // =====================================================
+      // VALIDATE IDs
+      // =====================================================
+
+      if (!finalStudentId) {
+
+        throw new Error(
+          'The admission was approved, but the Student ID was not returned by the server.'
+        );
+
+      }
+
+
+      if (!finalParentId) {
+
+        throw new Error(
+          'The admission was approved, but the Parent ID was not returned by the server.'
+        );
+
+      }
 
 
       // =====================================================
@@ -671,19 +1336,100 @@ export class Admissions {
 
 
       application.studentId =
-        result.studentId;
+        finalStudentId;
 
 
       application.studentUid =
-        result.studentUid;
+        finalStudentUid;
 
 
       application.parentId =
-        result.parentId;
+        finalParentId;
+
+
+      application.parentUid =
+        finalParentUid;
 
 
       application.approvedAt =
+        result.approvedAt ??
         new Date().toISOString();
+
+
+      // =====================================================
+      // STORE CREDENTIALS
+      // =====================================================
+
+      this.approvalCredentials = {
+
+        applicationNumber:
+          result.applicationNumber ??
+          application.applicationNumber,
+
+
+        student: {
+
+          studentId:
+            finalStudentId,
+
+          temporaryPassword:
+            finalStudentPassword,
+
+          email:
+            finalStudentEmail,
+
+          uid:
+            finalStudentUid
+
+        },
+
+
+        parent: {
+
+          parentId:
+            finalParentId,
+
+          temporaryPassword:
+            finalParentPassword,
+
+          email:
+            finalParentEmail,
+
+          uid:
+            finalParentUid,
+
+          accountCreated:
+            finalParentAccountCreated === true
+
+        },
+
+
+        existingParent:
+          result.existingParent === true
+
+      };
+
+
+      // =====================================================
+      // DEBUG FINAL CREDENTIALS
+      // =====================================================
+
+      console.log(
+        'FINAL APPROVAL CREDENTIALS:',
+        this.approvalCredentials
+      );
+
+
+      // =====================================================
+      // SHOW CREDENTIALS MODAL
+      // =====================================================
+
+      this.showCredentialsModal =
+        true;
+
+
+      document.body.style.overflow =
+        'hidden';
 
 
       // =====================================================
@@ -696,7 +1442,7 @@ export class Admissions {
 
 
       // =====================================================
-      // KEEP MODAL UPDATED
+      // UPDATE SELECTED APPLICATION
       // =====================================================
 
       if (
@@ -711,52 +1457,12 @@ export class Admissions {
 
 
       // =====================================================
-      // PARENT MESSAGE
+      // SUCCESS MESSAGE
       // =====================================================
 
-      const parentMessage =
-        result.existingParent
-
-          ? 'Existing parent record was linked.'
-
-          : 'New parent record was created.';
-
-
-      // =====================================================
-      // STUDENT LOGIN CREDENTIALS
-      // =====================================================
-
-      const credentialsMessage =
-
-        `Student Login Credentials\n\n` +
-
-        `Student ID: ${result.studentId}\n` +
-
-        `Temporary Password: ${result.temporaryPassword}\n\n` +
-
-        `The student should use the Student ID and password ` +
-
-        `to sign in. The internal Firebase email is not required.`;
-
-
-      // =====================================================
-      // SHOW SUCCESS MESSAGE
-      // =====================================================
-
-      window.alert(
-
-        `Application approved successfully.\n\n` +
-
-        `Student ID: ${result.studentId}\n` +
-
-        `Parent ID: ${result.parentId}\n\n` +
-
-        `${parentMessage}\n\n` +
-
-        `${credentialsMessage}\n\n` +
-
-        `Please keep these credentials secure.`
-
+      console.log(
+        'Account credentials prepared successfully:',
+        this.approvalCredentials
       );
 
 
@@ -781,6 +1487,132 @@ export class Admissions {
       this.cdr.detectChanges();
 
     }
+
+  }
+
+
+  // =========================================================
+  // CLOSE CREDENTIALS MODAL
+  // =========================================================
+
+  closeCredentialsModal(): void {
+
+    this.showCredentialsModal =
+      false;
+
+
+    this.approvalCredentials =
+      null;
+
+
+    document.body.style.overflow =
+      '';
+
+  }
+
+
+  // =========================================================
+  // COPY TEXT
+  // =========================================================
+
+  async copyCredential(
+    value: string
+  ): Promise<void> {
+
+    if (!value) {
+      return;
+    }
+
+
+    try {
+
+      await navigator.clipboard.writeText(
+        value
+      );
+
+
+      window.alert(
+        'Copied to clipboard.'
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Unable to copy credential:',
+        error
+      );
+
+
+      window.alert(
+        'Unable to copy automatically. Please copy it manually.'
+      );
+
+    }
+
+  }
+
+
+  // =========================================================
+  // COPY ALL CREDENTIALS
+  // =========================================================
+
+  async copyAllCredentials(): Promise<void> {
+
+    if (!this.approvalCredentials) {
+      return;
+    }
+
+
+    const student =
+      this.approvalCredentials.student;
+
+
+    const parent =
+      this.approvalCredentials.parent;
+
+
+    let text =
+
+      `D-LITTLES SCHOOL\n` +
+
+      `ADMISSION ACCOUNT CREDENTIALS\n\n` +
+
+      `STUDENT ACCOUNT\n` +
+
+      `Student ID: ${student.studentId}\n` +
+
+      `Temporary Password: ${student.temporaryPassword || 'Not generated'}\n` +
+
+      `Email: ${student.email}\n\n` +
+
+      `PARENT ACCOUNT\n` +
+
+      `Parent ID: ${parent.parentId}\n`;
+
+
+    if (
+      parent.temporaryPassword
+    ) {
+
+      text +=
+        `Temporary Password: ${parent.temporaryPassword}\n`;
+
+    } else {
+
+      text +=
+        `Password: Existing parent account - no new password generated.\n`;
+
+    }
+
+
+    text +=
+      `Email: ${parent.email}\n`;
+
+
+    await this.copyCredential(
+      text
+    );
 
   }
 
@@ -917,15 +1749,15 @@ export class Admissions {
     ) {
 
       case 'approved':
-        return 'status-approved';
+        return 'approved';
 
 
       case 'rejected':
-        return 'status-rejected';
+        return 'rejected';
 
 
       default:
-        return 'status-pending';
+        return 'pending';
 
     }
 
@@ -976,4 +1808,3 @@ export class Admissions {
   }
 
 }
-

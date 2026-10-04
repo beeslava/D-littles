@@ -23,13 +23,19 @@ import {
 import { database } from '../../../../core/firebase.config';
 
 
+// =========================================================
+// INTERFACES
+// =========================================================
+
 interface Student {
   id: string;
   studentId: string;
   fullName: string;
+
   firstName?: string;
   middleName?: string;
   lastName?: string;
+
   classId: string;
   className?: string;
   section?: string;
@@ -39,6 +45,7 @@ interface Student {
 
 interface SchoolClass {
   id: string;
+
   classCode?: string;
   className: string;
   section?: string;
@@ -112,6 +119,10 @@ interface ReportSubject {
 }
 
 
+// =========================================================
+// COMPONENT
+// =========================================================
+
 @Component({
   selector: 'app-report-cards',
   standalone: true,
@@ -126,9 +137,10 @@ interface ReportSubject {
 })
 export class ReportCards implements OnInit {
 
-  /* =====================================================
-     DATA
-  ===================================================== */
+
+  // =======================================================
+  // DATA
+  // =======================================================
 
   students: Student[] = [];
   classes: SchoolClass[] = [];
@@ -140,9 +152,9 @@ export class ReportCards implements OnInit {
   filteredTerms: AcademicTerm[] = [];
 
 
-  /* =====================================================
-     SELECTED FILTERS
-  ===================================================== */
+  // =======================================================
+  // SELECTED FILTERS
+  // =======================================================
 
   selectedSessionId = '';
   selectedTermId = '';
@@ -150,9 +162,9 @@ export class ReportCards implements OnInit {
   selectedStudentId = '';
 
 
-  /* =====================================================
-     REPORT DATA
-  ===================================================== */
+  // =======================================================
+  // REPORT DATA
+  // =======================================================
 
   reportSubjects: ReportSubject[] = [];
 
@@ -162,9 +174,9 @@ export class ReportCards implements OnInit {
   selectedTerm: AcademicTerm | null = null;
 
 
-  /* =====================================================
-     REPORT STATISTICS
-  ===================================================== */
+  // =======================================================
+  // REPORT STATISTICS
+  // =======================================================
 
   totalSubjects = 0;
   totalMarks = 0;
@@ -174,9 +186,9 @@ export class ReportCards implements OnInit {
   overallRemark = '-';
 
 
-  /* =====================================================
-     UI STATE
-  ===================================================== */
+  // =======================================================
+  // UI STATE
+  // =======================================================
 
   loading = false;
   generating = false;
@@ -187,9 +199,9 @@ export class ReportCards implements OnInit {
   reportGenerated = false;
 
 
-  /* =====================================================
-     CONSTRUCTOR
-  ===================================================== */
+  // =======================================================
+  // CONSTRUCTOR
+  // =======================================================
 
   constructor(
     private zone: NgZone,
@@ -197,25 +209,22 @@ export class ReportCards implements OnInit {
   ) {}
 
 
-  /* =====================================================
-     INIT
-  ===================================================== */
+  // =======================================================
+  // INIT
+  // =======================================================
 
   ngOnInit(): void {
-
     this.loadInitialData();
-
   }
 
 
-  /* =====================================================
-     LOAD ALL DATA
-  ===================================================== */
+  // =======================================================
+  // LOAD INITIAL DATA
+  // =======================================================
 
   async loadInitialData(): Promise<void> {
 
     this.loading = true;
-
     this.clearMessages();
 
     try {
@@ -228,13 +237,11 @@ export class ReportCards implements OnInit {
         this.loadResults()
       ]);
 
-
       this.zone.run(() => {
 
         this.loading = false;
 
         this.filterStudents();
-
         this.filterTerms();
 
         this.cdr.detectChanges();
@@ -247,7 +254,6 @@ export class ReportCards implements OnInit {
         'Error loading report card data:',
         error
       );
-
 
       this.zone.run(() => {
 
@@ -265,38 +271,28 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     LOAD STUDENTS
-  ===================================================== */
+  // =======================================================
+  // LOAD STUDENTS
+  // =======================================================
 
   async loadStudents(): Promise<void> {
 
-    const snapshot =
-      await get(
-        ref(database, 'students')
-      );
+    const snapshot = await get(
+      ref(database, 'students')
+    );
 
-
-    const data =
-      snapshot.val();
-
+    const data = snapshot.val();
 
     this.students = [];
 
-
     if (!data) {
-
       return;
-
     }
-
 
     Object.entries(data).forEach(
       ([id, value]: [string, any]) => {
 
-        const student =
-          value || {};
-
+        const student = value || {};
 
         const fullName =
           student.fullName ||
@@ -307,7 +303,6 @@ export class ReportCards implements OnInit {
           ]
             .filter(Boolean)
             .join(' ');
-
 
         this.students.push({
 
@@ -346,7 +341,6 @@ export class ReportCards implements OnInit {
       }
     );
 
-
     this.students.sort(
       (a, b) =>
         a.fullName.localeCompare(
@@ -357,38 +351,28 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     LOAD CLASSES
-  ===================================================== */
+  // =======================================================
+  // LOAD CLASSES
+  // =======================================================
 
   async loadClasses(): Promise<void> {
 
-    const snapshot =
-      await get(
-        ref(database, 'classes')
-      );
+    const snapshot = await get(
+      ref(database, 'classes')
+    );
 
-
-    const data =
-      snapshot.val();
-
+    const data = snapshot.val();
 
     this.classes = [];
 
-
     if (!data) {
-
       return;
-
     }
-
 
     Object.entries(data).forEach(
       ([id, value]: [string, any]) => {
 
-        const schoolClass =
-          value || {};
-
+        const schoolClass = value || {};
 
         this.classes.push({
 
@@ -411,7 +395,6 @@ export class ReportCards implements OnInit {
       }
     );
 
-
     this.classes.sort(
       (a, b) =>
         a.className.localeCompare(
@@ -422,41 +405,31 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     LOAD SESSIONS
-  ===================================================== */
+  // =======================================================
+  // LOAD ACADEMIC SESSIONS
+  // =======================================================
 
   async loadSessions(): Promise<void> {
 
-    const snapshot =
-      await get(
-        ref(
-          database,
-          'academicSessions'
-        )
-      );
+    const snapshot = await get(
+      ref(
+        database,
+        'academicSessions'
+      )
+    );
 
-
-    const data =
-      snapshot.val();
-
+    const data = snapshot.val();
 
     this.sessions = [];
 
-
     if (!data) {
-
       return;
-
     }
-
 
     Object.entries(data).forEach(
       ([id, value]: [string, any]) => {
 
-        const session =
-          value || {};
-
+        const session = value || {};
 
         this.sessions.push({
 
@@ -473,7 +446,6 @@ export class ReportCards implements OnInit {
       }
     );
 
-
     this.sessions.sort(
       (a, b) =>
         b.name.localeCompare(
@@ -484,41 +456,31 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     LOAD TERMS
-  ===================================================== */
+  // =======================================================
+  // LOAD ACADEMIC TERMS
+  // =======================================================
 
   async loadTerms(): Promise<void> {
 
-    const snapshot =
-      await get(
-        ref(
-          database,
-          'academicTerms'
-        )
-      );
+    const snapshot = await get(
+      ref(
+        database,
+        'academicTerms'
+      )
+    );
 
-
-    const data =
-      snapshot.val();
-
+    const data = snapshot.val();
 
     this.terms = [];
 
-
     if (!data) {
-
       return;
-
     }
-
 
     Object.entries(data).forEach(
       ([id, value]: [string, any]) => {
 
-        const term =
-          value || {};
-
+        const term = value || {};
 
         this.terms.push({
 
@@ -544,41 +506,31 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     LOAD RESULTS
-  ===================================================== */
+  // =======================================================
+  // LOAD RESULTS
+  // =======================================================
 
   async loadResults(): Promise<void> {
 
-    const snapshot =
-      await get(
-        ref(
-          database,
-          'results'
-        )
-      );
+    const snapshot = await get(
+      ref(
+        database,
+        'results'
+      )
+    );
 
-
-    const data =
-      snapshot.val();
-
+    const data = snapshot.val();
 
     this.results = [];
 
-
     if (!data) {
-
       return;
-
     }
-
 
     Object.entries(data).forEach(
       ([id, value]: [string, any]) => {
 
-        const result =
-          value || {};
-
+        const result = value || {};
 
         this.results.push({
 
@@ -657,14 +609,13 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     SESSION CHANGE
-  ===================================================== */
+  // =======================================================
+  // SESSION CHANGE
+  // =======================================================
 
   onSessionChange(): void {
 
     this.selectedTermId = '';
-
     this.selectedStudentId = '';
 
     this.reportGenerated = false;
@@ -676,9 +627,9 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     TERM FILTER
-  ===================================================== */
+  // =======================================================
+  // FILTER TERMS
+  // =======================================================
 
   filterTerms(): void {
 
@@ -690,7 +641,6 @@ export class ReportCards implements OnInit {
 
     }
 
-
     this.filteredTerms =
       this.terms.filter(
         term =>
@@ -701,9 +651,9 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     CLASS CHANGE
-  ===================================================== */
+  // =======================================================
+  // CLASS CHANGE
+  // =======================================================
 
   onClassChange(): void {
 
@@ -718,9 +668,9 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     FILTER STUDENTS BY CLASS
-  ===================================================== */
+  // =======================================================
+  // FILTER STUDENTS BY CLASS
+  // =======================================================
 
   filterStudents(): void {
 
@@ -732,14 +682,12 @@ export class ReportCards implements OnInit {
 
     }
 
-
     this.filteredStudents =
       this.students.filter(
         student =>
           student.classId ===
           this.selectedClassId
       );
-
 
     console.log(
       'Selected class:',
@@ -754,16 +702,15 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     STUDENT CHANGE
-  ===================================================== */
+  // =======================================================
+  // STUDENT CHANGE
+  // =======================================================
 
   onStudentChange(): void {
 
     this.reportGenerated = false;
 
     this.clearReport();
-
 
     console.log(
       'Selected student ID:',
@@ -773,18 +720,18 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     GENERATE REPORT
-  ===================================================== */
+  // =======================================================
+  // GENERATE REPORT
+  // =======================================================
 
   async generateReport(): Promise<void> {
 
     this.clearMessages();
 
 
-    // ===================================================
-    // VALIDATE SESSION
-    // ===================================================
+    // =====================================================
+    // VALIDATION
+    // =====================================================
 
     if (!this.selectedSessionId) {
 
@@ -796,10 +743,6 @@ export class ReportCards implements OnInit {
     }
 
 
-    // ===================================================
-    // VALIDATE TERM
-    // ===================================================
-
     if (!this.selectedTermId) {
 
       this.errorMessage =
@@ -809,10 +752,6 @@ export class ReportCards implements OnInit {
 
     }
 
-
-    // ===================================================
-    // VALIDATE CLASS
-    // ===================================================
 
     if (!this.selectedClassId) {
 
@@ -824,10 +763,6 @@ export class ReportCards implements OnInit {
     }
 
 
-    // ===================================================
-    // VALIDATE STUDENT
-    // ===================================================
-
     if (!this.selectedStudentId) {
 
       this.errorMessage =
@@ -838,9 +773,9 @@ export class ReportCards implements OnInit {
     }
 
 
-    // ===================================================
-    // FIND SELECTED STUDENT
-    // ===================================================
+    // =====================================================
+    // FIND STUDENT
+    // =====================================================
 
     const student =
       this.students.find(
@@ -860,26 +795,22 @@ export class ReportCards implements OnInit {
     }
 
 
-    // ===================================================
-    // START GENERATION
-    // ===================================================
+    // =====================================================
+    // START
+    // =====================================================
 
     this.generating = true;
 
 
     try {
 
-      // -------------------------------------------------
-      // SELECT STUDENT
-      // -------------------------------------------------
-
       this.selectedStudent =
         student;
 
 
-      // -------------------------------------------------
+      // ===================================================
       // SELECT CLASS
-      // -------------------------------------------------
+      // ===================================================
 
       this.selectedClass =
         this.classes.find(
@@ -889,9 +820,9 @@ export class ReportCards implements OnInit {
         ) || null;
 
 
-      // -------------------------------------------------
+      // ===================================================
       // SELECT SESSION
-      // -------------------------------------------------
+      // ===================================================
 
       this.selectedSession =
         this.sessions.find(
@@ -901,9 +832,9 @@ export class ReportCards implements OnInit {
         ) || null;
 
 
-      // -------------------------------------------------
+      // ===================================================
       // SELECT TERM
-      // -------------------------------------------------
+      // ===================================================
 
       this.selectedTerm =
         this.terms.find(
@@ -913,23 +844,13 @@ export class ReportCards implements OnInit {
         ) || null;
 
 
-      // =================================================
+      // ===================================================
       // FIND PUBLISHED RESULTS
-      // =================================================
+      // ===================================================
 
       const studentResults =
         this.results.filter(
           result => {
-
-            /*
-             * A result may store either:
-             *
-             * 1. Firebase student record ID
-             * OR
-             * 2. Actual student/admission ID
-             *
-             * We support both.
-             */
 
             const matchesStudent =
               result.studentId ===
@@ -971,52 +892,91 @@ export class ReportCards implements OnInit {
         );
 
 
-      // =================================================
+      // ===================================================
       // BUILD REPORT SUBJECTS
-      // =================================================
+      // ===================================================
 
       this.reportSubjects =
         studentResults.map(
-          result => ({
+          result => {
 
-            subjectName:
-              result.subjectName,
+            /*
+             * IMPORTANT:
+             *
+             * Do NOT trust the stored grade/remark.
+             *
+             * We calculate them again from:
+             *
+             * CA1 + CA2 + EXAM
+             *
+             * This keeps the report consistent.
+             */
 
-            teacherName:
-              result.teacherName || '-',
+            const ca1 =
+              Number(result.ca1) || 0;
 
-            ca1:
-              result.ca1,
+            const ca2 =
+              Number(result.ca2) || 0;
 
-            ca2:
-              result.ca2,
+            const exam =
+              Number(result.exam) || 0;
 
-            exam:
-              result.exam,
+            const total =
+              ca1 +
+              ca2 +
+              exam;
 
-            total:
-              result.total,
 
-            grade:
-              result.grade,
+            return {
 
-            remark:
-              result.remark
+              subjectName:
+                result.subjectName || '-',
 
-          })
+              teacherName:
+                result.teacherName || '-',
+
+              ca1,
+
+              ca2,
+
+              exam,
+
+              total,
+
+              grade:
+                this.getGrade(total),
+
+              remark:
+                this.getRemark(total)
+
+            };
+
+          }
         );
 
 
-      // =================================================
+      // ===================================================
+      // SORT SUBJECTS
+      // ===================================================
+
+      this.reportSubjects.sort(
+        (a, b) =>
+          a.subjectName.localeCompare(
+            b.subjectName
+          )
+      );
+
+
+      // ===================================================
       // CALCULATE STATISTICS
-      // =================================================
+      // ===================================================
 
       this.calculateReportStatistics();
 
 
-      // =================================================
+      // ===================================================
       // UPDATE UI
-      // =================================================
+      // ===================================================
 
       this.zone.run(() => {
 
@@ -1029,9 +989,9 @@ export class ReportCards implements OnInit {
       });
 
 
-      // =================================================
-      // RESULT MESSAGE
-      // =================================================
+      // ===================================================
+      // MESSAGE
+      // ===================================================
 
       if (
         this.reportSubjects.length === 0
@@ -1047,14 +1007,12 @@ export class ReportCards implements OnInit {
 
       }
 
-
     } catch (error) {
 
       console.error(
         'Error generating report:',
         error
       );
-
 
       this.zone.run(() => {
 
@@ -1072,9 +1030,9 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     CALCULATE REPORT STATISTICS
-  ===================================================== */
+  // =======================================================
+  // CALCULATE REPORT STATISTICS
+  // =======================================================
 
   calculateReportStatistics(): void {
 
@@ -1112,101 +1070,71 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     GRADE
-  ===================================================== */
+  // =======================================================
+  // GRADE
+  // =======================================================
 
   getGrade(score: number): string {
 
     if (score >= 80) {
-
       return 'A';
-
     }
-
 
     if (score >= 70) {
-
       return 'B';
-
     }
-
 
     if (score >= 60) {
-
       return 'C';
-
     }
-
 
     if (score >= 50) {
-
       return 'D';
-
     }
-
 
     if (score >= 40) {
-
       return 'E';
-
     }
-
 
     return 'F';
 
   }
 
 
-  /* =====================================================
-     REMARK
-  ===================================================== */
+  // =======================================================
+  // REMARK
+  // =======================================================
 
   getRemark(score: number): string {
 
     if (score >= 80) {
-
       return 'Excellent';
-
     }
-
 
     if (score >= 70) {
-
       return 'Very Good';
-
     }
-
 
     if (score >= 60) {
-
       return 'Good';
-
     }
-
 
     if (score >= 50) {
-
       return 'Pass';
-
     }
-
 
     if (score >= 40) {
-
       return 'Needs Improvement';
-
     }
-
 
     return 'Fail';
 
   }
 
 
-  /* =====================================================
-     CLEAR REPORT
-  ===================================================== */
+  // =======================================================
+  // CLEAR REPORT
+  // =======================================================
 
   clearReport(): void {
 
@@ -1233,9 +1161,9 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     CLEAR MESSAGES
-  ===================================================== */
+  // =======================================================
+  // CLEAR MESSAGES
+  // =======================================================
 
   clearMessages(): void {
 
@@ -1246,21 +1174,25 @@ export class ReportCards implements OnInit {
   }
 
 
-  /* =====================================================
-     PRINT REPORT
-  ===================================================== */
+  // =======================================================
+  // PRINT REPORT
+  // =======================================================
 
-  printReport(): void {
-
-    if (!this.reportGenerated) {
-
-      return;
-
-    }
-
-
-    window.print();
-
+ printReport(): void {
+  if (!this.reportGenerated) {
+    return;
   }
+
+  document.body.classList.add('printing-report');
+
+  const cleanup = () => {
+    document.body.classList.remove('printing-report');
+    window.removeEventListener('afterprint', cleanup);
+  };
+
+  window.addEventListener('afterprint', cleanup);
+
+  window.print();
+}
 
 }

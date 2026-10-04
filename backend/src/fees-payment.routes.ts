@@ -11,7 +11,6 @@ import {
 } from "./auth-middleware.js";
 
 import {
-  adminAuth,
   adminDatabase,
 } from "./firebase-admin.js";
 
@@ -429,15 +428,12 @@ async function getFeePaymentTotals(
     if (
       isPendingPayment(payment)
     ) {
+      const metadata =
+        payment.metadata || {};
+
       const expiresAt =
         normalizeNumber(
-          payment.metadata &&
-            (
-              payment.metadata as Record<
-                string,
-                unknown
-              >
-            ).expiresAt
+          metadata.expiresAt
         );
 
       if (
@@ -477,7 +473,8 @@ async function authorizeStudentPayment(
   if (!uid) {
     return {
       allowed: false,
-      message: "Authenticated user was not found.",
+      message:
+        "Authenticated user was not found.",
     };
   }
 
@@ -510,12 +507,10 @@ async function authorizeStudentPayment(
       user.role
     ).toLowerCase();
 
-  /*
-   * STUDENT
-   *
-   * A student can only pay for
-   * their own student record.
-   */
+  /* =======================================================
+     STUDENT
+  ======================================================= */
+
   if (role === "student") {
     const studentUserUid =
       getStudentUid(student);
@@ -561,12 +556,10 @@ async function authorizeStudentPayment(
     };
   }
 
-  /*
-   * PARENT
-   *
-   * Parent must be the parent
-   * attached to the student record.
-   */
+  /* =======================================================
+     PARENT
+  ======================================================= */
+
   if (role === "parent") {
     const parentUid =
       getStudentParentUid(student);
@@ -615,18 +608,27 @@ async function paystackRequest(
       `https://api.paystack.co${endpoint}`,
       {
         ...options,
+
         headers: {
           Authorization:
             `Bearer ${PAYSTACK_SECRET_KEY}`,
+
           "Content-Type":
             "application/json",
+
           ...(options.headers || {}),
         },
       }
     );
 
-  const data =
-    await response.json();
+  let data: any = {};
+
+  try {
+    data =
+      await response.json();
+  } catch {
+    data = {};
+  }
 
   if (!response.ok) {
     throw new Error(
@@ -649,6 +651,8 @@ router.post(
     req: AuthenticatedRequest,
     res: Response
   ) => {
+    let paymentId = "";
+
     try {
       const {
         feeId,
@@ -656,7 +660,15 @@ router.post(
         amount,
       } = req.body || {};
 
-      if (!feeId) {
+      const cleanFeeId =
+        normalizeString(feeId);
+
+      const cleanStudentRecordId =
+        normalizeString(
+          studentRecordId
+        );
+
+      if (!cleanFeeId) {
         res.status(400).json({
           success: false,
           message:
@@ -665,7 +677,7 @@ router.post(
         return;
       }
 
-      if (!studentRecordId) {
+      if (!cleanStudentRecordId) {
         res.status(400).json({
           success: false,
           message:
@@ -694,9 +706,7 @@ router.post(
       const authorization =
         await authorizeStudentPayment(
           req,
-          normalizeString(
-            studentRecordId
-          )
+          cleanStudentRecordId
         );
 
       if (!authorization.allowed) {
@@ -714,7 +724,7 @@ router.post(
 
       const fee =
         await getFeeById(
-          normalizeString(feeId)
+          cleanFeeId
         );
 
       if (!fee) {
@@ -755,11 +765,10 @@ router.post(
         return;
       }
 
-      /*
-       * Make sure the student's class
-       * matches the fee structure when
-       * the fee has a class assigned.
-       */
+      /* =====================================================
+         CLASS VALIDATION
+      ===================================================== */
+
       const feeClassId =
         normalizeString(
           fee.classId
@@ -809,12 +818,14 @@ router.post(
         return;
       }
 
+      /* =====================================================
+         EXISTING PAYMENT TOTALS
+      ===================================================== */
+
       const totals =
         await getFeePaymentTotals(
-          normalizeString(feeId),
-          normalizeString(
-            studentRecordId
-          )
+          cleanFeeId,
+          cleanStudentRecordId
         );
 
       const availableBalance =
@@ -825,14 +836,18 @@ router.post(
             totals.pending
         );
 
-      if (availableBalance <= 0) {
+      if (
+        availableBalance <= 0
+      ) {
         res.status(400).json({
           success: false,
           message:
             "This school fee has already been fully paid or has a pending payment.",
           totalFee,
-          totalPaid: totals.paid,
-          pendingAmount: totals.pending,
+          totalPaid:
+            totals.paid,
+          pendingAmount:
+            totals.pending,
           balance: 0,
         });
         return;
@@ -847,21 +862,39 @@ router.post(
           message:
             "Payment amount cannot be greater than the remaining balance.",
           totalFee,
-          totalPaid: totals.paid,
-          pendingAmount: totals.pending,
-          balance: availableBalance,
+          totalPaid:
+            totals.paid,
+          pendingAmount:
+            totals.pending,
+          balance:
+            availableBalance,
           requestedAmount:
             paymentAmount,
         });
         return;
       }
 
+      /* =====================================================
+         PAYER
+      ===================================================== */
+
       const payerUid =
-        req.user!.uid;
+        normalizeString(
+          req.user?.uid
+        );
+
+      if (!payerUid) {
+        res.status(401).json({
+          success: false,
+          message:
+            "Authenticated payer could not be identified.",
+        });
+        return;
+      }
 
       const payerEmail =
         normalizeEmail(
-          req.user!.email
+          req.user?.email
         ) ||
         normalizeEmail(
           authorization.user?.email
@@ -876,7 +909,11 @@ router.post(
         return;
       }
 
-      const paymentId =
+      /* =====================================================
+         PAYMENT IDENTIFIERS
+      ===================================================== */
+
+      paymentId =
         generatePaymentId();
 
       const reference =
@@ -891,9 +928,25 @@ router.post(
           60 *
           1000;
 
+      /* =====================================================
+         NORMALIZED OPTIONAL FIELDS
+
+         IMPORTANT:
+         Firebase Realtime Database does NOT accept
+         undefined values.
+
+         Therefore we only add optional properties
+         when they actually contain a value.
+      ===================================================== */
+
       const studentId =
         normalizeString(
           student.studentId
+        );
+
+      const studentUid =
+        getStudentUid(
+          student
         );
 
       const parentId =
@@ -901,38 +954,34 @@ router.post(
           student
         );
 
+      const feeTitle =
+        normalizeString(
+          fee.title
+        ) ||
+        "School Fees";
+
+      const accountNumber =
+        normalizeString(
+          fee.accountNumber
+        );
+
+      /* =====================================================
+         PAYMENT RECORD
+      ===================================================== */
+
       const paymentRecord:
         PaymentRecord = {
-          id: paymentId,
-
-          studentId:
-            studentId || undefined,
+          id:
+            paymentId,
 
           studentRecordId:
-            normalizeString(
-              studentRecordId
-            ),
-
-          studentUid:
-            getStudentUid(student) ||
-            undefined,
-
-          parentId:
-            parentId || undefined,
+            cleanStudentRecordId,
 
           feeId:
-            normalizeString(feeId),
+            cleanFeeId,
 
           feeTitle:
-            normalizeString(
-              fee.title
-            ) ||
-            "School Fees",
-
-          accountNumber:
-            normalizeString(
-              fee.accountNumber
-            ) || undefined,
+            feeTitle,
 
           amountPaid:
             paymentAmount,
@@ -973,7 +1022,8 @@ router.post(
             payerUid,
 
           payerRole:
-            authorization.role,
+            authorization.role ||
+            "unknown",
 
           currency:
             SCHOOL_FEE_CURRENCY,
@@ -997,71 +1047,100 @@ router.post(
         };
 
       /*
-       * Store the payment BEFORE
-       * initializing Paystack.
+       * Only add optional Firebase fields when
+       * they contain real values.
        *
-       * This gives us an audit trail
-       * and allows webhook/verification
-       * to update the same record.
+       * This prevents:
+       *
+       * "value argument contains undefined"
        */
+
+      if (studentId) {
+        paymentRecord.studentId =
+          studentId;
+      }
+
+      if (studentUid) {
+        paymentRecord.studentUid =
+          studentUid;
+      }
+
+      if (parentId) {
+        paymentRecord.parentId =
+          parentId;
+      }
+
+      if (accountNumber) {
+        paymentRecord.accountNumber =
+          accountNumber;
+      }
+
+      /* =====================================================
+         SAVE PENDING PAYMENT
+      ===================================================== */
+
       await adminDatabase
         .ref(
           `payments/${paymentId}`
         )
-        .set(paymentRecord);
+        .set(
+          paymentRecord
+        );
+
+      /* =====================================================
+         INITIALIZE PAYSTACK
+      ===================================================== */
 
       try {
         const paystackResponse =
           await paystackRequest(
             "/transaction/initialize",
             {
-              method: "POST",
-              body: JSON.stringify({
-                email:
-                  payerEmail,
+              method:
+                "POST",
 
-                amount:
-                  Math.round(
-                    paymentAmount *
-                      100
-                  ),
+              body:
+                JSON.stringify({
+                  email:
+                    payerEmail,
 
-                currency:
-                  SCHOOL_FEE_CURRENCY,
-
-                reference,
-
-                callback_url:
-                  `${FRONTEND_URL}/parent/fees/payment/${paymentId}`,
-
-                metadata: {
-                  paymentId,
-
-                  feeId:
-                    normalizeString(
-                      feeId
+                  amount:
+                    Math.round(
+                      paymentAmount *
+                        100
                     ),
 
-                  studentRecordId:
-                    normalizeString(
-                      studentRecordId
-                    ),
+                  currency:
+                    SCHOOL_FEE_CURRENCY,
 
-                  studentId:
-                    studentId || null,
+                  reference,
 
-                  payerUid,
+                  callback_url:
+                    `${FRONTEND_URL}/parent/fees/payment/${paymentId}`,
 
-                  payerRole:
-                    authorization.role,
+                  metadata: {
+                    paymentId,
 
-                  feeTitle:
-                    normalizeString(
-                      fee.title
-                    ) ||
-                    "School Fees",
-                },
-              }),
+                    feeId:
+                      cleanFeeId,
+
+                    studentRecordId:
+                      cleanStudentRecordId,
+
+                    studentId:
+                      studentId ||
+                      null,
+
+                    payerUid,
+
+                    payerRole:
+                      authorization.role ||
+                      "unknown",
+
+                    feeTitle:
+                      feeTitle,
+                  },
+                }),
             }
           );
 
@@ -1076,12 +1155,49 @@ router.post(
         }
 
         const authorizationUrl =
-          paystackResponse.data
-            .authorization_url;
+          normalizeString(
+            paystackResponse
+              .data
+              ?.authorization_url
+          );
 
         const accessCode =
-          paystackResponse.data
-            .access_code;
+          normalizeString(
+            paystackResponse
+              .data
+              ?.access_code
+          );
+
+        if (!authorizationUrl) {
+          throw new Error(
+            "Paystack did not return a checkout authorization URL."
+          );
+        }
+
+        const updatedMetadata:
+          Record<string, unknown> = {
+            ...(paymentRecord.metadata ||
+              {}),
+
+            expiresAt,
+
+            studentName:
+              getStudentName(
+                student
+              ),
+
+            payerEmail,
+
+            reservationMinutes:
+              PAYMENT_RESERVATION_MINUTES,
+
+            authorizationUrl,
+          };
+
+        if (accessCode) {
+          updatedMetadata.paystackAccessCode =
+            accessCode;
+        }
 
         await adminDatabase
           .ref(
@@ -1091,27 +1207,8 @@ router.post(
             updatedAt:
               nowIso(),
 
-            metadata: {
-              ...(paymentRecord.metadata ||
-                {}),
-
-              expiresAt,
-
-              studentName:
-                getStudentName(
-                  student
-                ),
-
-              payerEmail,
-
-              reservationMinutes:
-                PAYMENT_RESERVATION_MINUTES,
-
-              paystackAccessCode:
-                accessCode,
-
-              authorizationUrl,
-            },
+            metadata:
+              updatedMetadata,
           });
 
         res.json({
@@ -1126,7 +1223,8 @@ router.post(
 
           authorizationUrl,
 
-          accessCode,
+          accessCode:
+            accessCode || null,
 
           amount:
             paymentAmount,
@@ -1191,6 +1289,8 @@ router.post(
           error instanceof Error
             ? error.message
             : "Unable to initialize school fee payment.",
+        paymentId:
+          paymentId || null,
       });
     }
   }
@@ -1253,8 +1353,13 @@ router.get(
         PaymentRecord =
         paymentSnapshot.val();
 
+      const storedReference =
+        normalizeString(
+          payment.paymentReference
+        );
+
       if (
-        payment.paymentReference !==
+        storedReference !==
         reference
       ) {
         res.status(400).json({
@@ -1265,24 +1370,28 @@ router.get(
         return;
       }
 
-      /*
-       * Only the original payer,
-       * or an administrator, may
-       * verify this payment.
-       */
+      /* =====================================================
+         AUTHORIZATION
+      ===================================================== */
+
       const uid =
-        req.user?.uid;
+        normalizeString(
+          req.user?.uid
+        );
 
       const payerUid =
         normalizeString(
           payment.payerUid
         );
 
-      let isAdmin = false;
+      let isAdmin =
+        false;
 
       if (uid) {
         const user =
-          await getUserByUid(uid);
+          await getUserByUid(
+            uid
+          );
 
         isAdmin =
           normalizeString(
@@ -1303,12 +1412,10 @@ router.get(
         return;
       }
 
-      /*
-       * If already successfully
-       * verified, return the saved
-       * result without calling
-       * Paystack again.
-       */
+      /* =====================================================
+         ALREADY SUCCESSFUL
+      ===================================================== */
+
       if (
         isSuccessfulPayment(
           payment
@@ -1317,6 +1424,7 @@ router.get(
         res.json({
           success: true,
           verified: true,
+
           message:
             "Payment has already been verified.",
 
@@ -1357,8 +1465,13 @@ router.get(
               payment.feeTitle,
           },
         });
+
         return;
       }
+
+      /* =====================================================
+         PAYSTACK VERIFICATION
+      ===================================================== */
 
       const paystackResponse =
         await paystackRequest(
@@ -1394,59 +1507,99 @@ router.get(
           payment.amountPaid
         );
 
-      /*
-       * Paystack amount is stored
-       * in kobo. Our school-fee
-       * records use naira.
-       */
+      const transactionCurrency =
+        normalizeString(
+          transaction.currency
+        ).toUpperCase();
+
+      /* =====================================================
+         AMOUNT + CURRENCY VALIDATION
+      ===================================================== */
+
       const amountMatches =
         Math.abs(
           transactionAmountNaira -
             expectedAmount
         ) < 0.01;
 
+      const currencyMatches =
+        !transactionCurrency ||
+        transactionCurrency ===
+          SCHOOL_FEE_CURRENCY;
+
       if (
         transactionStatus !==
           "success" ||
-        !amountMatches
+        !amountMatches ||
+        !currencyMatches
       ) {
-        await adminDatabase
-          .ref(
-            `payments/${paymentId}`
-          )
-          .update({
+        const failureStatus =
+          transactionStatus ===
+          "failed"
+            ? "failed"
+            : "pending";
+
+        let gatewayResponse =
+          normalizeString(
+            transaction.gateway_response
+          ) ||
+          transactionStatus;
+
+        if (!amountMatches) {
+          gatewayResponse =
+            "Paystack amount mismatch.";
+        }
+
+        if (!currencyMatches) {
+          gatewayResponse =
+            "Paystack currency mismatch.";
+        }
+
+        const failedUpdate:
+          Record<string, unknown> = {
             status:
-              transactionStatus ===
-              "failed"
-                ? "failed"
-                : "pending",
+              failureStatus,
 
             paymentStatus:
-              transactionStatus ===
-              "failed"
-                ? "failed"
-                : "pending",
+              failureStatus,
 
             updatedAt:
               nowIso(),
 
-            gatewayResponse:
-              transaction.gateway_response ||
-              transactionStatus,
+            gatewayResponse,
+          };
 
-            paystackTransactionId:
-              transaction.id ||
-              null,
-          });
+        if (
+          transaction.id !==
+          undefined &&
+          transaction.id !==
+          null
+        ) {
+          failedUpdate.paystackTransactionId =
+            transaction.id;
+        }
+
+        await adminDatabase
+          .ref(
+            `payments/${paymentId}`
+          )
+          .update(
+            failedUpdate
+          );
 
         res.status(400).json({
           success: false,
           verified: false,
+
           message:
             transactionStatus ===
             "failed"
               ? "Paystack reports that this payment failed."
-              : "Payment has not been successfully completed.",
+              : !amountMatches
+                ? "The Paystack payment amount does not match the expected school fee payment."
+                : !currencyMatches
+                  ? "The Paystack payment currency does not match the expected currency."
+                  : "Payment has not been successfully completed.",
 
           status:
             transactionStatus,
@@ -1455,14 +1608,22 @@ router.get(
             transactionAmountNaira,
 
           expectedAmount,
+
+          currency:
+            transactionCurrency ||
+            null,
+
+          expectedCurrency:
+            SCHOOL_FEE_CURRENCY,
         });
+
         return;
       }
 
-      /*
-       * Re-read payments before
-       * calculating the final balance.
-       */
+      /* =====================================================
+         RE-CALCULATE TOTALS
+      ===================================================== */
+
       const totals =
         await getFeePaymentTotals(
           normalizeString(
@@ -1473,12 +1634,6 @@ router.get(
           )
         );
 
-      /*
-       * The current payment is
-       * still marked pending, so
-       * totals.paid does not include
-       * it yet.
-       */
       const fee =
         await getFeeById(
           normalizeString(
@@ -1503,14 +1658,16 @@ router.get(
         );
 
       const paidAt =
-        transaction.paid_at ||
+        normalizeString(
+          transaction.paid_at
+        ) ||
         nowIso();
 
-      await adminDatabase
-        .ref(
-          `payments/${paymentId}`
-        )
-        .update({
+      const verifiedAt =
+        nowIso();
+
+      const successfulUpdate:
+        Record<string, unknown> = {
           status:
             "success",
 
@@ -1523,21 +1680,21 @@ router.get(
           paidAt,
 
           updatedAt:
-            nowIso(),
+            verifiedAt,
 
           balance:
             finalBalance,
 
-          paystackTransactionId:
-            transaction.id ||
-            null,
-
           channel:
-            transaction.channel ||
+            normalizeString(
+              transaction.channel
+            ) ||
             "paystack",
 
           gatewayResponse:
-            transaction.gateway_response ||
+            normalizeString(
+              transaction.gateway_response
+            ) ||
             "Successful",
 
           metadata: {
@@ -1547,14 +1704,31 @@ router.get(
             paystackStatus:
               transactionStatus,
 
-            verifiedAt:
-              nowIso(),
+            verifiedAt,
 
             transactionCurrency:
-              transaction.currency ||
+              transactionCurrency ||
               SCHOOL_FEE_CURRENCY,
           },
-        });
+        };
+
+      if (
+        transaction.id !==
+        undefined &&
+        transaction.id !==
+        null
+      ) {
+        successfulUpdate.paystackTransactionId =
+          transaction.id;
+      }
+
+      await adminDatabase
+        .ref(
+          `payments/${paymentId}`
+        )
+        .update(
+          successfulUpdate
+        );
 
       res.json({
         success: true,
@@ -1641,6 +1815,7 @@ router.post(
           message:
             "Payment gateway is not configured.",
         });
+
         return;
       }
 
@@ -1658,13 +1833,16 @@ router.post(
           message:
             "Paystack signature is missing.",
         });
+
         return;
       }
 
       const rawBody =
-        (req as Request & {
-          rawBody?: Buffer;
-        }).rawBody;
+        (
+          req as Request & {
+            rawBody?: Buffer;
+          }
+        ).rawBody;
 
       if (!rawBody) {
         res.status(400).json({
@@ -1672,8 +1850,13 @@ router.post(
           message:
             "Raw webhook body is unavailable.",
         });
+
         return;
       }
+
+      /* =====================================================
+         VERIFY HMAC SIGNATURE
+      ===================================================== */
 
       const expectedSignature =
         crypto
@@ -1684,16 +1867,32 @@ router.post(
           .update(rawBody)
           .digest("hex");
 
+      const signatureBuffer =
+        Buffer.from(
+          signature,
+          "utf8"
+        );
+
+      const expectedSignatureBuffer =
+        Buffer.from(
+          expectedSignature,
+          "utf8"
+        );
+
+      /*
+       * crypto.timingSafeEqual()
+       * throws if the two buffers
+       * have different lengths.
+       *
+       * Check lengths first.
+       */
+
       const signaturesMatch =
+        signatureBuffer.length ===
+          expectedSignatureBuffer.length &&
         crypto.timingSafeEqual(
-          Buffer.from(
-            signature,
-            "utf8"
-          ),
-          Buffer.from(
-            expectedSignature,
-            "utf8"
-          )
+          signatureBuffer,
+          expectedSignatureBuffer
         );
 
       if (!signaturesMatch) {
@@ -1702,6 +1901,7 @@ router.post(
           message:
             "Invalid Paystack webhook signature.",
         });
+
         return;
       }
 
@@ -1713,11 +1913,10 @@ router.post(
           event.event
         ).toLowerCase();
 
-      /*
-       * We only need successful
-       * charge events for confirming
-       * school fee payments.
-       */
+      /* =====================================================
+         ONLY PROCESS charge.success
+      ===================================================== */
+
       if (
         eventName !==
         "charge.success"
@@ -1727,6 +1926,7 @@ router.post(
           message:
             "Webhook received.",
         });
+
         return;
       }
 
@@ -1744,8 +1944,13 @@ router.post(
           message:
             "Webhook received without a reference.",
         });
+
         return;
       }
+
+      /* =====================================================
+         FIND PAYMENT BY REFERENCE
+      ===================================================== */
 
       const paymentQuery =
         await adminDatabase
@@ -1768,11 +1973,13 @@ router.post(
           message:
             "Webhook received. Payment record not found.",
         });
+
         return;
       }
 
       const payments =
-        paymentQuery.val() || {};
+        paymentQuery.val() ||
+        {};
 
       const entries =
         Object.entries(
@@ -1787,6 +1994,10 @@ router.post(
         PaymentRecord
       ];
 
+      /* =====================================================
+         ALREADY PROCESSED
+      ===================================================== */
+
       if (
         isSuccessfulPayment(
           existingPayment
@@ -1797,8 +2008,13 @@ router.post(
           message:
             "Payment was already processed.",
         });
+
         return;
       }
+
+      /* =====================================================
+         AMOUNT VALIDATION
+      ===================================================== */
 
       const expectedAmount =
         normalizeNumber(
@@ -1816,15 +2032,36 @@ router.post(
             expectedAmount
         ) < 0.01;
 
-      if (!amountMatches) {
+      const transactionCurrency =
+        normalizeString(
+          transaction.currency
+        ).toUpperCase();
+
+      const currencyMatches =
+        !transactionCurrency ||
+        transactionCurrency ===
+          SCHOOL_FEE_CURRENCY;
+
+      if (
+        !amountMatches ||
+        !currencyMatches
+      ) {
         console.error(
-          "Paystack webhook amount mismatch:",
+          "Paystack webhook validation failed:",
           {
             reference,
             expectedAmount,
             transactionAmountNaira,
+            transactionCurrency,
+            expectedCurrency:
+              SCHOOL_FEE_CURRENCY,
           }
         );
+
+        const gatewayResponse =
+          !amountMatches
+            ? "Paystack webhook amount mismatch."
+            : "Paystack webhook currency mismatch.";
 
         await adminDatabase
           .ref(
@@ -1840,17 +2077,21 @@ router.post(
             updatedAt:
               nowIso(),
 
-            gatewayResponse:
-              "Paystack webhook amount mismatch.",
+            gatewayResponse,
           });
 
         res.status(200).json({
           success: true,
           message:
-            "Webhook received but amount did not match.",
+            "Webhook received but payment validation failed.",
         });
+
         return;
       }
+
+      /* =====================================================
+         CALCULATE FINAL BALANCE
+      ===================================================== */
 
       const totals =
         await getFeePaymentTotals(
@@ -1877,11 +2118,6 @@ router.post(
                 existingPayment.totalFee
             );
 
-      /*
-       * The current payment is
-       * pending, so totals.paid
-       * does not include it.
-       */
       const finalBalance =
         Math.max(
           0,
@@ -1891,14 +2127,20 @@ router.post(
         );
 
       const paidAt =
-        transaction.paid_at ||
+        normalizeString(
+          transaction.paid_at
+        ) ||
         nowIso();
 
-      await adminDatabase
-        .ref(
-          `payments/${paymentId}`
-        )
-        .update({
+      const verifiedAt =
+        nowIso();
+
+      /* =====================================================
+         UPDATE PAYMENT
+      ===================================================== */
+
+      const successfulUpdate:
+        Record<string, unknown> = {
           status:
             "success",
 
@@ -1914,18 +2156,18 @@ router.post(
             finalBalance,
 
           updatedAt:
-            nowIso(),
-
-          paystackTransactionId:
-            transaction.id ||
-            null,
+            verifiedAt,
 
           channel:
-            transaction.channel ||
+            normalizeString(
+              transaction.channel
+            ) ||
             "paystack",
 
           gatewayResponse:
-            transaction.gateway_response ||
+            normalizeString(
+              transaction.gateway_response
+            ) ||
             "Successful",
 
           metadata: {
@@ -1935,14 +2177,31 @@ router.post(
             webhookEvent:
               eventName,
 
-            verifiedAt:
-              nowIso(),
+            verifiedAt,
 
             transactionCurrency:
-              transaction.currency ||
+              transactionCurrency ||
               SCHOOL_FEE_CURRENCY,
           },
-        });
+        };
+
+      if (
+        transaction.id !==
+        undefined &&
+        transaction.id !==
+        null
+      ) {
+        successfulUpdate.paystackTransactionId =
+          transaction.id;
+      }
+
+      await adminDatabase
+        .ref(
+          `payments/${paymentId}`
+        )
+        .update(
+          successfulUpdate
+        );
 
       console.log(
         `School fee payment verified by Paystack webhook: ${reference}`
@@ -1960,10 +2219,9 @@ router.post(
       );
 
       /*
-       * Paystack should receive a
-       * response so it can stop
-       * repeatedly retrying the
-       * webhook.
+       * Keep HTTP 200 so Paystack does not
+       * continuously retry a webhook that has
+       * already been received.
        */
       res.status(200).json({
         success: false,
@@ -2004,6 +2262,7 @@ router.get(
         res.redirect(
           `${FRONTEND_URL}/parent/fees?payment=failed`
         );
+
         return;
       }
 
@@ -2032,3 +2291,4 @@ router.get(
 ========================================================= */
 
 export default router;
+

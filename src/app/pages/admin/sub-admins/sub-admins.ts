@@ -1,15 +1,8 @@
-import {
-  Component,
-  OnInit
-} from '@angular/core';
-
-import {
-  CommonModule
-} from '@angular/common';
-
-import {
-  FormsModule
-} from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 import {
   AdminAuthService,
@@ -18,62 +11,70 @@ import {
 
 
 // =========================================================
-// TYPES
+// INTERFACES
 // =========================================================
 
 interface SubAdmin {
   uid: string;
-
-  subAdminId?: string;
-
-  fullName?: string;
-
-  email?: string;
-
+  subAdminId: string;
+  fullName: string;
+  email: string;
   phone?: string;
 
-  role?: 'subadmin';
+  role: 'subadmin';
 
-  status?: string;
+  status: 'active' | 'inactive';
 
-  permissions?: Partial<
+  permissions: Partial<
     Record<AdminPermission, boolean>
   >;
 
   createdAt?: number;
-
   updatedAt?: number;
 }
 
 
-interface PermissionItem {
-  key: AdminPermission;
-
-  label: string;
-
-  description: string;
+interface SubAdminCredentials {
+  uid?: string;
+  subAdminId: string;
+  email: string;
+  temporaryPassword: string;
 }
 
 
 interface ApiResponse {
   success?: boolean;
-
   message?: string;
-
-  error?: string;
-
-  subAdmin?: SubAdmin;
 
   subAdmins?: SubAdmin[];
 
-  data?: any;
+  subAdmin?: SubAdmin;
 
   credentials?: {
     uid?: string;
     subAdminId?: string;
     email?: string;
+    temporaryPassword?: string;
     password?: string;
   };
+
+  data?: {
+    subAdmins?: SubAdmin[];
+
+    subAdmin?: SubAdmin;
+
+    credentials?: {
+      uid?: string;
+      subAdminId?: string;
+      email?: string;
+      temporaryPassword?: string;
+      password?: string;
+    };
+
+    [key: string]: any;
+  };
+
+  [key: string]: any;
 }
 
 
@@ -83,20 +84,15 @@ interface ApiResponse {
 
 @Component({
   selector: 'app-sub-admins',
-
   standalone: true,
-
   imports: [
     CommonModule,
     FormsModule
   ],
-
   templateUrl: './sub-admins.html',
-
   styleUrl: './sub-admins.css'
 })
 export class SubAdmins implements OnInit {
-
 
   // =======================================================
   // API
@@ -107,57 +103,43 @@ export class SubAdmins implements OnInit {
 
 
   // =======================================================
-  // STATE
+  // DATA
   // =======================================================
 
   subAdmins: SubAdmin[] = [];
 
-  filteredSubAdmins: SubAdmin[] = [];
+  selectedSubAdmin: SubAdmin | null = null;
+
+  credentials: SubAdminCredentials | null = null;
+
+
+  // =======================================================
+  // UI STATE
+  // =======================================================
 
   loading = false;
 
   saving = false;
 
-  deleting = false;
+  disabling = false;
 
+  errorMessage = '';
 
-  // =======================================================
-  // SEARCH
-  // =======================================================
+  successMessage = '';
 
   searchTerm = '';
 
+  statusFilter:
+    | 'all'
+    | 'active'
+    | 'inactive' = 'all';
 
-  // =======================================================
-  // MODALS
-  // =======================================================
 
-  showCreateModal = false;
-
-  showEditModal = false;
+  showFormModal = false;
 
   showCredentialsModal = false;
 
-  showDeleteModal = false;
-
-
-  // =======================================================
-  // SELECTED SUB ADMIN
-  // =======================================================
-
-  selectedSubAdmin: SubAdmin | null = null;
-
-
-  // =======================================================
-  // CREDENTIALS
-  // =======================================================
-
-  generatedCredentials = {
-    uid: '',
-    subAdminId: '',
-    email: '',
-    password: ''
-  };
+  isEditMode = false;
 
 
   // =======================================================
@@ -167,171 +149,151 @@ export class SubAdmins implements OnInit {
   form = {
     fullName: '',
     phone: '',
-    permissions: {} as Partial<
-      Record<AdminPermission, boolean>
-    >
+
+    permissions:
+      this.createDefaultPermissions(),
+
+    status:
+      'active' as 'active' | 'inactive'
   };
 
 
   // =======================================================
-  // PERMISSIONS
+  // PERMISSION LIST
   // =======================================================
 
-  readonly permissionItems: PermissionItem[] = [
+  readonly permissionList: Array<{
+    key: Exclude<AdminPermission, 'dashboard'>;
+    label: string;
+    icon: string;
+  }> = [
 
     {
       key: 'admissions',
-
       label: 'Admissions',
-
-      description:
-        'Manage admission applications and admission processing.'
+      icon: 'fas fa-user-plus'
     },
 
     {
       key: 'students',
-
       label: 'Students',
-
-      description:
-        'View and manage student records.'
+      icon: 'fas fa-user-graduate'
     },
 
     {
       key: 'parents',
-
       label: 'Parents & Guardians',
-
-      description:
-        'View and manage parent and guardian records.'
+      icon: 'fas fa-users'
     },
 
     {
       key: 'staff',
-
       label: 'Teachers & Staff',
-
-      description:
-        'Manage teachers and other staff records.'
+      icon: 'fas fa-chalkboard-teacher'
     },
 
     {
       key: 'classes',
-
       label: 'Classes',
-
-      description:
-        'Manage school classes and class information.'
+      icon: 'fas fa-school'
     },
 
     {
       key: 'subjects',
-
       label: 'Subjects',
-
-      description:
-        'Manage subjects and subject information.'
+      icon: 'fas fa-book'
     },
 
     {
       key: 'teachingAssignments',
-
       label: 'Teaching Assignments',
-
-      description:
-        'Manage staff teaching assignments.'
+      icon: 'fas fa-tasks'
     },
 
     {
       key: 'academics',
-
       label: 'Academics',
-
-      description:
-        'Access academic administration.'
+      icon: 'fas fa-graduation-cap'
     },
 
     {
       key: 'results',
-
       label: 'Results',
-
-      description:
-        'Manage student results and report cards.'
+      icon: 'fas fa-chart-bar'
     },
 
     {
       key: 'attendance',
-
       label: 'Attendance',
-
-      description:
-        'Manage student and staff attendance.'
+      icon: 'fas fa-calendar-check'
     },
 
     {
       key: 'messages',
-
       label: 'Messages',
-
-      description:
-        'Manage school administration messages.'
+      icon: 'fas fa-envelope'
     },
 
     {
       key: 'fees',
-
       label: 'School Fees',
-
-      description:
-        'Manage school fee structures and fee records.'
+      icon: 'fas fa-money-bill-wave'
     },
 
     {
       key: 'payments',
-
       label: 'Payments',
-
-      description:
-        'View and manage school payment records.'
+      icon: 'fas fa-credit-card'
     },
 
     {
       key: 'news',
-
       label: 'News',
-
-      description:
-        'Manage school news and announcements.'
+      icon: 'fas fa-newspaper'
     },
 
     {
       key: 'events',
-
       label: 'Events',
-
-      description:
-        'Manage school events.'
+      icon: 'fas fa-calendar-alt'
     },
 
     {
       key: 'gallery',
-
       label: 'Gallery',
-
-      description:
-        'Manage school gallery content.'
+      icon: 'fas fa-images'
     }
-
   ];
+
+
+  // =======================================================
+  // CONSTRUCTOR
+  // =======================================================
+
+  constructor(
+    private readonly http: HttpClient,
+    private readonly adminAuthService: AdminAuthService
+  ) {}
+
+
+  // =======================================================
+  // INIT
+  // =======================================================
+
+  async ngOnInit(): Promise<void> {
+    await this.loadSubAdmins();
+  }
 
 
   // =======================================================
   // DEFAULT PERMISSIONS
   // =======================================================
 
-  private readonly defaultPermissions:
-    Partial<Record<AdminPermission, boolean>> = {
+  private createDefaultPermissions(): Partial<
+    Record<AdminPermission, boolean>
+  > {
+
+    return {
 
       admissions: true,
 
@@ -364,37 +326,33 @@ export class SubAdmins implements OnInit {
       events: false,
 
       gallery: false
-
     };
+  }
 
 
   // =======================================================
-  // CONSTRUCTOR
+  // AUTH HEADERS
   // =======================================================
 
-  constructor(
-    private readonly adminAuthService:
-      AdminAuthService
-  ) {}
+  private async getHeaders(): Promise<HttpHeaders> {
 
+    const user =
+      this.adminAuthService.getUser();
 
-  // =======================================================
-  // INIT
-  // =======================================================
+    if (!user) {
 
-  async ngOnInit(): Promise<void> {
-
-    const isAdmin =
-      await this.adminAuthService.isAdmin();
-
-    if (!isAdmin) {
-
-      return;
-
+      throw new Error(
+        'You are not authenticated.'
+      );
     }
 
-    await this.loadSubAdmins();
+    const token =
+      await user.getIdToken(true);
 
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
   }
 
 
@@ -406,130 +364,77 @@ export class SubAdmins implements OnInit {
 
     this.loading = true;
 
+    this.clearMessages();
+
     try {
 
+      const headers =
+        await this.getHeaders();
+
       const response =
-        await this.apiRequest(
-          '',
-          'GET'
-        ) as ApiResponse;
-
-
-      const records =
-        response.subAdmins ||
-        response.data ||
-        [];
-
+        await firstValueFrom(
+          this.http.get<ApiResponse>(
+            this.API_URL,
+            { headers }
+          )
+        );
 
       this.subAdmins =
-        Array.isArray(records)
-          ? records
-          : [];
+        response.subAdmins ??
+        response.data?.subAdmins ??
+        [];
 
-
-      this.applySearch();
-
-    } catch (error) {
+    } catch (error: any) {
 
       console.error(
-        'Error loading Sub Admins:',
+        'Unable to load sub-admins:',
         error
       );
 
-      this.showError(
+      this.errorMessage =
         this.getErrorMessage(
           error,
-          'Unable to load Sub Admin accounts.'
-        )
-      );
+          'Unable to load sub-admins.'
+        );
 
     } finally {
 
       this.loading = false;
-
     }
-
   }
 
 
   // =======================================================
-  // SEARCH
+  // SILENT REFRESH
   // =======================================================
 
-  onSearch(): void {
+  private async refreshSubAdminsSilently(): Promise<void> {
 
-    this.applySearch();
+    try {
 
-  }
+      const headers =
+        await this.getHeaders();
 
+      const response =
+        await firstValueFrom(
+          this.http.get<ApiResponse>(
+            this.API_URL,
+            { headers }
+          )
+        );
 
-  applySearch(): void {
+      this.subAdmins =
+        response.subAdmins ??
+        response.data?.subAdmins ??
+        [];
 
-    const term =
-      this.searchTerm
-        .trim()
-        .toLowerCase();
+    } catch (error) {
 
-
-    if (!term) {
-
-      this.filteredSubAdmins =
-        [...this.subAdmins];
-
-      return;
-
-    }
-
-
-    this.filteredSubAdmins =
-      this.subAdmins.filter(
-        (subAdmin) => {
-
-          return (
-
-            String(
-              subAdmin.fullName || ''
-            )
-              .toLowerCase()
-              .includes(term)
-
-            ||
-
-            String(
-              subAdmin.subAdminId || ''
-            )
-              .toLowerCase()
-              .includes(term)
-
-            ||
-
-            String(
-              subAdmin.email || ''
-            )
-              .toLowerCase()
-              .includes(term)
-
-            ||
-
-            String(
-              subAdmin.phone || ''
-            )
-              .toLowerCase()
-              .includes(term)
-
-            ||
-
-            String(
-              subAdmin.status || ''
-            )
-              .toLowerCase()
-              .includes(term)
-
-          );
-
-        }
+      console.error(
+        'Silent sub-admin refresh failed:',
+        error
       );
-
+    }
   }
 
 
@@ -539,31 +444,11 @@ export class SubAdmins implements OnInit {
 
   openCreateModal(): void {
 
-    this.resetForm();
+    this.isEditMode = false;
 
-    this.showCreateModal = true;
+    this.selectedSubAdmin = null;
 
-  }
-
-
-  closeCreateModal(): void {
-
-    if (this.saving) {
-
-      return;
-
-    }
-
-    this.showCreateModal = false;
-
-  }
-
-
-  // =======================================================
-  // RESET FORM
-  // =======================================================
-
-  resetForm(): void {
+    this.credentials = null;
 
     this.form = {
 
@@ -571,77 +456,132 @@ export class SubAdmins implements OnInit {
 
       phone: '',
 
-      permissions: {
-        ...this.defaultPermissions
-      }
+      permissions:
+        this.createDefaultPermissions(),
 
+      status: 'active'
     };
 
+    this.clearMessages();
+
+    this.showFormModal = true;
   }
 
 
   // =======================================================
-  // TOGGLE PERMISSION
+  // EDIT MODAL
   // =======================================================
 
-  togglePermission(
-    permission: AdminPermission
+  openEditModal(
+    subAdmin: SubAdmin
   ): void {
 
-    this.form.permissions[permission] =
-      !this.form.permissions[permission];
+    this.isEditMode = true;
 
+    this.selectedSubAdmin =
+      subAdmin;
+
+    this.form = {
+
+      fullName:
+        subAdmin.fullName ?? '',
+
+      phone:
+        subAdmin.phone ?? '',
+
+      permissions: {
+
+        ...this.createDefaultPermissions(),
+
+        ...(subAdmin.permissions ?? {})
+      },
+
+      status:
+        subAdmin.status === 'inactive'
+          ? 'inactive'
+          : 'active'
+    };
+
+    this.clearMessages();
+
+    this.showFormModal = true;
   }
 
 
   // =======================================================
-  // CHECK PERMISSION
+  // CLOSE FORM MODAL
   // =======================================================
 
-  hasFormPermission(
-    permission: AdminPermission
-  ): boolean {
+  closeFormModal(): void {
 
-    return (
-      this.form.permissions[permission] === true
-    );
-
-  }
-
-
-  // =======================================================
-  // SELECT ALL
-  // =======================================================
-
-  selectAllPermissions(): void {
-
-    for (
-      const item of this.permissionItems
-    ) {
-
-      this.form.permissions[item.key] =
-        true;
-
+    if (this.saving) {
+      return;
     }
 
+    this.showFormModal = false;
+
+    this.selectedSubAdmin = null;
   }
 
 
   // =======================================================
-  // CLEAR ALL
+  // SAVE SUB ADMIN
   // =======================================================
 
-  clearAllPermissions(): void {
+  async saveSubAdmin(): Promise<void> {
 
-    for (
-      const item of this.permissionItems
-    ) {
+    const fullName =
+      this.form.fullName.trim();
 
-      this.form.permissions[item.key] =
-        false;
+    if (!fullName) {
 
+      this.errorMessage =
+        'Please enter the sub-admin full name.';
+
+      return;
     }
 
+    this.saving = true;
+
+    this.errorMessage = '';
+
+    this.successMessage = '';
+
+    try {
+
+      const headers =
+        await this.getHeaders();
+
+      if (this.isEditMode) {
+
+        await this.updateSubAdmin(
+          headers
+        );
+
+      } else {
+
+        await this.createSubAdmin(
+          headers
+        );
+      }
+
+    } catch (error: any) {
+
+      console.error(
+        'Save sub-admin error:',
+        error
+      );
+
+      this.errorMessage =
+        this.getErrorMessage(
+          error,
+          'Unable to save sub-admin.'
+        );
+
+    } finally {
+
+      this.saving = false;
+    }
   }
 
 
@@ -649,586 +589,476 @@ export class SubAdmins implements OnInit {
   // CREATE SUB ADMIN
   // =======================================================
 
-  async createSubAdmin(): Promise<void> {
+  private async createSubAdmin(
+    headers: HttpHeaders
+  ): Promise<void> {
 
-    if (this.saving) {
-
-      return;
-
-    }
-
-
-    const fullName =
-      this.form.fullName.trim();
-
-
-    if (!fullName) {
-
-      this.showError(
-        'Please enter the Sub Admin full name.'
-      );
-
-      return;
-
-    }
-
-
-    this.saving = true;
-
-
-    try {
-
-      const response =
-        await this.apiRequest(
-          '/create',
-          'POST',
-          {
-
-            fullName,
-
-            phone:
-              this.form.phone.trim(),
-
-            permissions:
-              this.form.permissions
-
-          }
-        ) as ApiResponse;
-
-
-      if (
-        response.success === false
-      ) {
-
-        throw new Error(
-          response.message ||
-          response.error ||
-          'Unable to create Sub Admin.'
-        );
-
-      }
-
-
-      const credentials =
-        response.credentials ||
-        {};
-
-
-      this.generatedCredentials = {
-
-        uid:
-          credentials.uid ||
-          response.subAdmin?.uid ||
-          '',
-
-        subAdminId:
-          credentials.subAdminId ||
-          response.subAdmin?.subAdminId ||
-          '',
-
-        email:
-          credentials.email ||
-          response.subAdmin?.email ||
-          '',
-
-        password:
-          credentials.password ||
-          ''
-
-      };
-
-
-      this.showCreateModal = false;
-
-      this.showCredentialsModal = true;
-
-
-      await this.loadSubAdmins();
-
-
-      this.showSuccess(
-        'Sub Admin account created successfully.'
-      );
-
-    } catch (error) {
-
-      console.error(
-        'Error creating Sub Admin:',
-        error
-      );
-
-      this.showError(
-        this.getErrorMessage(
-          error,
-          'Unable to create Sub Admin account.'
-        )
-      );
-
-    } finally {
-
-      this.saving = false;
-
-    }
-
-  }
-
-
-  // =======================================================
-  // EDIT
-  // =======================================================
-
-  openEditModal(
-    subAdmin: SubAdmin
-  ): void {
-
-    this.selectedSubAdmin =
-      subAdmin;
-
-
-    this.form = {
+    const payload = {
 
       fullName:
-        subAdmin.fullName || '',
+        this.form.fullName.trim(),
 
       phone:
-        subAdmin.phone || '',
+        this.form.phone.trim(),
 
-      permissions: {
-
-        ...this.defaultPermissions,
-
-        ...(subAdmin.permissions || {})
-
-      }
-
+      permissions:
+        this.form.permissions
     };
 
 
-    this.showEditModal = true;
-
-  }
-
-
-  closeEditModal(): void {
-
-    if (this.saving) {
-
-      return;
-
-    }
-
-    this.showEditModal = false;
-
-    this.selectedSubAdmin = null;
-
-  }
-
-
-  // =======================================================
-  // UPDATE
-  // =======================================================
-
-  async updateSubAdmin(): Promise<void> {
-
-    if (
-      this.saving ||
-      !this.selectedSubAdmin
-    ) {
-
-      return;
-
-    }
-
-
-    const fullName =
-      this.form.fullName.trim();
-
-
-    if (!fullName) {
-
-      this.showError(
-        'Please enter the Sub Admin full name.'
-      );
-
-      return;
-
-    }
-
-
-    this.saving = true;
-
-
-    try {
-
-      const response =
-        await this.apiRequest(
-          `/${encodeURIComponent(
-            this.selectedSubAdmin.uid
-          )}`,
-          'PUT',
-          {
-
-            fullName,
-
-            phone:
-              this.form.phone.trim(),
-
-            permissions:
-              this.form.permissions
-
-          }
-        ) as ApiResponse;
-
-
-      if (
-        response.success === false
-      ) {
-
-        throw new Error(
-          response.message ||
-          response.error ||
-          'Unable to update Sub Admin.'
-        );
-
-      }
-
-
-      this.showEditModal = false;
-
-      this.selectedSubAdmin = null;
-
-
-      await this.loadSubAdmins();
-
-
-      this.showSuccess(
-        'Sub Admin updated successfully.'
-      );
-
-    } catch (error) {
-
-      console.error(
-        'Error updating Sub Admin:',
-        error
-      );
-
-      this.showError(
-        this.getErrorMessage(
-          error,
-          'Unable to update Sub Admin.'
+    const response =
+      await firstValueFrom(
+        this.http.post<ApiResponse>(
+          `${this.API_URL}/create`,
+          payload,
+          { headers }
         )
       );
 
-    } finally {
 
-      this.saving = false;
+    const extractedCredentials =
+      this.extractCredentials(
+        response
+      );
 
-    }
-
-  }
-
-
-  // =======================================================
-  // DELETE / DEACTIVATE MODAL
-  // =======================================================
-
-  openDeleteModal(
-    subAdmin: SubAdmin
-  ): void {
-
-    this.selectedSubAdmin =
-      subAdmin;
-
-    this.showDeleteModal = true;
-
-  }
-
-
-  closeDeleteModal(): void {
-
-    if (this.deleting) {
-
-      return;
-
-    }
-
-    this.showDeleteModal = false;
-
-    this.selectedSubAdmin = null;
-
-  }
-
-
-  // =======================================================
-  // DEACTIVATE
-  // =======================================================
-
-  async deactivateSubAdmin(): Promise<void> {
 
     if (
-      this.deleting ||
-      !this.selectedSubAdmin
+      !extractedCredentials ||
+      !extractedCredentials.temporaryPassword
     ) {
 
-      return;
+      console.error(
+        'Sub-admin creation response did not contain credentials.'
+      );
 
+      throw new Error(
+        'The sub-admin account was created, but the temporary password was not returned by the server.'
+      );
     }
 
 
-    this.deleting = true;
+    this.credentials =
+      extractedCredentials;
 
 
-    try {
-
-      const response =
-        await this.apiRequest(
-          `/${encodeURIComponent(
-            this.selectedSubAdmin.uid
-          )}`,
-          'DELETE'
-        ) as ApiResponse;
+    this.showFormModal = false;
 
 
-      if (
-        response.success === false
-      ) {
-
-        throw new Error(
-          response.message ||
-          response.error ||
-          'Unable to deactivate Sub Admin.'
-        );
-
-      }
+    this.showCredentialsModal = true;
 
 
-      this.showDeleteModal = false;
-
-      this.selectedSubAdmin = null;
-
-
-      await this.loadSubAdmins();
+    this.successMessage =
+      response.message ??
+      'Sub-admin created successfully.';
 
 
-      this.showSuccess(
-        'Sub Admin account deactivated successfully.'
+    void this.refreshSubAdminsSilently();
+  }
+
+
+  // =======================================================
+  // UPDATE SUB ADMIN
+  // =======================================================
+
+  private async updateSubAdmin(
+    headers: HttpHeaders
+  ): Promise<void> {
+
+    if (!this.selectedSubAdmin) {
+
+      throw new Error(
+        'No sub-admin selected.'
       );
+    }
 
-    } catch (error) {
 
-      console.error(
-        'Error deactivating Sub Admin:',
-        error
-      );
+    const payload = {
 
-      this.showError(
-        this.getErrorMessage(
-          error,
-          'Unable to deactivate Sub Admin.'
+      fullName:
+        this.form.fullName.trim(),
+
+      phone:
+        this.form.phone.trim(),
+
+      permissions:
+        this.form.permissions,
+
+      status:
+        this.form.status
+    };
+
+
+    const response =
+      await firstValueFrom(
+        this.http.put<ApiResponse>(
+          `${this.API_URL}/${this.selectedSubAdmin.uid}`,
+          payload,
+          { headers }
         )
       );
 
-    } finally {
 
-      this.deleting = false;
+    this.showFormModal = false;
 
-    }
+    this.selectedSubAdmin = null;
 
+
+    this.successMessage =
+      response.message ??
+      'Sub-admin updated successfully.';
+
+
+    await this.loadSubAdmins();
   }
 
 
   // =======================================================
-  // REACTIVATE
+  // TOGGLE STATUS
+  // =======================================================
+  //
+  // Used for REACTIVATE.
+  //
+  // The dedicated disableSubAdmin() method below
+  // handles disabling through DELETE.
+  //
   // =======================================================
 
-  async reactivateSubAdmin(
+  async toggleStatus(
     subAdmin: SubAdmin
   ): Promise<void> {
 
-    if (this.saving) {
+    if (this.disabling) {
+      return;
+    }
+
+    if (
+      subAdmin.status === 'active'
+    ) {
+
+      await this.disableSubAdmin(
+        subAdmin
+      );
 
       return;
+    }
 
+    const confirmed =
+      window.confirm(
+        `Reactivate ${subAdmin.fullName}'s Sub Admin account?\n\n` +
+        `They will be able to sign in again and use their assigned permissions.`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.disabling = true;
+
+    this.clearMessages();
+
+    try {
+
+      const headers =
+        await this.getHeaders();
+
+      const response =
+        await firstValueFrom(
+          this.http.put<ApiResponse>(
+            `${this.API_URL}/${subAdmin.uid}`,
+            {
+              status: 'active'
+            },
+            { headers }
+          )
+        );
+
+      this.successMessage =
+        response.message ??
+        `${subAdmin.fullName}'s Sub Admin account was reactivated successfully.`;
+
+      await this.loadSubAdmins();
+
+    } catch (error: any) {
+
+      console.error(
+        'Reactivate sub-admin error:',
+        error
+      );
+
+      this.errorMessage =
+        this.getErrorMessage(
+          error,
+          'Unable to reactivate Sub Admin account.'
+        );
+
+    } finally {
+
+      this.disabling = false;
+    }
+  }
+
+
+  // =======================================================
+  // DISABLE SUB ADMIN
+  // =======================================================
+  //
+  // IMPORTANT:
+  //
+  // The backend DELETE endpoint does NOT permanently
+  // delete the account.
+  //
+  // It:
+  //
+  // 1. Sets subAdmins/{uid}.status = inactive
+  // 2. Sets users/{uid}.status = inactive
+  // 3. Disables the Firebase Auth account
+  //
+  // The account can therefore be reactivated later.
+  //
+  // =======================================================
+
+  async disableSubAdmin(
+    subAdmin: SubAdmin
+  ): Promise<void> {
+
+    if (this.disabling) {
+      return;
+    }
+
+    if (!subAdmin?.uid) {
+
+      this.errorMessage =
+        'Invalid Sub Admin account.';
+
+      return;
     }
 
 
     const confirmed =
       window.confirm(
-        `Reactivate ${subAdmin.fullName || 'this Sub Admin'}?`
+        `Disable ${subAdmin.fullName}'s Sub Admin account?\n\n` +
+        `Sub Admin ID: ${subAdmin.subAdminId}\n` +
+        `Email: ${subAdmin.email}\n\n` +
+        `The account will no longer be able to sign in, ` +
+        `but the account and permissions will be preserved.\n\n` +
+        `You can reactivate the account later.`
       );
 
 
     if (!confirmed) {
-
       return;
-
     }
 
 
-    this.saving = true;
+    this.disabling = true;
+
+    this.clearMessages();
 
 
     try {
 
+      const headers =
+        await this.getHeaders();
+
+
       const response =
-        await this.apiRequest(
-          `/${encodeURIComponent(
-            subAdmin.uid
-          )}`,
-          'PUT',
-          {
-
-            fullName:
-              subAdmin.fullName || '',
-
-            phone:
-              subAdmin.phone || '',
-
-            permissions:
-              subAdmin.permissions || {},
-
-            status:
-              'active'
-
-          }
-        ) as ApiResponse;
-
-
-      if (
-        response.success === false
-      ) {
-
-        throw new Error(
-          response.message ||
-          response.error ||
-          'Unable to reactivate Sub Admin.'
+        await firstValueFrom(
+          this.http.delete<ApiResponse>(
+            `${this.API_URL}/${subAdmin.uid}`,
+            { headers }
+          )
         );
 
-      }
+
+      this.successMessage =
+        response.message ??
+        `${subAdmin.fullName}'s Sub Admin account was disabled successfully.`;
 
 
       await this.loadSubAdmins();
 
 
-      this.showSuccess(
-        'Sub Admin account reactivated successfully.'
-      );
-
-    } catch (error) {
+    } catch (error: any) {
 
       console.error(
-        'Error reactivating Sub Admin:',
+        'Disable sub-admin error:',
         error
       );
 
-      this.showError(
+
+      this.errorMessage =
         this.getErrorMessage(
           error,
-          'Unable to reactivate Sub Admin.'
-        )
-      );
+          'Unable to disable Sub Admin account.'
+        );
 
     } finally {
 
-      this.saving = false;
-
+      this.disabling = false;
     }
-
   }
 
 
   // =======================================================
-  // CREDENTIALS
+  // CLOSE CREDENTIALS MODAL
   // =======================================================
 
   closeCredentialsModal(): void {
 
-    this.showCredentialsModal = false;
+    this.showCredentialsModal =
+      false;
 
+    this.credentials = null;
   }
 
 
   // =======================================================
-  // COPY CREDENTIAL
+  // COPY ALL CREDENTIALS
   // =======================================================
 
-  async copyText(
-    value: string
+  async copyCredentials(): Promise<void> {
+
+    if (!this.credentials) {
+      return;
+    }
+
+
+    const text = [
+
+      `D Little Private School`,
+
+      `Sub Admin ID: ${this.credentials.subAdminId}`,
+
+      `Email: ${this.credentials.email}`,
+
+      `Temporary Password: ${this.credentials.temporaryPassword}`
+
+    ].join('\n');
+
+
+    await this.copyText(text);
+
+
+    this.successMessage =
+      'Credentials copied successfully.';
+  }
+
+
+  // =======================================================
+  // COPY SINGLE VALUE
+  // =======================================================
+
+  async copySingleValue(
+    value: string,
+    label: string
   ): Promise<void> {
 
     if (!value) {
-
       return;
-
     }
 
+
+    await this.copyText(value);
+
+
+    this.successMessage =
+      `${label} copied successfully.`;
+  }
+
+
+  // =======================================================
+  // CLIPBOARD
+  // =======================================================
+
+  private async copyText(
+    text: string
+  ): Promise<void> {
 
     try {
 
       await navigator.clipboard.writeText(
-        value
+        text
       );
 
-      this.showSuccess(
-        'Copied to clipboard.'
+    } catch {
+
+      const textarea =
+        document.createElement(
+          'textarea'
+        );
+
+      textarea.value = text;
+
+      textarea.style.position =
+        'fixed';
+
+      textarea.style.opacity =
+        '0';
+
+      document.body.appendChild(
+        textarea
       );
 
-    } catch (error) {
+      textarea.select();
 
-      console.error(
-        'Clipboard error:',
-        error
+      document.execCommand(
+        'copy'
       );
 
-      this.showError(
-        'Unable to copy to clipboard.'
-      );
-
+      textarea.remove();
     }
-
   }
 
 
   // =======================================================
-  // FORMAT DATE
+  // SELECT ALL PERMISSIONS
   // =======================================================
 
-  formatDate(
-    timestamp?: number
-  ): string {
+  selectAllPermissions(): void {
 
-    if (!timestamp) {
+    for (
+      const permission
+      of this.permissionList
+    ) {
 
-      return '—';
-
+      this.form.permissions[
+        permission.key
+      ] = true;
     }
-
-
-    return new Intl.DateTimeFormat(
-      'en-NG',
-      {
-        dateStyle: 'medium',
-        timeStyle: 'short'
-      }
-    ).format(
-      new Date(timestamp)
-    );
-
   }
 
 
   // =======================================================
-  // STATUS
+  // CLEAR ALL PERMISSIONS
   // =======================================================
 
-  isActive(
-    subAdmin: SubAdmin
+  clearAllPermissions(): void {
+
+    for (
+      const permission
+      of this.permissionList
+    ) {
+
+      this.form.permissions[
+        permission.key
+      ] = false;
+    }
+  }
+
+
+  // =======================================================
+  // CHECK PERMISSION
+  // =======================================================
+
+  hasPermission(
+    permission: AdminPermission
   ): boolean {
 
     return (
-      subAdmin.status === 'active'
+      this.form.permissions[
+        permission
+      ] === true
     );
-
   }
 
 
@@ -1236,113 +1066,114 @@ export class SubAdmins implements OnInit {
   // PERMISSION COUNT
   // =======================================================
 
-  permissionCount(
+  getPermissionCount(
     subAdmin: SubAdmin
   ): number {
 
-    const permissions =
-      subAdmin.permissions || {};
-
-
     return Object.values(
-      permissions
+      subAdmin.permissions ?? {}
     ).filter(
       value => value === true
     ).length;
-
   }
 
 
   // =======================================================
-  // API REQUEST
+  // FILTERED SUB ADMINS
   // =======================================================
 
-  private async apiRequest(
-    endpoint: string,
-    method: string,
-    body?: any
-  ): Promise<any> {
+  get filteredSubAdmins(): SubAdmin[] {
 
-    const user =
-      this.adminAuthService.getUser();
+    const search =
+      this.searchTerm
+        .trim()
+        .toLowerCase();
 
 
-    if (!user) {
+    return this.subAdmins.filter(
+      subAdmin => {
 
-      throw new Error(
-        'Your administrator session has expired. Please log in again.'
-      );
+        const fullName =
+          String(
+            subAdmin.fullName ?? ''
+          ).toLowerCase();
 
-    }
+        const subAdminId =
+          String(
+            subAdmin.subAdminId ?? ''
+          ).toLowerCase();
+
+        const email =
+          String(
+            subAdmin.email ?? ''
+          ).toLowerCase();
+
+        const phone =
+          String(
+            subAdmin.phone ?? ''
+          ).toLowerCase();
 
 
-    const token =
-      await user.getIdToken();
+        const matchesSearch =
+          !search ||
+          fullName.includes(search) ||
+          subAdminId.includes(search) ||
+          email.includes(search) ||
+          phone.includes(search);
 
 
-    const options: RequestInit = {
+        const matchesStatus =
+          this.statusFilter === 'all' ||
+          subAdmin.status ===
+            this.statusFilter;
 
-      method,
 
-      headers: {
-
-        'Authorization':
-          `Bearer ${token}`,
-
-        'Content-Type':
-          'application/json'
-
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
       }
-
-    };
-
-
-    if (
-      body !== undefined &&
-      method !== 'GET'
-    ) {
-
-      options.body =
-        JSON.stringify(body);
-
-    }
+    );
+  }
 
 
-    const response =
-      await fetch(
-        `${this.API_URL}${endpoint}`,
-        options
-      );
+  // =======================================================
+  // COUNTS
+  // =======================================================
+
+  get totalCount(): number {
+
+    return this.subAdmins.length;
+  }
 
 
-    let result: any = null;
+  get activeCount(): number {
+
+    return this.subAdmins.filter(
+      subAdmin =>
+        subAdmin.status === 'active'
+    ).length;
+  }
 
 
-    try {
+  get inactiveCount(): number {
 
-      result =
-        await response.json();
-
-    } catch {
-
-      result = null;
-
-    }
+    return this.subAdmins.filter(
+      subAdmin =>
+        subAdmin.status === 'inactive'
+    ).length;
+  }
 
 
-    if (!response.ok) {
+  // =======================================================
+  // CLEAR MESSAGES
+  // =======================================================
 
-      throw new Error(
-        result?.message ||
-        result?.error ||
-        `Request failed with status ${response.status}.`
-      );
+  private clearMessages(): void {
 
-    }
+    this.errorMessage = '';
 
-
-    return result;
-
+    this.successMessage = '';
   }
 
 
@@ -1351,54 +1182,95 @@ export class SubAdmins implements OnInit {
   // =======================================================
 
   private getErrorMessage(
-    error: unknown,
+    error: any,
     fallback: string
   ): string {
 
-    if (error instanceof Error) {
+    if (
+      error?.error?.message &&
+      typeof error.error.message === 'string'
+    ) {
 
-      return error.message;
-
+      return error.error.message;
     }
 
 
     if (
-      typeof error === 'string'
+      error?.message &&
+      typeof error.message === 'string'
     ) {
 
-      return error;
+      return error.message;
+    }
 
+
+    if (
+      typeof error?.error === 'string'
+    ) {
+
+      return error.error;
     }
 
 
     return fallback;
-
   }
 
 
   // =======================================================
-  // SUCCESS MESSAGE
+  // EXTRACT CREDENTIALS
   // =======================================================
 
-  private showSuccess(
-    message: string
-  ): void {
+  private extractCredentials(
+    response: ApiResponse
+  ): SubAdminCredentials | null {
 
-    window.alert(message);
+    const credentials =
+      response.credentials ??
+      response.data?.credentials;
 
+
+    if (!credentials) {
+      return null;
+    }
+
+
+    const subAdminId =
+      credentials.subAdminId ??
+      '';
+
+
+    const email =
+      credentials.email ??
+      '';
+
+
+    const temporaryPassword =
+      credentials.temporaryPassword ??
+      credentials.password ??
+      '';
+
+
+    if (
+      !subAdminId ||
+      !email ||
+      !temporaryPassword
+    ) {
+
+      return null;
+    }
+
+
+    return {
+
+      uid:
+        credentials.uid ??
+        '',
+
+      subAdminId,
+
+      email,
+
+      temporaryPassword
+    };
   }
-
-
-  // =======================================================
-  // ERROR MESSAGE
-  // =======================================================
-
-  private showError(
-    message: string
-  ): void {
-
-    window.alert(message);
-
-  }
-
 }

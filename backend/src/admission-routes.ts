@@ -3,6 +3,7 @@ import crypto from "crypto";
 
 import {
   requireAuth,
+  requireAdminPermission,
   AuthenticatedRequest,
 } from "./auth-middleware.js";
 
@@ -1261,7 +1262,6 @@ async function sendAdmissionEmail(
 // SEND SMS WITH TERMII
 // =========================================================
 
-
 async function sendAdmissionSms(
   data: AdmissionNotificationData
 ): Promise<{
@@ -1854,15 +1854,6 @@ router.post(
 // =========================================================
 // GET ADMISSION APPLICATION FOR PAYMENT
 // =========================================================
-//
-// GET /api/admissions/payment/application/:applicationId
-//
-// This endpoint is intentionally limited to the information
-// needed by the payment page.
-//
-// It does NOT return the complete private admission record.
-//
-// =========================================================
 
 router.get(
   "/payment/application/:applicationId",
@@ -1905,12 +1896,6 @@ router.get(
           .filter(Boolean)
           .join(" ")
           .trim();
-
-      // -----------------------------------------------------
-      // IMPORTANT:
-      // Return the exact DTO expected by Angular
-      // FirebaseService.getAdmissionApplication()
-      // -----------------------------------------------------
 
       return res.status(200).json({
         success: true,
@@ -2016,15 +2001,6 @@ router.get(
 
 // =========================================================
 // INITIALIZE ADMISSION FEE PAYMENT
-// =========================================================
-//
-// POST /api/admissions/payment/initialize
-//
-// Body:
-// {
-//   "applicationId": "..."
-// }
-//
 // =========================================================
 
 router.post(
@@ -2546,6 +2522,7 @@ router.post(
   "/approve",
 
   requireAuth,
+  requireAdminPermission("admissions"),
 
   async (
     req: AuthenticatedRequest,
@@ -2564,59 +2541,6 @@ router.post(
       false;
 
     try {
-      // ---------------------------------------------------
-      // CHECK AUTHENTICATED USER
-      // ---------------------------------------------------
-
-      const adminUid =
-        req.user?.uid;
-
-      if (!adminUid) {
-        return res.status(401).json({
-          success: false,
-
-          message:
-            "Authentication is required.",
-        });
-      }
-
-      // ---------------------------------------------------
-      // CHECK ADMIN ROLE
-      // ---------------------------------------------------
-
-      const adminSnapshot =
-        await adminDatabase
-          .ref(
-            `users/${adminUid}`
-          )
-          .once("value");
-
-      if (
-        !adminSnapshot.exists()
-      ) {
-        return res.status(403).json({
-          success: false,
-
-          message:
-            "Admin account was not found.",
-        });
-      }
-
-      const adminUser =
-        adminSnapshot.val() as FirebaseRecord;
-
-      if (
-        adminUser.role !==
-        "admin"
-      ) {
-        return res.status(403).json({
-          success: false,
-
-          message:
-            "Only administrators can approve admission applications.",
-        });
-      }
-
       // ---------------------------------------------------
       // GET APPLICATION ID
       // ---------------------------------------------------
@@ -3461,10 +3385,6 @@ router.post(
         databaseSaveCompleted =
           true;
 
-        // The Auth accounts now belong to the successfully
-        // approved admission. Do not delete them if a later
-        // notification operation fails.
-
         createdStudentUid =
           null;
 
@@ -3610,9 +3530,6 @@ router.post(
         ] =
           notificationAttemptTime;
       }
-
-      // Notification status must never undo a successful
-      // admission approval.
 
       try {
         await adminDatabase

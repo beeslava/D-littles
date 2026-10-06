@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 
 import {
   requireAuth,
+  requireAdminPermission,
   AuthenticatedRequest,
 } from "./auth-middleware.js";
 
@@ -10,16 +11,13 @@ import {
   adminDatabase,
 } from "./firebase-admin.js";
 
-
 const router = Router();
-
 
 // =========================================================
 // TYPES
 // =========================================================
 
 interface CreateStaffBody {
-
   staffId?: string;
 
   fullName: string;
@@ -43,16 +41,13 @@ interface CreateStaffBody {
   emergencyContact?: string;
 
   status?: string;
-
 }
-
 
 // =========================================================
 // GENERATE STAFF ID
 // =========================================================
 
 function generateStaffId(): string {
-
   const randomNumber =
     Math.floor(
       100000 +
@@ -60,16 +55,13 @@ function generateStaffId(): string {
     );
 
   return `DL-ST-${randomNumber}`;
-
 }
-
 
 // =========================================================
 // GENERATE TEMPORARY PASSWORD
 // =========================================================
 
 function generateTemporaryPassword(): string {
-
   const characters =
     "ABCDEFGHJKLMNPQRSTUVWXYZ" +
     "abcdefghijkmnopqrstuvwxyz" +
@@ -78,7 +70,6 @@ function generateTemporaryPassword(): string {
   let password = "";
 
   for (let i = 0; i < 10; i++) {
-
     const index =
       Math.floor(
         Math.random() *
@@ -87,13 +78,10 @@ function generateTemporaryPassword(): string {
 
     password +=
       characters[index];
-
   }
 
   return password;
-
 }
-
 
 // =========================================================
 // GENERATE STAFF LOGIN EMAIL
@@ -102,48 +90,11 @@ function generateTemporaryPassword(): string {
 function createStaffEmail(
   staffId: string
 ): string {
-
   return (
     `${staffId.toLowerCase()}` +
     `@staff.dlittles.com`
   );
-
 }
-
-
-// =========================================================
-// VERIFY ADMIN
-// =========================================================
-
-async function verifyAdmin(
-  req: AuthenticatedRequest
-): Promise<boolean> {
-
-  const uid =
-    req.user?.uid;
-
-  if (!uid) {
-    return false;
-  }
-
-  const snapshot =
-    await adminDatabase
-      .ref(`users/${uid}`)
-      .once("value");
-
-  if (!snapshot.exists()) {
-    return false;
-  }
-
-  const userData =
-    snapshot.val();
-
-  return (
-    userData?.role === "admin"
-  );
-
-}
-
 
 // =========================================================
 // CREATE STAFF ACCOUNT
@@ -154,16 +105,25 @@ async function verifyAdmin(
 // Authorization:
 // Bearer <firebase-id-token>
 //
+// Required permission:
+//
+// Main Admin:
+//   Automatically allowed.
+//
+// Sub Admin:
+//   Requires:
+//   subAdmins/{uid}/permissions/staff === true
+//
 // =========================================================
 
 router.post(
   "/create",
   requireAuth,
+  requireAdminPermission("staff"),
   async (
     req: AuthenticatedRequest,
     res: Response
   ) => {
-
     let createdAuthUser:
       Awaited<
         ReturnType<
@@ -172,28 +132,6 @@ router.post(
       > | null = null;
 
     try {
-
-      // =====================================================
-      // VERIFY ADMIN
-      // =====================================================
-
-      const isAdmin =
-        await verifyAdmin(req);
-
-      if (!isAdmin) {
-
-        return res.status(403).json({
-
-          success: false,
-
-          message:
-            "Only administrators can create staff accounts.",
-
-        });
-
-      }
-
-
       // =====================================================
       // REQUEST DATA
       // =====================================================
@@ -201,20 +139,13 @@ router.post(
       const body =
         req.body as CreateStaffBody;
 
-
       if (!body.fullName?.trim()) {
-
         return res.status(400).json({
-
           success: false,
-
           message:
             "Staff full name is required.",
-
         });
-
       }
-
 
       // =====================================================
       // STAFF ID
@@ -224,15 +155,12 @@ router.post(
         body.staffId?.trim();
 
       if (!staffId) {
-
         staffId =
           generateStaffId();
-
       }
 
       staffId =
         staffId.toUpperCase();
-
 
       // =====================================================
       // CHECK STAFF ID
@@ -245,20 +173,13 @@ router.post(
           .equalTo(staffId)
           .once("value");
 
-
       if (existingStaff.exists()) {
-
         return res.status(409).json({
-
           success: false,
-
           message:
             `Staff ID ${staffId} already exists.`,
-
         });
-
       }
-
 
       // =====================================================
       // STAFF EMAIL
@@ -269,39 +190,28 @@ router.post(
           ? body.email.trim().toLowerCase()
           : createStaffEmail(staffId);
 
-
       // =====================================================
       // CHECK EMAIL
       // =====================================================
 
       try {
-
         await adminAuth.getUserByEmail(
           loginEmail
         );
 
         return res.status(409).json({
-
           success: false,
-
           message:
             `An account already exists for ${loginEmail}.`,
-
         });
-
       } catch (error: any) {
-
         if (
           error?.code !==
           "auth/user-not-found"
         ) {
-
           throw error;
-
         }
-
       }
-
 
       // =====================================================
       // TEMPORARY PASSWORD
@@ -310,14 +220,12 @@ router.post(
       const temporaryPassword =
         generateTemporaryPassword();
 
-
       // =====================================================
       // CREATE FIREBASE AUTH USER
       // =====================================================
 
       createdAuthUser =
         await adminAuth.createUser({
-
           email:
             loginEmail,
 
@@ -329,9 +237,7 @@ router.post(
 
           disabled:
             false,
-
         });
-
 
       // =====================================================
       // CREATE STAFF DATABASE RECORD
@@ -346,13 +252,10 @@ router.post(
         staffRef.key;
 
       if (!staffRecordId) {
-
         throw new Error(
           "Unable to generate staff record ID."
         );
-
       }
-
 
       // =====================================================
       // TIMESTAMP
@@ -361,13 +264,11 @@ router.post(
       const now =
         Date.now();
 
-
       // =====================================================
       // STAFF RECORD
       // =====================================================
 
       const staffData = {
-
         id:
           staffRecordId,
 
@@ -416,16 +317,13 @@ router.post(
 
         updatedAt:
           now,
-
       };
-
 
       // =====================================================
       // USERS RECORD
       // =====================================================
 
       const userData = {
-
         uid:
           createdAuthUser.uid,
 
@@ -450,9 +348,7 @@ router.post(
 
         updatedAt:
           now,
-
       };
-
 
       // =====================================================
       // SAVE BOTH RECORDS
@@ -461,29 +357,24 @@ router.post(
       await adminDatabase
         .ref()
         .update({
-
           [`staff/${staffRecordId}`]:
             staffData,
 
           [`users/${createdAuthUser.uid}`]:
             userData,
-
         });
-
 
       // =====================================================
       // SUCCESS RESPONSE
       // =====================================================
 
       return res.status(201).json({
-
         success: true,
 
         message:
           "Staff account created successfully.",
 
         staff: {
-
           id:
             staffRecordId,
 
@@ -506,60 +397,46 @@ router.post(
 
           status:
             staffData.status,
-
         },
 
         credentials: {
-
           staffId,
 
           email:
             loginEmail,
 
           temporaryPassword,
-
         },
-
       });
 
     } catch (error: any) {
-
       console.error(
         "Create staff error:",
         error
       );
-
 
       // =====================================================
       // CLEANUP AUTH ACCOUNT
       // =====================================================
 
       if (createdAuthUser) {
-
         try {
-
           await adminAuth.deleteUser(
             createdAuthUser.uid
           );
-
         } catch (cleanupError) {
-
           console.error(
             "Failed to clean up Auth account:",
             cleanupError
           );
-
         }
-
       }
-
 
       // =====================================================
       // ERROR RESPONSE
       // =====================================================
 
       return res.status(500).json({
-
         success: false,
 
         message:
@@ -568,13 +445,9 @@ router.post(
         error:
           error?.message ||
           "Unknown server error.",
-
       });
-
     }
-
   }
 );
-
 
 export default router;

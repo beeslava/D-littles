@@ -1,22 +1,27 @@
 import { inject } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
+import {
+  Router,
+  CanActivateFn,
+} from '@angular/router';
 
 import {
   AdminAuthService,
   AdminPermission,
 } from './Auth/admin-auth.service';
 
-/**
- * =========================================================
- * ADMIN OR SUB-ADMIN GUARD
- * =========================================================
- *
- * Allows:
- * - Main admin
- * - Active sub-admin
- *
- * Used for the general /admin area.
- */
+
+// =========================================================
+// ADMIN OR SUB-ADMIN GUARD
+// =========================================================
+//
+// Allows:
+// - Main Admin
+// - Active Sub Admin
+//
+// Used when a route should be accessible to any
+// authenticated administrator.
+// =========================================================
+
 export const adminGuard: CanActivateFn = async () => {
   const adminAuthService = inject(AdminAuthService);
   const router = inject(Router);
@@ -28,29 +33,31 @@ export const adminGuard: CanActivateFn = async () => {
     return true;
   }
 
-  await router.navigate(['/admin']);
-
-  return false;
+  // Return a UrlTree instead of starting a second
+  // navigation from inside the guard.
+  return router.createUrlTree(['/admin']);
 };
 
 
-/**
- * =========================================================
- * PERMISSION GUARD
- * =========================================================
- *
- * Main admin:
- * - Always allowed.
- *
- * Sub-admin:
- * - Must have the requested permission.
- *
- * Example:
- *
- * adminPermissionGuard('students')
- * adminPermissionGuard('fees')
- * adminPermissionGuard('results')
- */
+// =========================================================
+// ADMIN PERMISSION GUARD
+// =========================================================
+//
+// Main Admin:
+// - Always allowed.
+//
+// Active Sub Admin:
+// - Must have the requested permission.
+//
+// Examples:
+//
+// adminPermissionGuard('dashboard')
+// adminPermissionGuard('students')
+// adminPermissionGuard('fees')
+// adminPermissionGuard('payments')
+// adminPermissionGuard('results')
+// =========================================================
+
 export function adminPermissionGuard(
   permission: AdminPermission
 ): CanActivateFn {
@@ -58,12 +65,26 @@ export function adminPermissionGuard(
     const adminAuthService = inject(AdminAuthService);
     const router = inject(Router);
 
-    // Main admin has unrestricted access.
+    // -----------------------------------------------------
+    // MAIN ADMIN
+    // -----------------------------------------------------
+    //
+    // Main Admin has unrestricted access to all
+    // administrative modules.
+    //
     if (await adminAuthService.isAdmin()) {
       return true;
     }
 
-    // Sub-admin must have the specific permission.
+
+    // -----------------------------------------------------
+    // SUB ADMIN / PERMISSION CHECK
+    // -----------------------------------------------------
+    //
+    // hasPermission() is responsible for determining
+    // whether the currently authenticated administrator
+    // has this specific permission.
+    //
     const allowed =
       await adminAuthService.hasPermission(permission);
 
@@ -71,32 +92,40 @@ export function adminPermissionGuard(
       return true;
     }
 
-    await router.navigate([
+
+    // -----------------------------------------------------
+    // UNAUTHORIZED
+    // -----------------------------------------------------
+    //
+    // The user is authenticated but does not have
+    // permission to access this module.
+    //
+    // Send them back to the admin dashboard.
+    //
+    return router.createUrlTree([
       '/admin/dashboard',
     ]);
-
-    return false;
   };
 }
 
 
-/**
- * =========================================================
- * MAIN ADMIN ONLY GUARD
- * =========================================================
- *
- * Allows ONLY the main administrator.
- *
- * This is used for sensitive administration areas such as:
- *
- * - Sub Admin management
- * - Creating sub-admin accounts
- * - Editing sub-admin permissions
- * - Deactivating sub-admin accounts
- *
- * Sub-admins are deliberately blocked even if they have
- * other administrative permissions.
- */
+// =========================================================
+// MAIN ADMIN ONLY GUARD
+// =========================================================
+//
+// Allows ONLY the Main Administrator.
+//
+// Used for highly privileged administration areas such as:
+//
+// - Sub Admin management
+// - Creating Sub Admin accounts
+// - Editing Sub Admin permissions
+// - Deactivating Sub Admin accounts
+//
+// A Sub Admin is blocked even if they have other
+// administrative permissions.
+// =========================================================
+
 export const mainAdminGuard: CanActivateFn = async () => {
   const adminAuthService = inject(AdminAuthService);
   const router = inject(Router);
@@ -108,9 +137,9 @@ export const mainAdminGuard: CanActivateFn = async () => {
     return true;
   }
 
-  await router.navigate([
+  // Sub Admin or unauthorized user.
+  return router.createUrlTree([
     '/admin/dashboard',
   ]);
-
-  return false;
 };
+

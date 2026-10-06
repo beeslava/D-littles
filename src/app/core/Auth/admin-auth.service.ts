@@ -97,6 +97,10 @@ export class AdminAuthService {
   private authReadyPromise: Promise<User | null>;
 
 
+  // =======================================================
+  // CONSTRUCTOR
+  // =======================================================
+
   constructor() {
 
     this.authReadyPromise =
@@ -106,7 +110,8 @@ export class AdminAuthService {
           auth,
           async (user) => {
 
-            this.currentUser = user;
+            this.currentUser =
+              user;
 
             /**
              * Load the administrator/sub-admin
@@ -128,17 +133,20 @@ export class AdminAuthService {
                   error
                 );
 
-                this.currentUserData = null;
+                this.currentUserData =
+                  null;
 
               }
 
             } else {
 
-              this.currentUserData = null;
+              this.currentUserData =
+                null;
 
             }
 
-            this.authReady = true;
+            this.authReady =
+              true;
 
             resolve(user);
 
@@ -199,7 +207,8 @@ export class AdminAuthService {
 
     if (!snapshot.exists()) {
 
-      this.currentUserData = null;
+      this.currentUserData =
+        null;
 
       return null;
 
@@ -215,7 +224,8 @@ export class AdminAuthService {
       data?.role !== 'subadmin'
     ) {
 
-      this.currentUserData = null;
+      this.currentUserData =
+        null;
 
       return null;
 
@@ -257,15 +267,10 @@ export class AdminAuthService {
       };
 
 
-    /**
-     * Sub Admin permissions are stored under:
-     *
-     * subAdmins/{uid}
-     *
-     * The users/{uid} record contains the identity
-     * information, while subAdmins/{uid} contains
-     * the permission configuration.
-     */
+    // =====================================================
+    // LOAD SUB ADMIN RECORD
+    // =====================================================
+
     if (
       data.role === 'subadmin'
     ) {
@@ -289,7 +294,8 @@ export class AdminAuthService {
 
 
         userData.permissions =
-          subAdminData.permissions || {};
+          subAdminData.permissions ||
+          {};
 
         userData.status =
           subAdminData.status ||
@@ -326,23 +332,119 @@ export class AdminAuthService {
 
 
   // =======================================================
+  // NORMALIZE ADMIN LOGIN
+  // =======================================================
+  //
+  // Supports:
+  //
+  // Main Admin:
+  //     admin@example.com
+  //
+  // Sub Admin:
+  //     DL-SA-254337
+  //
+  // becomes:
+  //
+  //     dl-sa-254337@admin.dlittles.com
+  //
+  // =======================================================
+
+  private normalizeLoginEmail(
+    loginValue: string
+  ): string {
+
+    const value =
+      loginValue
+        .trim();
+
+
+    if (!value) {
+
+      throw new Error(
+        'Admin email or Sub Admin ID is required.'
+      );
+
+    }
+
+
+    // =====================================================
+    // SUB ADMIN ID
+    // =====================================================
+
+    if (
+      value
+        .toUpperCase()
+        .startsWith('DL-SA-')
+    ) {
+
+      return (
+        `${value.toLowerCase()}@admin.dlittles.com`
+      );
+
+    }
+
+
+    // =====================================================
+    // NORMAL ADMIN EMAIL
+    // =====================================================
+
+    return value.toLowerCase();
+
+  }
+
+
+  // =======================================================
   // LOGIN
   // =======================================================
 
   /**
    * Administrator / Sub Admin login.
+   *
+   * Accepts either:
+   *
+   * 1. Main Admin email
+   * 2. Sub Admin ID
    */
   async login(
-    email: string,
+    emailOrSubAdminId: string,
     password: string
   ): Promise<User> {
+
+
+    // =====================================================
+    // VALIDATE LOGIN VALUE
+    // =====================================================
+
+    const loginEmail =
+      this.normalizeLoginEmail(
+        emailOrSubAdminId
+      );
+
+
+    // =====================================================
+    // VALIDATE PASSWORD
+    // =====================================================
+
+    if (!password) {
+
+      throw new Error(
+        'Password is required.'
+      );
+
+    }
+
+
+    // =====================================================
+    // FIREBASE AUTHENTICATION
+    // =====================================================
 
     const credential =
       await signInWithEmailAndPassword(
         auth,
-        email,
+        loginEmail,
         password
       );
+
 
     const user =
       credential.user;
@@ -366,9 +468,11 @@ export class AdminAuthService {
 
       await signOut(auth);
 
-      this.currentUser = null;
+      this.currentUser =
+        null;
 
-      this.currentUserData = null;
+      this.currentUserData =
+        null;
 
       throw new Error(
         'This account is not authorized as an administrator.'
@@ -392,9 +496,11 @@ export class AdminAuthService {
 
       await signOut(auth);
 
-      this.currentUser = null;
+      this.currentUser =
+        null;
 
-      this.currentUserData = null;
+      this.currentUserData =
+        null;
 
       throw new Error(
         'This account does not have administrator access.'
@@ -414,9 +520,11 @@ export class AdminAuthService {
 
       await signOut(auth);
 
-      this.currentUser = null;
+      this.currentUser =
+        null;
 
-      this.currentUserData = null;
+      this.currentUserData =
+        null;
 
       throw new Error(
         'This administrator account is inactive.'
@@ -449,9 +557,11 @@ export class AdminAuthService {
 
         await signOut(auth);
 
-        this.currentUser = null;
+        this.currentUser =
+          null;
 
-        this.currentUserData = null;
+        this.currentUserData =
+          null;
 
         throw new Error(
           'This Sub Admin account is not properly configured.'
@@ -470,9 +580,11 @@ export class AdminAuthService {
 
         await signOut(auth);
 
-        this.currentUser = null;
+        this.currentUser =
+          null;
 
-        this.currentUserData = null;
+        this.currentUserData =
+          null;
 
         throw new Error(
           'This Sub Admin account is inactive.'
@@ -512,9 +624,11 @@ export class AdminAuthService {
 
     await signOut(auth);
 
-    this.currentUser = null;
+    this.currentUser =
+      null;
 
-    this.currentUserData = null;
+    this.currentUserData =
+      null;
 
   }
 

@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 
 import {
-  adminGuard,
   adminPermissionGuard,
   mainAdminGuard
 } from './core/admin.guard';
@@ -9,6 +8,21 @@ import {
 import { schoolGuard } from './core/Auth/school.guard';
 
 import { staffGuard } from './core/Auth/staff.guard';
+
+
+// =====================================================
+// SUB ADMIN
+// =====================================================
+//
+// IMPORTANT:
+// SubAdmins is imported directly instead of being loaded
+// through loadComponent().
+//
+// This prevents Angular from attempting to JIT-compile
+// the SubAdmins component at runtime.
+// =====================================================
+
+import { SubAdmins } from './pages/admin/sub-admins/sub-admins';
 
 
 export const routes: Routes = [
@@ -323,6 +337,10 @@ export const routes: Routes = [
   // their permissions, but they cannot create, edit,
   // deactivate, or manage other sub-admin accounts.
   //
+  // SubAdmins is intentionally loaded directly rather
+  // than through loadComponent() to avoid the runtime
+  // JIT compilation error.
+  // =====================================================
 
   {
     path: 'admin/sub-admins',
@@ -331,9 +349,7 @@ export const routes: Routes = [
       mainAdminGuard
     ],
 
-    loadComponent: () =>
-      import('./pages/admin/sub-admins/sub-admins')
-        .then(m => m.SubAdmins)
+    component: SubAdmins
   },
 
 
@@ -691,4 +707,3 @@ export const routes: Routes = [
   }
 
 ];
-

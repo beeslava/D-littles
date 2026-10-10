@@ -46,10 +46,16 @@ export class AdminDashboard {
 
   adminName = 'Administrator';
 
+
   /**
    * True only for the Main Administrator.
    *
-   * Sub Admins will have this set to false.
+   * Main Administrator:
+   * - Can see all sidebar modules.
+   * - Can manage Sub Admins.
+   *
+   * Sub Admin:
+   * - Can only see assigned modules.
    */
   isMainAdmin = false;
 
@@ -67,14 +73,25 @@ export class AdminDashboard {
   /**
    * Permissions assigned to the current account.
    *
-   * Main Admin receives every permission.
+   * Main Admin:
+   * Every permission is treated as allowed.
    *
-   * Sub Admin receives only the permissions assigned
-   * to their account.
+   * Sub Admin:
+   * Only permissions explicitly set to true are allowed.
    */
   permissions: Partial<
     Record<AdminPermission, boolean>
   > = {};
+
+
+  /**
+   * True after the permission/account information
+   * has finished loading.
+   *
+   * This prevents the sidebar from briefly displaying
+   * incorrect items while permissions are loading.
+   */
+  permissionsLoaded = false;
 
 
   // =========================================================
@@ -135,59 +152,94 @@ export class AdminDashboard {
 
   async ngOnInit(): Promise<void> {
 
-    // -------------------------------------------------------
-    // LOAD CURRENT ADMIN PROFILE
-    // -------------------------------------------------------
+    try {
 
-    const userData =
-      this.adminAuthService.getUserData();
+      // -------------------------------------------------------
+      // LOAD CURRENT ADMIN PROFILE
+      // -------------------------------------------------------
+
+      const userData =
+        this.adminAuthService.getUserData();
 
 
-    if (userData?.fullName) {
+      if (userData?.fullName) {
 
-      this.adminName =
-        userData.fullName;
+        this.adminName =
+          userData.fullName;
 
-    } else if (userData?.email) {
+      } else if (userData?.email) {
 
-      this.adminName =
-        userData.email;
+        this.adminName =
+          userData.email;
+
+      }
+
+
+      // -------------------------------------------------------
+      // DETERMINE ACCOUNT TYPE
+      // -------------------------------------------------------
+
+      this.isMainAdmin =
+        await this.adminAuthService.isAdmin();
+
+
+      this.isSubAdmin =
+        await this.adminAuthService.isSubAdmin();
+
+
+      // -------------------------------------------------------
+      // LOAD PERMISSIONS
+      // -------------------------------------------------------
+
+      this.permissions =
+        await this.adminAuthService.getPermissions();
+
+
+      // -------------------------------------------------------
+      // PERMISSIONS ARE NOW READY
+      // -------------------------------------------------------
+
+      this.permissionsLoaded = true;
+
+
+      // -------------------------------------------------------
+      // LOAD DASHBOARD STATISTICS
+      // -------------------------------------------------------
+
+      await this.loadDashboardStatistics();
+
+
+      // -------------------------------------------------------
+      // REFRESH UI
+      // -------------------------------------------------------
+
+      this.cdr.detectChanges();
+
+    } catch (error) {
+
+      console.error(
+        'Failed to initialize admin dashboard:',
+        error
+      );
+
+
+      this.errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unable to load administrator information.';
+
+
+      /**
+       * We still mark permissions as loaded so that the
+       * application does not remain permanently stuck
+       * in a loading state.
+       */
+      this.permissionsLoaded = true;
+
+
+      this.cdr.detectChanges();
 
     }
-
-
-    // -------------------------------------------------------
-    // DETERMINE ACCOUNT TYPE
-    // -------------------------------------------------------
-
-    this.isMainAdmin =
-      await this.adminAuthService.isAdmin();
-
-
-    this.isSubAdmin =
-      await this.adminAuthService.isSubAdmin();
-
-
-    // -------------------------------------------------------
-    // LOAD PERMISSIONS
-    // -------------------------------------------------------
-
-    this.permissions =
-      await this.adminAuthService.getPermissions();
-
-
-    // -------------------------------------------------------
-    // LOAD DASHBOARD STATISTICS
-    // -------------------------------------------------------
-
-    await this.loadDashboardStatistics();
-
-
-    // -------------------------------------------------------
-    // REFRESH UI
-    // -------------------------------------------------------
-
-    this.cdr.detectChanges();
 
   }
 
@@ -222,6 +274,17 @@ export class AdminDashboard {
 
 
     // -------------------------------------------------------
+    // PERMISSIONS NOT LOADED YET
+    // -------------------------------------------------------
+
+    if (!this.permissionsLoaded) {
+
+      return false;
+
+    }
+
+
+    // -------------------------------------------------------
     // SUB ADMIN
     // -------------------------------------------------------
 
@@ -248,12 +311,20 @@ export class AdminDashboard {
    */
   canSeeAcademics(): boolean {
 
+    // -------------------------------------------------------
+    // MAIN ADMIN
+    // -------------------------------------------------------
+
     if (this.isMainAdmin) {
 
       return true;
 
     }
 
+
+    // -------------------------------------------------------
+    // SUB ADMIN
+    // -------------------------------------------------------
 
     return (
       this.canAccess('academics') ||
@@ -313,7 +384,9 @@ export class AdminDashboard {
 
   toggleAcademics(): void {
 
-    // Do nothing if the account has no Academics access.
+    // -------------------------------------------------------
+    // SAFETY CHECK
+    // -------------------------------------------------------
 
     if (!this.canSeeAcademics()) {
 
@@ -321,6 +394,10 @@ export class AdminDashboard {
 
     }
 
+
+    // -------------------------------------------------------
+    // TOGGLE
+    // -------------------------------------------------------
 
     this.academicsOpen =
       !this.academicsOpen;
@@ -348,17 +425,19 @@ export class AdminDashboard {
 
     try {
 
-      // -----------------------------------------------------
-      // LOAD ADMISSIONS
-      // -----------------------------------------------------
+      // =====================================================
+      // ADMISSIONS
+      // =====================================================
 
       /**
-       * Only attempt to read admissions when the current
-       * account actually has admissions permission.
+       * Only read admissions when the current account
+       * has admissions permission.
        *
-       * This is important because Firebase rules may deny
-       * the read for a Sub Admin without this permission.
+       * This prevents a Sub Admin without admissions
+       * permission from attempting an unauthorized
+       * Firebase read.
        */
+
       if (
         this.canAccess('admissions')
       ) {
@@ -415,16 +494,18 @@ export class AdminDashboard {
       }
 
 
-      // -----------------------------------------------------
+      // =====================================================
       // STUDENTS
-      // -----------------------------------------------------
+      // =====================================================
 
       /**
-       * Students statistics will be connected to the
-       * students Firebase path.
+       * Only load student statistics when the account
+       * has the Students permission.
        *
-       * Only display/load it when permission exists.
+       * The actual student statistics can be connected
+       * here when required.
        */
+
       if (
         this.canAccess('students')
       ) {
@@ -438,14 +519,18 @@ export class AdminDashboard {
       }
 
 
-      // -----------------------------------------------------
+      // =====================================================
       // STAFF
-      // -----------------------------------------------------
+      // =====================================================
 
       /**
-       * Staff statistics will be connected to the
-       * staff Firebase path.
+       * Only load staff statistics when the account
+       * has the Staff permission.
+       *
+       * The actual staff statistics can be connected
+       * here when required.
        */
+
       if (
         this.canAccess('staff')
       ) {

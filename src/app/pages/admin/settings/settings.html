@@ -1,0 +1,713 @@
+<div class="settings-page">
+
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <header class="page-header">
+
+    <div>
+
+      <span class="eyebrow">
+        ADMINISTRATION
+      </span>
+
+      <h1>
+        Settings
+      </h1>
+
+      <p>
+        Manage your school information and system preferences.
+      </p>
+
+    </div>
+
+
+    <!-- ADMIN PROFILE -->
+
+    <div class="admin-badge">
+
+      <div class="avatar">
+        DL
+      </div>
+
+      <div>
+
+        <strong>
+          {{ adminName }}
+        </strong>
+
+        <span>
+          Main Administrator
+        </span>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- =====================================================
+       SUCCESS MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert success"
+    *ngIf="saved"
+  >
+
+    <i class="fas fa-check-circle"></i>
+
+    <span>
+      Settings saved successfully.
+    </span>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       ERROR MESSAGE
+       ===================================================== -->
+
+  <div
+    class="alert error"
+    *ngIf="errorMessage"
+  >
+
+    <i class="fas fa-exclamation-circle"></i>
+
+    <span>
+      {{ errorMessage }}
+    </span>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       LOADING
+       ===================================================== -->
+
+  <div
+    class="loading-card"
+    *ngIf="loading"
+  >
+
+    <i class="fas fa-spinner fa-spin"></i>
+
+    <span>
+      Loading settings...
+    </span>
+
+  </div>
+
+
+
+  <!-- =====================================================
+       SETTINGS FORM
+       ===================================================== -->
+
+  <form
+    class="settings-form"
+    *ngIf="!loading"
+    (ngSubmit)="saveSettings()"
+  >
+
+
+    <!-- ===================================================
+         SCHOOL INFORMATION
+         =================================================== -->
+
+    <section class="settings-card">
+
+      <div class="card-heading">
+
+        <div class="heading-icon">
+
+          <i class="fas fa-school"></i>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            GENERAL
+          </span>
+
+          <h2>
+            School Information
+          </h2>
+
+          <p>
+            Information displayed and used throughout
+            the school system.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-grid">
+
+
+        <!-- SCHOOL NAME -->
+
+        <label class="form-field">
+
+          <span>
+            School Name <b>*</b>
+          </span>
+
+          <input
+            type="text"
+            name="schoolName"
+            [(ngModel)]="settings.schoolName"
+            placeholder="D Little Private School"
+            required
+          />
+
+        </label>
+
+
+
+        <!-- MOTTO -->
+
+        <label class="form-field">
+
+          <span>
+            School Motto
+          </span>
+
+          <input
+            type="text"
+            name="motto"
+            [(ngModel)]="settings.motto"
+            placeholder="Enter school motto"
+          />
+
+        </label>
+
+
+
+        <!-- ADDRESS -->
+
+        <label class="form-field full">
+
+          <span>
+            School Address
+          </span>
+
+          <textarea
+            name="address"
+            [(ngModel)]="settings.address"
+            rows="3"
+            placeholder="Enter the complete school address"
+          ></textarea>
+
+        </label>
+
+
+
+        <!-- PHONE -->
+
+        <label class="form-field">
+
+          <span>
+            Phone Number
+          </span>
+
+          <input
+            type="tel"
+            name="phone"
+            [(ngModel)]="settings.phone"
+            placeholder="+234..."
+          />
+
+        </label>
+
+
+
+        <!-- EMAIL -->
+
+        <label class="form-field">
+
+          <span>
+            School Email
+          </span>
+
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="settings.email"
+            placeholder="school@example.com"
+          />
+
+        </label>
+
+
+
+        <!-- WEBSITE -->
+
+        <label class="form-field full">
+
+          <span>
+            Website
+          </span>
+
+          <input
+            type="url"
+            name="website"
+            [(ngModel)]="settings.website"
+            placeholder="https://example.com"
+          />
+
+        </label>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         ACADEMIC CONFIGURATION
+         =================================================== -->
+
+    <section class="settings-card">
+
+      <div class="card-heading">
+
+        <div class="heading-icon">
+
+          <i class="fas fa-graduation-cap"></i>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            ACADEMICS
+          </span>
+
+          <h2>
+            Academic Configuration
+          </h2>
+
+          <p>
+            Set the current academic session and term.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-grid">
+
+
+        <!-- SESSION -->
+
+        <label class="form-field">
+
+          <span>
+            Current Academic Session
+          </span>
+
+          <input
+            type="text"
+            name="currentSession"
+            [(ngModel)]="settings.currentSession"
+            placeholder="2026/2027"
+          />
+
+        </label>
+
+
+
+        <!-- TERM -->
+
+        <label class="form-field">
+
+          <span>
+            Current Term
+          </span>
+
+          <select
+            name="currentTerm"
+            [(ngModel)]="settings.currentTerm"
+          >
+
+            <option value="First Term">
+              First Term
+            </option>
+
+            <option value="Second Term">
+              Second Term
+            </option>
+
+            <option value="Third Term">
+              Third Term
+            </option>
+
+          </select>
+
+        </label>
+
+
+
+        <!-- SESSION START -->
+
+        <label class="form-field">
+
+          <span>
+            Session Start Date
+          </span>
+
+          <input
+            type="date"
+            name="sessionStartDate"
+            [(ngModel)]="settings.sessionStartDate"
+          />
+
+        </label>
+
+
+
+        <!-- SESSION END -->
+
+        <label class="form-field">
+
+          <span>
+            Session End Date
+          </span>
+
+          <input
+            type="date"
+            name="sessionEndDate"
+            [(ngModel)]="settings.sessionEndDate"
+          />
+
+        </label>
+
+
+
+        <!-- TERM START -->
+
+        <label class="form-field">
+
+          <span>
+            Term Start Date
+          </span>
+
+          <input
+            type="date"
+            name="termStartDate"
+            [(ngModel)]="settings.termStartDate"
+          />
+
+        </label>
+
+
+
+        <!-- TERM END -->
+
+        <label class="form-field">
+
+          <span>
+            Term End Date
+          </span>
+
+          <input
+            type="date"
+            name="termEndDate"
+            [(ngModel)]="settings.termEndDate"
+          />
+
+        </label>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         NOTIFICATIONS
+         =================================================== -->
+
+    <section class="settings-card">
+
+      <div class="card-heading">
+
+        <div class="heading-icon">
+
+          <i class="fas fa-bell"></i>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            NOTIFICATIONS
+          </span>
+
+          <h2>
+            Notification Preferences
+          </h2>
+
+          <p>
+            Choose which school notifications are enabled.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="toggle-list">
+
+
+        <!-- ADMISSION EMAIL -->
+
+        <label class="toggle-row">
+
+          <div>
+
+            <strong>
+              Admission Email Notifications
+            </strong>
+
+            <span>
+              Send email notifications for admission activities.
+            </span>
+
+          </div>
+
+
+          <input
+            type="checkbox"
+            name="admissionEmailNotifications"
+            [(ngModel)]="settings.admissionEmailNotifications"
+          />
+
+          <span class="toggle"></span>
+
+        </label>
+
+
+
+        <!-- PAYMENT EMAIL -->
+
+        <label class="toggle-row">
+
+          <div>
+
+            <strong>
+              Payment Email Notifications
+            </strong>
+
+            <span>
+              Enable payment-related email notifications.
+            </span>
+
+          </div>
+
+
+          <input
+            type="checkbox"
+            name="paymentEmailNotifications"
+            [(ngModel)]="settings.paymentEmailNotifications"
+          />
+
+          <span class="toggle"></span>
+
+        </label>
+
+
+
+        <!-- SMS -->
+
+        <label class="toggle-row">
+
+          <div>
+
+            <strong>
+              SMS Notifications
+            </strong>
+
+            <span>
+              Enable school SMS notifications when the
+              SMS service is configured.
+            </span>
+
+          </div>
+
+
+          <input
+            type="checkbox"
+            name="smsNotifications"
+            [(ngModel)]="settings.smsNotifications"
+          />
+
+          <span class="toggle"></span>
+
+        </label>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         ADMINISTRATOR ACCOUNT
+         =================================================== -->
+
+    <section class="settings-card account-card">
+
+      <div class="card-heading">
+
+        <div class="heading-icon">
+
+          <i class="fas fa-user-shield"></i>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            ACCOUNT
+          </span>
+
+          <h2>
+            Administrator Account
+          </h2>
+
+          <p>
+            Current administrator account information.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="account-details">
+
+
+        <div>
+
+          <span>
+            Name
+          </span>
+
+          <strong>
+            {{ adminName }}
+          </strong>
+
+        </div>
+
+
+
+        <div>
+
+          <span>
+            Email
+          </span>
+
+          <strong>
+            {{ adminEmail || 'Not available' }}
+          </strong>
+
+        </div>
+
+
+
+        <div>
+
+          <span>
+            Role
+          </span>
+
+          <strong>
+            Main Administrator
+          </strong>
+
+        </div>
+
+
+      </div>
+
+
+      <p class="security-note">
+
+        <i class="fas fa-lock"></i>
+
+        To change the administrator password, use the
+        <strong>Change Password</strong>
+        option in the administration menu.
+
+      </p>
+
+    </section>
+
+
+
+    <!-- ===================================================
+         ACTIONS
+         =================================================== -->
+
+    <div class="form-actions">
+
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="resetForm()"
+        [disabled]="saving"
+      >
+
+        <i class="fas fa-undo"></i>
+
+        Reset
+
+      </button>
+
+
+
+      <button
+        type="submit"
+        class="primary-button"
+        [disabled]="saving"
+      >
+
+        <i
+          class="fas"
+          [class.fa-save]="!saving"
+          [class.fa-spinner]="saving"
+          [class.fa-spin]="saving"
+        ></i>
+
+        {{ saving ? 'Saving...' : 'Save Settings' }}
+
+      </button>
+
+
+    </div>
+
+
+  </form>
+
+</div>

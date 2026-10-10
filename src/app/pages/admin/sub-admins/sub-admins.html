@@ -550,7 +550,7 @@
                 </button>
 
 
-                <!-- ACTIVATE / DEACTIVATE -->
+                <!-- DEACTIVATE -->
 
                 <button
                   *ngIf="
@@ -567,6 +567,8 @@
                 </button>
 
 
+                <!-- ACTIVATE -->
+
                 <button
                   *ngIf="
                     subAdmin.status !== 'active'
@@ -582,13 +584,15 @@
                 </button>
 
 
-                <!-- PERMANENT DELETE -->
+                <!-- =================================================
+                     PERMANENT DELETE
+                     ================================================= -->
 
                 <button
                   type="button"
                   class="icon-button delete"
                   title="Permanently Delete Sub Admin"
-                  (click)="disableSubAdmin(subAdmin)"
+                  (click)="deleteSubAdmin(subAdmin)"
                 >
 
                   <i class="fas fa-trash"></i>
@@ -763,7 +767,9 @@
         </div>
 
 
-        <!-- PERMISSIONS -->
+        <!-- =================================================
+             PERMISSIONS
+             ================================================= -->
 
         <div class="form-section">
 

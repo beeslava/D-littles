@@ -234,8 +234,25 @@ export class Staff implements OnInit {
   // BACKEND URL
   // =====================================================
 
+  /**
+   * Production Render backend.
+   *
+   * IMPORTANT:
+   *
+   * This must NOT point to localhost when the Angular
+   * application is deployed to Firebase Hosting.
+   *
+   * Staff account creation is handled by:
+   *
+   * Angular
+   *    ↓
+   * Render backend
+   *    ↓
+   * Firebase Admin SDK
+   */
+
   private readonly backendUrl =
-    'http://localhost:10000';
+    'https://d-littles.onrender.com';
 
 
   // =====================================================
@@ -566,7 +583,7 @@ export class Staff implements OnInit {
   //
   // IMPORTANT:
   //
-  // Staff creation is now handled by the backend.
+  // Staff creation is handled by the backend.
   //
   // The backend creates:
   //

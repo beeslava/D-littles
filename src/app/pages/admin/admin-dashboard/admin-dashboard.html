@@ -33,7 +33,9 @@
 
     <nav class="admin-nav">
 
-      <!-- DASHBOARD -->
+      <!-- =================================================
+           DASHBOARD
+           ================================================= -->
 
       <a
         routerLink="/admin/dashboard"
@@ -52,9 +54,13 @@
       </a>
 
 
-      <!-- ADMISSIONS -->
+      <!-- =================================================
+           ADMISSIONS
+           Visible when admissions permission is granted.
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('admissions')"
         routerLink="/admin/admissions"
         routerLinkActive="active"
       >
@@ -70,9 +76,12 @@
       </a>
 
 
-      <!-- STUDENTS -->
+      <!-- =================================================
+           STUDENTS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('students')"
         routerLink="/admin/students"
         routerLinkActive="active"
       >
@@ -88,9 +97,12 @@
       </a>
 
 
-      <!-- PARENTS & GUARDIANS -->
+      <!-- =================================================
+           PARENTS & GUARDIANS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('parents')"
         routerLink="/admin/parents"
         routerLinkActive="active"
       >
@@ -106,9 +118,12 @@
       </a>
 
 
-      <!-- TEACHERS & STAFF -->
+      <!-- =================================================
+           TEACHERS & STAFF
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('staff')"
         routerLink="/admin/staff"
         routerLinkActive="active"
       >
@@ -124,9 +139,12 @@
       </a>
 
 
-      <!-- CLASSES -->
+      <!-- =================================================
+           CLASSES
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('classes')"
         routerLink="/admin/classes"
         routerLinkActive="active"
       >
@@ -142,9 +160,12 @@
       </a>
 
 
-      <!-- SUBJECTS -->
+      <!-- =================================================
+           SUBJECTS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('subjects')"
         routerLink="/admin/subjects"
         routerLinkActive="active"
       >
@@ -160,9 +181,12 @@
       </a>
 
 
-      <!-- TEACHING ASSIGNMENTS -->
+      <!-- =================================================
+           TEACHING ASSIGNMENTS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('teachingAssignments')"
         routerLink="/admin/teaching-assignments"
         routerLinkActive="active"
       >
@@ -183,6 +207,7 @@
            ================================================= -->
 
       <div
+        *ngIf="canSeeAcademics()"
         class="nav-dropdown"
         [class.open]="academicsOpen"
       >
@@ -208,15 +233,17 @@
             <i
               class="fas"
               [class.fa-chevron-down]="!academicsOpen"
-              [class.fa-chevron-up]="academicsOpen">
-            </i>
+              [class.fa-chevron-up]="academicsOpen"
+            ></i>
 
           </span>
 
         </button>
 
 
-        <!-- ACADEMICS SUBMENU -->
+        <!-- =================================================
+             ACADEMICS SUBMENU
+             ================================================= -->
 
         <div
           class="nav-submenu"
@@ -226,6 +253,7 @@
           <!-- ACADEMIC MANAGEMENT -->
 
           <a
+            *ngIf="canSeeAcademicManagement()"
             routerLink="/admin/academics"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -245,6 +273,7 @@
           <!-- ACADEMIC RESULTS -->
 
           <a
+            *ngIf="canSeeAcademicResults()"
             routerLink="/admin/academics/results"
             routerLinkActive="active"
           >
@@ -263,6 +292,7 @@
           <!-- REPORT CARDS -->
 
           <a
+            *ngIf="canSeeReportCards()"
             routerLink="/admin/academics/report-cards"
             routerLinkActive="active"
           >
@@ -282,9 +312,12 @@
       </div>
 
 
-      <!-- NEWS -->
+      <!-- =================================================
+           NEWS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('news')"
         routerLink="/admin/news"
         routerLinkActive="active"
       >
@@ -300,9 +333,12 @@
       </a>
 
 
-      <!-- EVENTS -->
+      <!-- =================================================
+           EVENTS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('events')"
         routerLink="/admin/events"
         routerLinkActive="active"
       >
@@ -318,9 +354,12 @@
       </a>
 
 
-      <!-- GALLERY -->
+      <!-- =================================================
+           GALLERY
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('gallery')"
         routerLink="/admin/gallery"
         routerLinkActive="active"
       >
@@ -336,9 +375,12 @@
       </a>
 
 
-      <!-- SCHOOL FEES -->
+      <!-- =================================================
+           SCHOOL FEES
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('fees')"
         routerLink="/admin/fees"
         routerLinkActive="active"
       >
@@ -354,9 +396,12 @@
       </a>
 
 
-      <!-- PAYMENTS -->
+      <!-- =================================================
+           PAYMENTS
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('payments')"
         routerLink="/admin/payments"
         routerLinkActive="active"
       >
@@ -372,9 +417,12 @@
       </a>
 
 
-      <!-- MESSAGES -->
+      <!-- =================================================
+           MESSAGES
+           ================================================= -->
 
       <a
+        *ngIf="canAccess('messages')"
         routerLink="/admin/messages"
         routerLinkActive="active"
       >
@@ -392,12 +440,10 @@
 
       <!-- =================================================
            SUB ADMINS
-           =================================================
            
            ONLY THE MAIN ADMINISTRATOR CAN SEE THIS.
            
-           Active sub-admins will NOT see this item.
-           
+           Sub-admins will NEVER see this menu.
            ================================================= -->
 
       <a
@@ -417,7 +463,11 @@
       </a>
 
 
-      <!-- SETTINGS -->
+      <!-- =================================================
+           SETTINGS
+           
+           Kept available to the account.
+           ================================================= -->
 
       <a
         routerLink="/admin/settings"
@@ -434,12 +484,35 @@
 
       </a>
 
+
+      <!-- =================================================
+           CHANGE PASSWORD
+           
+           Every administrator/sub-admin should be able
+           to change their own password.
+           ================================================= -->
+
+      <a
+        routerLink="/admin/change-password"
+        routerLinkActive="active"
+      >
+
+        <span class="nav-icon">
+          <i class="fas fa-key"></i>
+        </span>
+
+        <span class="nav-text">
+          Change Password
+        </span>
+
+      </a>
+
     </nav>
 
 
-    <!-- =================================================
+    <!-- =====================================================
          SIDEBAR BOTTOM
-         ================================================= -->
+         ===================================================== -->
 
     <div class="sidebar-bottom">
 
@@ -503,7 +576,7 @@
           </strong>
 
           <span>
-            Administrator
+            {{ isMainAdmin ? 'Main Administrator' : 'Sub Administrator' }}
           </span>
 
         </div>
@@ -563,14 +636,21 @@
       </div>
 
 
-      <!-- STATS GRID -->
+      <!-- =================================================
+           STATS GRID
+           ================================================= -->
 
       <div class="stats-grid">
 
 
-        <!-- STUDENTS -->
+        <!-- =================================================
+             STUDENTS
+             ================================================= -->
 
-        <div class="stat-card">
+        <div
+          *ngIf="canAccess('students')"
+          class="stat-card"
+        >
 
           <span class="stat-label">
             Total Students
@@ -583,9 +663,14 @@
         </div>
 
 
-        <!-- APPLICATIONS -->
+        <!-- =================================================
+             APPLICATIONS
+             ================================================= -->
 
-        <div class="stat-card">
+        <div
+          *ngIf="canAccess('admissions')"
+          class="stat-card"
+        >
 
           <span class="stat-label">
             Applications
@@ -598,9 +683,14 @@
         </div>
 
 
-        <!-- PENDING ADMISSIONS -->
+        <!-- =================================================
+             PENDING ADMISSIONS
+             ================================================= -->
 
-        <div class="stat-card">
+        <div
+          *ngIf="canAccess('admissions')"
+          class="stat-card"
+        >
 
           <span class="stat-label">
             Pending Admissions
@@ -613,9 +703,14 @@
         </div>
 
 
-        <!-- STAFF -->
+        <!-- =================================================
+             STAFF
+             ================================================= -->
 
-        <div class="stat-card">
+        <div
+          *ngIf="canAccess('staff')"
+          class="stat-card"
+        >
 
           <span class="stat-label">
             Staff
@@ -636,4 +731,3 @@
   </main>
 
 </div>
-

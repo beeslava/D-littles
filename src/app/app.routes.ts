@@ -23,6 +23,23 @@ import { staffGuard } from './core/Auth/staff.guard';
 // =====================================================
 
 import { SubAdmins } from './pages/admin/sub-admins/sub-admins';
+import { ChangePassword } from './pages/admin/changepassward/changepassward';
+import { AdminSettings } from './pages/admin/settings/settings';
+
+
+// =====================================================
+// CHANGE PASSWORD
+// =====================================================
+//
+// ChangePassword is imported directly so the page does
+// not depend on runtime JIT compilation.
+//
+// Both main admin and sub-admin accounts can access
+// this page because changing your own password is an
+// account-security action, not a module permission.
+// =====================================================
+
+
 
 
 export const routes: Routes = [
@@ -153,6 +170,27 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin/admin-dashboard/admin-dashboard')
         .then(m => m.AdminDashboard)
+  },
+
+
+  // =====================================================
+  // ADMIN CHANGE PASSWORD
+  // =====================================================
+  //
+  // Available to both:
+  // - Main Admin
+  // - Sub Admin
+  //
+  // This route intentionally does NOT use
+  // adminPermissionGuard() because password management
+  // is an account-security function and should not depend
+  // on permissions such as students, fees, staff, etc.
+  // =====================================================
+
+  {
+    path: 'admin/change-password',
+
+    component: ChangePassword
   },
 
 
@@ -368,6 +406,16 @@ export const routes: Routes = [
       import('./pages/admin/classes/classes')
         .then(m => m.Classes)
   },
+
+  {
+  path: 'admin/settings',
+
+  canActivate: [
+    mainAdminGuard
+  ],
+
+  component: AdminSettings
+},
 
 
   // =====================================================

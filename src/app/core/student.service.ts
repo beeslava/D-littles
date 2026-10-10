@@ -260,7 +260,7 @@ export class StudentService {
   //
   // IMPORTANT:
   //
-  // This method now queries ONLY by the real school
+  // This method queries ONLY by the real school
   // student ID.
   //
   // Example:
@@ -541,9 +541,7 @@ export class StudentService {
   // GET CHILDREN RESULTS FOR PARENT
   // =========================================================
   //
-  // IMPORTANT:
-  //
-  // Parent result loading is now based on parentId.
+  // Parent result loading is based on parentId.
   //
   // The parent queries:
   //
@@ -927,4 +925,3 @@ export class StudentService {
   }
 
 }
-

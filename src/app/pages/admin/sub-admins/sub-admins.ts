@@ -1,7 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+import {
+  HttpClient,
+  HttpHeaders
+} from '@angular/common/http';
+
 import { firstValueFrom } from 'rxjs';
 
 import {
@@ -123,6 +133,8 @@ export class SubAdmins implements OnInit {
 
   disabling = false;
 
+  deleting = false;
+
   errorMessage = '';
 
   successMessage = '';
@@ -148,6 +160,7 @@ export class SubAdmins implements OnInit {
 
   form = {
     fullName: '',
+
     phone: '',
 
     permissions:
@@ -272,7 +285,8 @@ export class SubAdmins implements OnInit {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly adminAuthService: AdminAuthService
+    private readonly adminAuthService: AdminAuthService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
 
@@ -281,7 +295,30 @@ export class SubAdmins implements OnInit {
   // =======================================================
 
   async ngOnInit(): Promise<void> {
+
     await this.loadSubAdmins();
+
+    this.detectChanges();
+  }
+
+
+  // =======================================================
+  // MANUAL CHANGE DETECTION
+  // =======================================================
+
+  private detectChanges(): void {
+
+    try {
+
+      this.cdr.detectChanges();
+
+    } catch (error) {
+
+      console.warn(
+        'Change detection refresh skipped:',
+        error
+      );
+    }
   }
 
 
@@ -366,6 +403,8 @@ export class SubAdmins implements OnInit {
 
     this.clearMessages();
 
+    this.detectChanges();
+
     try {
 
       const headers =
@@ -384,6 +423,11 @@ export class SubAdmins implements OnInit {
         response.data?.subAdmins ??
         [];
 
+      console.log(
+        'Sub-admins loaded:',
+        this.subAdmins
+      );
+
     } catch (error: any) {
 
       console.error(
@@ -400,6 +444,8 @@ export class SubAdmins implements OnInit {
     } finally {
 
       this.loading = false;
+
+      this.detectChanges();
     }
   }
 
@@ -427,6 +473,8 @@ export class SubAdmins implements OnInit {
         response.subAdmins ??
         response.data?.subAdmins ??
         [];
+
+      this.detectChanges();
 
     } catch (error) {
 
@@ -465,6 +513,8 @@ export class SubAdmins implements OnInit {
     this.clearMessages();
 
     this.showFormModal = true;
+
+    this.detectChanges();
   }
 
 
@@ -505,6 +555,8 @@ export class SubAdmins implements OnInit {
     this.clearMessages();
 
     this.showFormModal = true;
+
+    this.detectChanges();
   }
 
 
@@ -521,6 +573,8 @@ export class SubAdmins implements OnInit {
     this.showFormModal = false;
 
     this.selectedSubAdmin = null;
+
+    this.detectChanges();
   }
 
 
@@ -538,6 +592,8 @@ export class SubAdmins implements OnInit {
       this.errorMessage =
         'Please enter the sub-admin full name.';
 
+      this.detectChanges();
+
       return;
     }
 
@@ -546,6 +602,8 @@ export class SubAdmins implements OnInit {
     this.errorMessage = '';
 
     this.successMessage = '';
+
+    this.detectChanges();
 
     try {
 
@@ -581,6 +639,8 @@ export class SubAdmins implements OnInit {
     } finally {
 
       this.saving = false;
+
+      this.detectChanges();
     }
   }
 
@@ -643,7 +703,6 @@ export class SubAdmins implements OnInit {
 
     this.showFormModal = false;
 
-
     this.showCredentialsModal = true;
 
 
@@ -652,7 +711,9 @@ export class SubAdmins implements OnInit {
       'Sub-admin created successfully.';
 
 
-    void this.refreshSubAdminsSilently();
+    await this.refreshSubAdminsSilently();
+
+    this.detectChanges();
   }
 
 
@@ -709,6 +770,8 @@ export class SubAdmins implements OnInit {
 
 
     await this.loadSubAdmins();
+
+    this.detectChanges();
   }
 
 
@@ -716,10 +779,15 @@ export class SubAdmins implements OnInit {
   // TOGGLE STATUS
   // =======================================================
   //
-  // Used for REACTIVATE.
+  // ACTIVE  -> DEACTIVATE
+  // INACTIVE -> REACTIVATE
   //
-  // The dedicated disableSubAdmin() method below
-  // handles disabling through DELETE.
+  // IMPORTANT:
+  //
+  // Status changes use PUT.
+  //
+  // Permanent deletion uses DELETE
+  // through deleteSubAdmin().
   //
   // =======================================================
 
@@ -727,121 +795,56 @@ export class SubAdmins implements OnInit {
     subAdmin: SubAdmin
   ): Promise<void> {
 
-    if (this.disabling) {
-      return;
-    }
-
     if (
-      subAdmin.status === 'active'
+      this.disabling ||
+      this.deleting
     ) {
 
-      await this.disableSubAdmin(
-        subAdmin
-      );
-
       return;
     }
 
-    const confirmed =
-      window.confirm(
-        `Reactivate ${subAdmin.fullName}'s Sub Admin account?\n\n` +
-        `They will be able to sign in again and use their assigned permissions.`
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    this.disabling = true;
-
-    this.clearMessages();
-
-    try {
-
-      const headers =
-        await this.getHeaders();
-
-      const response =
-        await firstValueFrom(
-          this.http.put<ApiResponse>(
-            `${this.API_URL}/${subAdmin.uid}`,
-            {
-              status: 'active'
-            },
-            { headers }
-          )
-        );
-
-      this.successMessage =
-        response.message ??
-        `${subAdmin.fullName}'s Sub Admin account was reactivated successfully.`;
-
-      await this.loadSubAdmins();
-
-    } catch (error: any) {
-
-      console.error(
-        'Reactivate sub-admin error:',
-        error
-      );
-
-      this.errorMessage =
-        this.getErrorMessage(
-          error,
-          'Unable to reactivate Sub Admin account.'
-        );
-
-    } finally {
-
-      this.disabling = false;
-    }
-  }
-
-
-  // =======================================================
-  // DISABLE SUB ADMIN
-  // =======================================================
-  //
-  // IMPORTANT:
-  //
-  // The backend DELETE endpoint does NOT permanently
-  // delete the account.
-  //
-  // It:
-  //
-  // 1. Sets subAdmins/{uid}.status = inactive
-  // 2. Sets users/{uid}.status = inactive
-  // 3. Disables the Firebase Auth account
-  //
-  // The account can therefore be reactivated later.
-  //
-  // =======================================================
-
-  async disableSubAdmin(
-    subAdmin: SubAdmin
-  ): Promise<void> {
-
-    if (this.disabling) {
-      return;
-    }
 
     if (!subAdmin?.uid) {
 
       this.errorMessage =
         'Invalid Sub Admin account.';
 
+      this.detectChanges();
+
       return;
     }
 
 
+    const isActive =
+      subAdmin.status === 'active';
+
+
+    const action =
+      isActive
+        ? 'deactivate'
+        : 'reactivate';
+
+
     const confirmed =
       window.confirm(
-        `Disable ${subAdmin.fullName}'s Sub Admin account?\n\n` +
-        `Sub Admin ID: ${subAdmin.subAdminId}\n` +
-        `Email: ${subAdmin.email}\n\n` +
-        `The account will no longer be able to sign in, ` +
-        `but the account and permissions will be preserved.\n\n` +
-        `You can reactivate the account later.`
+
+        isActive
+
+          ? `Deactivate ${subAdmin.fullName}'s Sub Admin account?\n\n` +
+
+            `Sub Admin ID: ${subAdmin.subAdminId}\n` +
+
+            `Email: ${subAdmin.email}\n\n` +
+
+            `The account will no longer be able to sign in, ` +
+
+            `but the account and permissions will be preserved.\n\n` +
+
+            `You can reactivate it later.`
+
+          : `Reactivate ${subAdmin.fullName}'s Sub Admin account?\n\n` +
+
+            `They will be able to sign in again and use their assigned permissions.`
       );
 
 
@@ -853,6 +856,138 @@ export class SubAdmins implements OnInit {
     this.disabling = true;
 
     this.clearMessages();
+
+    this.detectChanges();
+
+
+    try {
+
+      const headers =
+        await this.getHeaders();
+
+
+      const response =
+        await firstValueFrom(
+          this.http.put<ApiResponse>(
+            `${this.API_URL}/${subAdmin.uid}`,
+            {
+              status:
+                action === 'deactivate'
+                  ? 'inactive'
+                  : 'active'
+            },
+            { headers }
+          )
+        );
+
+
+      this.successMessage =
+        response.message ??
+        (
+          action === 'deactivate'
+
+            ? `${subAdmin.fullName}'s Sub Admin account was deactivated successfully.`
+
+            : `${subAdmin.fullName}'s Sub Admin account was reactivated successfully.`
+        );
+
+
+      await this.loadSubAdmins();
+
+    } catch (error: any) {
+
+      console.error(
+        `${action} sub-admin error:`,
+        error
+      );
+
+      this.errorMessage =
+        this.getErrorMessage(
+          error,
+
+          action === 'deactivate'
+
+            ? 'Unable to deactivate Sub Admin account.'
+
+            : 'Unable to reactivate Sub Admin account.'
+        );
+
+    } finally {
+
+      this.disabling = false;
+
+      this.detectChanges();
+    }
+  }
+
+
+  // =======================================================
+  // PERMANENTLY DELETE SUB ADMIN
+  // =======================================================
+  //
+  // DELETE endpoint permanently removes:
+  //
+  // 1. Firebase Authentication account
+  // 2. users/{uid}
+  // 3. subAdmins/{uid}
+  //
+  // This is NOT deactivation.
+  //
+  // =======================================================
+
+  async deleteSubAdmin(
+    subAdmin: SubAdmin
+  ): Promise<void> {
+
+    if (
+      this.deleting ||
+      this.disabling
+    ) {
+
+      return;
+    }
+
+
+    if (!subAdmin?.uid) {
+
+      this.errorMessage =
+        'Invalid Sub Admin account.';
+
+      this.detectChanges();
+
+      return;
+    }
+
+
+    const confirmed =
+      window.confirm(
+
+        `PERMANENTLY DELETE ${subAdmin.fullName}'s Sub Admin account?\n\n` +
+
+        `Sub Admin ID: ${subAdmin.subAdminId}\n` +
+
+        `Email: ${subAdmin.email}\n\n` +
+
+        `WARNING: This action cannot be undone.\n\n` +
+
+        `The Firebase login account, user record, Sub Admin record, ` +
+
+        `permissions and account data will be permanently deleted.\n\n` +
+
+        `Click OK only if you are absolutely sure.`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    this.deleting = true;
+
+    this.clearMessages();
+
+    this.detectChanges();
 
 
     try {
@@ -870,18 +1005,34 @@ export class SubAdmins implements OnInit {
         );
 
 
+      // Remove immediately from the current UI list.
+      this.subAdmins =
+        this.subAdmins.filter(
+          item =>
+            item.uid !== subAdmin.uid
+        );
+
+
+      this.selectedSubAdmin = null;
+
+
       this.successMessage =
         response.message ??
-        `${subAdmin.fullName}'s Sub Admin account was disabled successfully.`;
+        `${subAdmin.fullName}'s Sub Admin account was permanently deleted.`;
 
 
-      await this.loadSubAdmins();
+      this.detectChanges();
+
+
+      // Refresh from backend to make sure
+      // the displayed list matches production data.
+      await this.refreshSubAdminsSilently();
 
 
     } catch (error: any) {
 
       console.error(
-        'Disable sub-admin error:',
+        'Permanent sub-admin deletion error:',
         error
       );
 
@@ -889,12 +1040,14 @@ export class SubAdmins implements OnInit {
       this.errorMessage =
         this.getErrorMessage(
           error,
-          'Unable to disable Sub Admin account.'
+          'Unable to permanently delete Sub Admin account.'
         );
 
     } finally {
 
-      this.disabling = false;
+      this.deleting = false;
+
+      this.detectChanges();
     }
   }
 
@@ -909,6 +1062,8 @@ export class SubAdmins implements OnInit {
       false;
 
     this.credentials = null;
+
+    this.detectChanges();
   }
 
 
@@ -941,6 +1096,8 @@ export class SubAdmins implements OnInit {
 
     this.successMessage =
       'Credentials copied successfully.';
+
+    this.detectChanges();
   }
 
 
@@ -963,6 +1120,8 @@ export class SubAdmins implements OnInit {
 
     this.successMessage =
       `${label} copied successfully.`;
+
+    this.detectChanges();
   }
 
 
@@ -1025,6 +1184,8 @@ export class SubAdmins implements OnInit {
         permission.key
       ] = true;
     }
+
+    this.detectChanges();
   }
 
 
@@ -1043,6 +1204,8 @@ export class SubAdmins implements OnInit {
         permission.key
       ] = false;
     }
+
+    this.detectChanges();
   }
 
 

@@ -1,0 +1,565 @@
+<div class="change-password-page">
+
+  <!-- =====================================================
+       PAGE HEADER
+       ===================================================== -->
+
+  <header class="page-header">
+
+    <div class="header-content">
+
+      <div class="header-icon">
+        🔐
+      </div>
+
+      <div>
+
+        <span class="header-label">
+          ACCOUNT SECURITY
+        </span>
+
+        <h1>
+          Change Password
+        </h1>
+
+        <p>
+          Update your administrator account password to keep
+          your account secure.
+        </p>
+
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="logout-button"
+      (click)="logout()"
+      [disabled]="loading"
+    >
+      <span class="button-icon">
+        ↪
+      </span>
+
+      Logout
+    </button>
+
+  </header>
+
+
+  <!-- =====================================================
+       MAIN CONTENT
+       ===================================================== -->
+
+  <main class="content-area">
+
+    <div class="password-card">
+
+      <!-- =================================================
+           CARD HEADER
+           ================================================= -->
+
+      <div class="card-header">
+
+        <div class="security-icon">
+          🔒
+        </div>
+
+        <div>
+
+          <h2>
+            Update your password
+          </h2>
+
+          <p>
+            Enter your current password and choose a new
+            password for your account.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           SUCCESS MESSAGE
+           ================================================= -->
+
+      <div
+        *ngIf="successMessage"
+        class="message success-message"
+        role="alert"
+      >
+
+        <span class="message-icon">
+          ✓
+        </span>
+
+        <div>
+          <strong>
+            Password Updated
+          </strong>
+
+          <p>
+            {{ successMessage }}
+          </p>
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           ERROR MESSAGE
+           ================================================= -->
+
+      <div
+        *ngIf="errorMessage"
+        class="message error-message"
+        role="alert"
+      >
+
+        <span class="message-icon">
+          !
+        </span>
+
+        <div>
+          <strong>
+            Unable to change password
+          </strong>
+
+          <p>
+            {{ errorMessage }}
+          </p>
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           PASSWORD FORM
+           ================================================= -->
+
+      <form
+        class="password-form"
+        (ngSubmit)="changePassword()"
+        novalidate
+      >
+
+        <!-- ===============================================
+             CURRENT PASSWORD
+             =============================================== -->
+
+        <div class="form-group">
+
+          <label for="currentPassword">
+            Current Password
+          </label>
+
+          <div class="password-input-wrapper">
+
+            <input
+              id="currentPassword"
+              name="currentPassword"
+              [type]="showCurrentPassword ? 'text' : 'password'"
+              [(ngModel)]="currentPassword"
+              placeholder="Enter your current password"
+              autocomplete="current-password"
+              [disabled]="loading"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="toggleCurrentPassword()"
+              [disabled]="loading"
+              [attr.aria-label]="
+                showCurrentPassword
+                  ? 'Hide current password'
+                  : 'Show current password'
+              "
+            >
+
+              <span *ngIf="showCurrentPassword">
+                Hide
+              </span>
+
+              <span *ngIf="!showCurrentPassword">
+                Show
+              </span>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- ===============================================
+             NEW PASSWORD
+             =============================================== -->
+
+        <div class="form-group">
+
+          <label for="newPassword">
+            New Password
+          </label>
+
+          <div class="password-input-wrapper">
+
+            <input
+              id="newPassword"
+              name="newPassword"
+              [type]="showNewPassword ? 'text' : 'password'"
+              [(ngModel)]="newPassword"
+              placeholder="Enter your new password"
+              autocomplete="new-password"
+              [disabled]="loading"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="toggleNewPassword()"
+              [disabled]="loading"
+              [attr.aria-label]="
+                showNewPassword
+                  ? 'Hide new password'
+                  : 'Show new password'
+              "
+            >
+
+              <span *ngIf="showNewPassword">
+                Hide
+              </span>
+
+              <span *ngIf="!showNewPassword">
+                Show
+              </span>
+
+            </button>
+
+          </div>
+
+
+          <!-- =============================================
+               PASSWORD STRENGTH
+               ============================================= -->
+
+          <div
+            *ngIf="newPassword"
+            class="password-strength"
+          >
+
+            <div class="strength-header">
+
+              <span>
+                Password strength
+              </span>
+
+              <span
+                class="strength-label"
+                [ngClass]="getPasswordStrength()"
+              >
+                {{ getPasswordStrengthLabel() }}
+              </span>
+
+            </div>
+
+            <div class="strength-bar">
+
+              <div
+                class="strength-progress"
+                [ngClass]="getPasswordStrength()"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+          <!-- =============================================
+               PASSWORD REQUIREMENTS
+               ============================================= -->
+
+          <div class="password-requirements">
+
+            <span class="requirements-title">
+              Password requirements:
+            </span>
+
+            <div class="requirements-list">
+
+              <span
+                [class.requirement-met]="
+                  newPassword.length >= minimumPasswordLength
+                "
+              >
+                <span class="requirement-icon">
+                  {{
+                    newPassword.length >= minimumPasswordLength
+                      ? '✓'
+                      : '○'
+                  }}
+                </span>
+
+                At least {{ minimumPasswordLength }} characters
+              </span>
+
+              <span
+                [class.requirement-met]="
+                  /[a-z]/.test(newPassword)
+                "
+              >
+                <span class="requirement-icon">
+                  {{
+                    /[a-z]/.test(newPassword)
+                      ? '✓'
+                      : '○'
+                  }}
+                </span>
+
+                Lowercase letter
+              </span>
+
+              <span
+                [class.requirement-met]="
+                  /[A-Z]/.test(newPassword)
+                "
+              >
+                <span class="requirement-icon">
+                  {{
+                    /[A-Z]/.test(newPassword)
+                      ? '✓'
+                      : '○'
+                  }}
+                </span>
+
+                Uppercase letter
+              </span>
+
+              <span
+                [class.requirement-met]="
+                  /[0-9]/.test(newPassword)
+                "
+              >
+                <span class="requirement-icon">
+                  {{
+                    /[0-9]/.test(newPassword)
+                      ? '✓'
+                      : '○'
+                  }}
+                </span>
+
+                Number
+              </span>
+
+              <span
+                [class.requirement-met]="
+                  /[^A-Za-z0-9]/.test(newPassword)
+                "
+              >
+                <span class="requirement-icon">
+                  {{
+                    /[^A-Za-z0-9]/.test(newPassword)
+                      ? '✓'
+                      : '○'
+                  }}
+                </span>
+
+                Special character
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ===============================================
+             CONFIRM PASSWORD
+             =============================================== -->
+
+        <div class="form-group">
+
+          <label for="confirmPassword">
+            Confirm New Password
+          </label>
+
+          <div
+            class="password-input-wrapper"
+            [class.input-error]="
+              confirmPassword &&
+              !passwordsMatch()
+            "
+            [class.input-success]="
+              confirmPassword &&
+              passwordsMatch()
+            "
+          >
+
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              [type]="
+                showConfirmPassword
+                  ? 'text'
+                  : 'password'
+              "
+              [(ngModel)]="confirmPassword"
+              placeholder="Re-enter your new password"
+              autocomplete="new-password"
+              [disabled]="loading"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="toggleConfirmPassword()"
+              [disabled]="loading"
+              [attr.aria-label]="
+                showConfirmPassword
+                  ? 'Hide confirmation password'
+                  : 'Show confirmation password'
+              "
+            >
+
+              <span *ngIf="showConfirmPassword">
+                Hide
+              </span>
+
+              <span *ngIf="!showConfirmPassword">
+                Show
+              </span>
+
+            </button>
+
+          </div>
+
+
+          <!-- Password match status -->
+
+          <div
+            *ngIf="confirmPassword"
+            class="match-message"
+            [class.match-success]="passwordsMatch()"
+            [class.match-error]="!passwordsMatch()"
+          >
+
+            <span>
+              {{ passwordsMatch() ? '✓' : '!' }}
+            </span>
+
+            <span>
+              {{
+                passwordsMatch()
+                  ? 'Passwords match'
+                  : 'Passwords do not match'
+              }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             SECURITY NOTICE
+             ================================================= -->
+
+        <div class="security-notice">
+
+          <div class="notice-icon">
+            🛡️
+          </div>
+
+          <div>
+
+            <strong>
+              Security reminder
+            </strong>
+
+            <p>
+              Never share your password with anyone.
+              Use a unique password that you do not use
+              for other accounts.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FORM ACTIONS
+             ================================================= -->
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="cancel()"
+            [disabled]="loading"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="
+              loading ||
+              !currentPassword ||
+              !newPassword ||
+              !confirmPassword ||
+              !passwordsMatch()
+            "
+          >
+
+            <span
+              *ngIf="loading"
+              class="spinner"
+            ></span>
+
+            <span *ngIf="!loading">
+              🔐
+            </span>
+
+            <span>
+              {{
+                loading
+                  ? 'Changing Password...'
+                  : 'Change Password'
+              }}
+            </span>
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         BACK TO DASHBOARD
+         ===================================================== -->
+
+    <div class="back-link-wrapper">
+
+      <button
+        type="button"
+        class="back-link"
+        (click)="cancel()"
+        [disabled]="loading"
+      >
+        ← Back to Dashboard
+      </button>
+
+    </div>
+
+  </main>
+
+</div>

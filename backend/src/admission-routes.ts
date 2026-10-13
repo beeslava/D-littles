@@ -2515,6 +2515,206 @@ router.post(
 );
 
 // =========================================================
+// DELETE ADMISSION APPLICATION
+// =========================================================
+//
+// DELETE /api/admissions/delete/:applicationId
+//
+// Requires authentication and admissions permission.
+// Allows deletion regardless of application/payment status.
+// Archives recorded payment details before deleting.
+// Deletes only the admission record, never linked accounts.
+//
+// =========================================================
+
+router.delete(
+  "/delete/:applicationId",
+  requireAuth,
+  requireAdminPermission("admissions"),
+  async (
+    req: AuthenticatedRequest,
+    res: Response
+  ) => {
+    try {
+      const applicationId = String(
+        req.params.applicationId || ""
+      ).trim();
+
+      if (!applicationId) {
+        return res.status(400).json({
+          success: false,
+          message: "Application ID is required.",
+        });
+      }
+
+      const applicationRef = adminDatabase.ref(
+        `admissions/${applicationId}`
+      );
+
+      const snapshot = await applicationRef.once("value");
+
+      if (!snapshot.exists()) {
+        return res.status(404).json({
+          success: false,
+          message: "Admission application not found.",
+        });
+      }
+
+      const application = snapshot.val() as AdmissionData;
+
+      const applicationNumber = String(
+        application.applicationNumber || applicationId
+      );
+
+      const paymentFields = {
+        applicationId,
+        applicationNumber,
+        paymentStatus: application.paymentStatus ?? null,
+        paymentAmount: application.paymentAmount ?? null,
+        paymentReference: application.paymentReference ?? null,
+        paymentDate: application.paymentDate ?? null,
+        paymentVerifiedAt: application.paymentVerifiedAt ?? null,
+        archivedAt: Date.now(),
+        archiveReason: "Admission application deletion",
+      };
+
+      const hasRecordedPaymentDetails = [
+        application.paymentStatus,
+        application.paymentAmount,
+        application.paymentReference,
+        application.paymentDate,
+        application.paymentVerifiedAt,
+      ].some(value =>
+        value !== undefined &&
+        value !== null &&
+        String(value).trim() !== ""
+      );
+
+      let paymentArchiveId: string | null = null;
+
+      // Archive payment information before attempting deletion.
+      // Do not copy the student's full application or personal details.
+      if (hasRecordedPaymentDetails) {
+        const archiveSnapshot = {
+          applicationId,
+          applicationNumber,
+          paymentStatus: application.paymentStatus ?? null,
+          paymentAmount: application.paymentAmount ?? null,
+          paymentReference: application.paymentReference ?? null,
+          paymentDate: application.paymentDate ?? null,
+          paymentVerifiedAt: application.paymentVerifiedAt ?? null,
+        };
+
+        // Give each distinct payment snapshot its own stable archive key.
+        const archiveKey = crypto
+          .createHash("sha256")
+          .update(JSON.stringify(archiveSnapshot))
+          .digest("hex");
+
+        const archiveRef = adminDatabase
+          .ref("admissionPaymentHistory")
+          .child(archiveKey);
+
+        // Keep an existing archive record instead of overwriting it.
+        const archiveTransaction = await archiveRef.transaction(
+          (currentValue: Record<string, unknown> | null) =>
+            currentValue ?? paymentFields,
+          undefined,
+          false
+        );
+
+        const archivedPayment =
+          archiveTransaction.snapshot.val() as Record<string, unknown> | null;
+
+        const archiveMatches =
+          archivedPayment !== null &&
+          archivedPayment.applicationId === archiveSnapshot.applicationId &&
+          archivedPayment.applicationNumber === archiveSnapshot.applicationNumber &&
+          archivedPayment.paymentStatus === archiveSnapshot.paymentStatus &&
+          archivedPayment.paymentAmount === archiveSnapshot.paymentAmount &&
+          archivedPayment.paymentReference === archiveSnapshot.paymentReference &&
+          archivedPayment.paymentDate === archiveSnapshot.paymentDate &&
+          archivedPayment.paymentVerifiedAt === archiveSnapshot.paymentVerifiedAt;
+
+        if (!archiveMatches) {
+          return res.status(409).json({
+            success: false,
+            message:
+              "Payment history could not be safely confirmed. The application has not been deleted.",
+          });
+        }
+
+        paymentArchiveId = archiveRef.key;
+      }
+
+      // Recheck the latest record to avoid deleting an application
+      // that another process changed while its payment data was archived.
+      const transactionResult = await applicationRef.transaction(
+        (currentValue: AdmissionData | null) => {
+          if (!currentValue) {
+            return;
+          }
+
+          const unchanged =
+            currentValue.applicationNumber === application.applicationNumber &&
+            currentValue.status === application.status &&
+            currentValue.paymentStatus === application.paymentStatus &&
+            currentValue.paymentAmount === application.paymentAmount &&
+            currentValue.paymentReference === application.paymentReference &&
+            currentValue.paymentDate === application.paymentDate &&
+            currentValue.paymentVerifiedAt === application.paymentVerifiedAt;
+
+          if (!unchanged) {
+            return;
+          }
+
+          return null;
+        },
+        undefined,
+        false
+      );
+
+      if (!transactionResult.committed) {
+        return res.status(409).json({
+          success: false,
+          message:
+            "The application changed during deletion. Refresh the admissions list and try again. Any recorded payment archive has been retained.",
+          paymentArchiveId,
+        });
+      }
+
+      console.info("Admission application deleted.", {
+        applicationId,
+        applicationNumber,
+        paymentArchived: Boolean(paymentArchiveId),
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: hasRecordedPaymentDetails
+          ? "Admission application deleted successfully. Its recorded payment details have been retained in the admission payment history archive."
+          : "Admission application deleted successfully. No recorded payment details needed archiving.",
+        applicationId,
+        applicationNumber,
+        paymentArchived: Boolean(paymentArchiveId),
+        paymentArchiveId,
+      });
+    } catch (error: unknown) {
+      console.error("Delete admission application error:", error);
+
+      return res.status(getHttpStatus(error)).json({
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to delete the admission application.",
+      });
+    }
+  }
+);
+
+// =========================================================
+
 // APPROVE ADMISSION
 // =========================================================
 

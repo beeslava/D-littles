@@ -2647,33 +2647,82 @@ router.delete(
         paymentArchiveId = archiveRef.key;
       }
 
+      // Record why the transaction aborts without logging applicant data.
+      let deletionAbortReason = "unknown";
+      let deletionMismatchFields: string[] = [];
+
       // Recheck the latest record to avoid deleting an application
       // that another process changed while its payment data was archived.
       const transactionResult = await applicationRef.transaction(
         (currentValue: AdmissionData | null) => {
           if (!currentValue) {
+            deletionAbortReason = "record_missing";
+            deletionMismatchFields = [];
             return;
           }
 
-          const unchanged =
-            currentValue.applicationNumber === application.applicationNumber &&
-            currentValue.status === application.status &&
-            currentValue.paymentStatus === application.paymentStatus &&
-            currentValue.paymentAmount === application.paymentAmount &&
-            currentValue.paymentReference === application.paymentReference &&
-            currentValue.paymentDate === application.paymentDate &&
-            currentValue.paymentVerifiedAt === application.paymentVerifiedAt;
+          const comparisons: Array<[string, unknown, unknown]> = [
+            [
+              "applicationNumber",
+              currentValue.applicationNumber,
+              application.applicationNumber,
+            ],
+            ["status", currentValue.status, application.status],
+            [
+              "paymentStatus",
+              currentValue.paymentStatus,
+              application.paymentStatus,
+            ],
+            [
+              "paymentAmount",
+              currentValue.paymentAmount,
+              application.paymentAmount,
+            ],
+            [
+              "paymentReference",
+              currentValue.paymentReference,
+              application.paymentReference,
+            ],
+            [
+              "paymentDate",
+              currentValue.paymentDate,
+              application.paymentDate,
+            ],
+            [
+              "paymentVerifiedAt",
+              currentValue.paymentVerifiedAt,
+              application.paymentVerifiedAt,
+            ],
+          ];
 
-          if (!unchanged) {
+          const mismatchFields = comparisons
+            .filter(
+              ([, currentField, originalField]) =>
+                currentField !== originalField
+            )
+            .map(([fieldName]) => fieldName);
+
+          if (mismatchFields.length > 0) {
+            deletionAbortReason = "fields_changed";
+            deletionMismatchFields = mismatchFields;
             return;
           }
 
+          deletionAbortReason = "matched";
+          deletionMismatchFields = [];
           return null;
         },
         undefined,
         false
       );
 
+      if (!transactionResult.committed) {
+        console.warn("Admission deletion transaction aborted.", {
+          applicationId,
+          reason: deletionAbortReason,
+          mismatchFields: deletionMismatchFields,
+        });
+      }
       if (!transactionResult.committed) {
         return res.status(409).json({
           success: false,

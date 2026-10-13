@@ -2651,14 +2651,21 @@ router.delete(
       let deletionAbortReason = "unknown";
       let deletionMismatchFields: string[] = [];
 
+      // Track whether a real application record matched the deletion checks.
+      let deletionMatchedCurrentRecord = false;
+
       // Recheck the latest record to avoid deleting an application
       // that another process changed while its payment data was archived.
       const transactionResult = await applicationRef.transaction(
         (currentValue: AdmissionData | null) => {
-          if (!currentValue) {
-            deletionAbortReason = "record_missing";
+          // Reset this on every callback invocation because Firebase may retry.
+          deletionMatchedCurrentRecord = false;
+          if (currentValue === null) {
+            // Allow Firebase to reconcile an initial null candidate
+            // against the server value instead of aborting immediately.
+            deletionAbortReason = "initial_null_candidate";
             deletionMismatchFields = [];
-            return;
+            return null;
           }
 
           const comparisons: Array<[string, unknown, unknown]> = [
@@ -2710,6 +2717,7 @@ router.delete(
 
           deletionAbortReason = "matched";
           deletionMismatchFields = [];
+          deletionMatchedCurrentRecord = true;
           return null;
         },
         undefined,
@@ -2728,6 +2736,20 @@ router.delete(
           success: false,
           message:
             "The application changed during deletion. Refresh the admissions list and try again. Any recorded payment archive has been retained.",
+          paymentArchiveId,
+        });
+      }
+
+      if (!deletionMatchedCurrentRecord) {
+        console.warn("Admission deletion committed without matching an application record.", {
+          applicationId,
+          reason: deletionAbortReason,
+        });
+
+        return res.status(404).json({
+          success: false,
+          message:
+            "The admission application no longer exists. Refresh the admissions list. Any recorded payment archive has been retained.",
           paymentArchiveId,
         });
       }
